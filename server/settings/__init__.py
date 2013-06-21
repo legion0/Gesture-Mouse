@@ -7,3 +7,4 @@ def load_settings(file_path):
 TCP_PORT = "tcp_port"
 UDP_PORT = "udp_port"
 BROADCAST_PORT = "broadcast_port"
+WINDOW_DETECTION_DELAY = "window_detection_delay"
