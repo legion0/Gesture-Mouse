@@ -3,6 +3,7 @@
 
 #Python
 .pydevproject
+*.pyc
 
 # Java
 .classpath
