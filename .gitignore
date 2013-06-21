@@ -1,0 +1,9 @@
+#eclipse
+.project
+
+#Python
+.pydevproject
+
+# Java
+.classpath
+*.class
