@@ -1,9 +1,14 @@
 import sys, os
 import threading
 import socket
+import random
+import ctypes
+from ctypes import wintypes
 
 import msgpack
 import win32gui, win32process, win32api
+
+from SysTrayIcon import SysTrayIcon
 
 import settings as SETTINGS
 import protocol
@@ -15,6 +20,14 @@ SCRIPT_DIR = os.path.dirname(__file__)
 SCRIPT_NAME = os.path.basename(__file__)
 SETTINGS_DIR = SCRIPT_DIR
 
+MOUSE_LISTENER_BUFFER_SIZE = 1024
+BROADCAST_LISTENER_BUFFER_SIZE = 1024
+CONTROL_BUFFER_SIZE = 1024
+
+CLIENTS = {}
+CLIENTS_LOCK = threading.Lock()
+SESSION_ID = 0
+
 event_shutdown = threading.Event()
 
 settings = None
@@ -22,39 +35,137 @@ broadcast_listener_thread = None
 
 def main(args):
 	global settings
+	# Load Settings
 	settings_file_path = os.path.join(SETTINGS_DIR, "settings.yml")
 	settings = SETTINGS.load_settings(settings_file_path)
 
+	# Start threads
 	bl_args = (
 		settings[SETTINGS.BROADCAST_PORT],
 		settings[SETTINGS.TCP_PORT],
-		settings[SETTINGS.UDP_PORT],
 	)
 	broadcast_listener_thread = threading.Thread(target=broadcast_listener, args=bl_args)
 	broadcast_listener_thread.start()
 
-	known_applications = (
-		"Power Point",
-		"Eclipse SDK",
-		"Notepad++",
-		"Windows Task Manager",
-		"Google Chrome",
-		"explorer.exe",
-		"cygwin.exe"
-	)
+	client_server_thread = threading.Thread(target=client_server)
+	client_server_thread.start()
 
-	monitor_args = (
-		("127.0.0.1", 35202),
-		[x.lower() for x in known_applications]
-	)
-	window_monitor_thread = threading.Thread(target=window_monitor, args=monitor_args)
-	window_monitor_thread.start()
+	#Set Tray Icon
+	tray_thread = threading.Thread(target=tray_handler)
+	tray_thread.start()
 
-	time.sleep(30)
-
-	event_shutdown.set()
+	tray_thread.join()
+	client_server_thread.join()
 	broadcast_listener_thread.join()
-	window_monitor_thread.join()
+
+def tray_handler():
+	hover_text = "Gesture Mouse Server"
+	menu_options = (
+#		('Say Hello', None, kill_server),
+#		('Switch Icon', None, kill_server),
+#		('A sub-menu', None, (
+#			('Say Hello to Simon', None, kill_server),
+#			('Switch Icon', None, kill_server),
+#		))
+	)
+
+	SysTrayIcon("icon.ico", hover_text, menu_options, on_quit=kill_server, default_menu_index=1)
+
+def kill_server(_):
+	event_shutdown.set()
+
+def shutting_down():
+	return event_shutdown.is_set()
+
+def client_server():
+	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
+	sock.settimeout(1)
+	sock.bind(("", settings[SETTINGS.TCP_PORT]))
+	sock.listen(3)
+	serve_sock_function(sock, client_handler)
+	sock.close()
+
+def serve_sock_function(sock, func):
+	print "Serving %s on %s:%s" % (func, sock.getsockname()[0], sock.getsockname()[1])
+	threads = []
+	while True:
+		if shutting_down():
+			break
+		try:
+			client = sock.accept()
+		except socket.timeout:
+			continue
+		thread = threading.Thread(target=func, args=client)
+		threads.append(thread)
+		thread.start()
+	for thread in threads:
+		thread.join()
+
+def read_msg(sock):
+	data = sock.recv(CONTROL_BUFFER_SIZE)
+	try:
+		return msgpack.unpackb(data)
+	except ValueError:
+		print >> sys.stderr, "read_msg", "cannot unpack:", repr(data)
+		return None
+
+def client_handler(sock, addr):
+	global SESSION_ID
+	client_disconnect_event = threading.Event()
+	udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	udp_sock.settimeout(1)
+	udp_sock.bind(("", 0))
+	udp_port = sock.getsockname()[1]
+	sock.sendall(msgpack.packb({"udp": udp_port}))
+
+	session = {"sock": sock, "udp_sock": udp_sock, "ip": addr[0], "disconnected": client_disconnect_event, "lock": threading.Lock()}
+	with CLIENTS_LOCK:
+		session_id = SESSION_ID
+		SESSION_ID += 1
+	session["id"] = session_id
+	while True:
+		if shutting_down():
+			client_disconnect_event.set()
+			break
+		if client_disconnect_event.is_set():
+			break
+		msg = read_msg(sock)
+		print "client_handler", "got msg from:", addr
+		print msg
+		if msg is None:
+			continue
+		client_msg_handler(session, msg)
+	sock.close()
+	udp_sock.close()
+
+def client_msg_handler(session, msg):
+	if "name" in msg:
+		session["name"] = client_name = msg["name"]
+		session["control_port"] = msg["port"]
+		session["apps"] = msg["apps"]
+
+		print "client_msg_handler", "new connection from:", client_name
+		window_monitor_thread = threading.Thread(target=window_monitor, args=(session,))
+		window_monitor_thread.start()
+		mouse_listener_thread = threading.Thread(target=mouse_listener, args=(session,))
+		mouse_listener_thread.start()
+	elif "close" in msg:
+		session["disconnected"].set()
+		window_monitor_thread.join()
+		mouse_listener_thread.join()
+		session["sock"].close()
+	elif "gid" in msg:
+		action = None
+		gid = msg["gid"]
+		with session["lock"]:
+			active_app = session["active_app"]
+		if active_app is not None:
+			for gesture in active_app["gestures"]:
+				if gesture["gid"] == gid:
+					action = gesture["action"]
+					break
+		print action
 
 #PROCESS_CREATE_PROCESS = 0x0080
 #PROCESS_CREATE_THREAD = 0x0002
@@ -71,10 +182,15 @@ PROCESS_VM_READ = 0x0010
 #SYNCHRONIZE = 0x00100000L
 #PROCESS_ALL_ACCESS = PROCESS_CREATE_PROCESS | PROCESS_CREATE_THREAD | PROCESS_DUP_HANDLE | PROCESS_QUERY_INFORMATION | PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_INFORMATION | PROCESS_SET_QUOTA | PROCESS_SUSPEND_RESUME | PROCESS_TERMINATE | PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE | SYNCHRONIZE
 
-def window_monitor(client_addr, known_applications):
-	active_application = None
+def window_monitor(session):
+	client_disconnect_event = session["disconnected"]
+	client_addr = (session["ip"], session["control_port"])
+	active_app = None
+	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	apps = session["apps"]
+	sock.connect(client_addr)
 	while True:
-		if event_shutdown.is_set():
+		if client_disconnect_event.is_set():
 			break
 		handle = win32gui.GetForegroundWindow()
 		window_title = win32gui.GetWindowText(handle).lower()
@@ -87,65 +203,86 @@ def window_monitor(client_addr, known_applications):
 			file_name = os.path.basename(file_path).lower()
 			process_handle.Close()
 
-		application_name = extract_application_name(window_title, file_name, known_applications)
-		if application_name != active_application:
-			active_application = application_name
-			send_app_name_to_client(client_addr, active_application)
+		app = extract_application(window_title, file_name, apps)
+		if app != active_app:
+			active_app = app
+			with session["lock"]:
+				session["active_app"] = app
+			app_name = app["name"] if "name" in app else None
+			print "window_monitor", "active_app:", app_name
+			sock.sendall({"app": app_name})
+
 		time.sleep(settings[SETTINGS.WINDOW_DETECTION_DELAY])
+	sock.close()
 
-def send_app_name_to_client(client_addr, active_application):
-	print "active_application:", active_application
-	msg = {"app": active_application}
-	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	try:
-		sock.connect(client_addr)
-		sock.sendall(msg)
-	except socket.error as ex:
-		print >> sys.stderr, ex
-	finally:
-		sock.close()
-
-def extract_application_name(window_title, file_name, known_applications):
+def extract_application(window_title, file_name, apps):
 	if window_title == "" and file_name == "explorer.exe": # Desktop
 		return None
-	application_name = None
-	for app_name in known_applications: # First try by title
-		if window_title.endswith(app_name):
-			application_name = app_name
+	selected_app = None
+	for app in apps: # First try by title
+		if window_title.endswith(app["name"]):
+			selected_app = app
 			break
-	if application_name is None: # Cannot find by title
-		if file_name in known_applications:
-			application_name = file_name
-	return application_name
+	if selected_app is None: # Cannot find by title
+		for app in apps: # First try by title
+			if file_name == app["name"]:
+				selected_app = app
+				break
+	return selected_app
 
-def broadcast_listener(broadcast_port, tcp_port, udp_port):
-	response = {"service": "GM", "tcp": tcp_port, "udp": udp_port}
+def mouse_listener(session):
+	sock = session["udp_sock"]
+	client_disconnect_event = session["disconnected"]
+	while True:
+		if client_disconnect_event.is_set():
+			break
+		try:
+			data, addr = sock.recvfrom(MOUSE_LISTENER_BUFFER_SIZE)
+		except socket.timeout:
+			continue
+		print "mouse_listener", "got msg from:", addr
+		try:
+			msg = msgpack.unpackb(data)
+		except ValueError:
+			print >> sys.stderr, "mouse_listener", "cannot unpack:", repr(data)
+			continue
+		print "mouse_listener", "msg:", msg
+		x, y = win32api.GetCursorPos()
+		x += random.randint(-40, 40)
+		y += random.randint(-40, 40)
+		win32api.SetCursorPos((x,y))
+#		time.sleep(0.1)
+	sock.close()
+
+def broadcast_listener(broadcast_port, tcp_port):
+	response = {"service": "GM", "tcp": tcp_port}
 
 	sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 	sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
-	sock.settimeout(1)
+#	sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+#	sock.settimeout(5)
 	sock.bind(("", broadcast_port))
+	print "Serving discovery on %s:%s." % sock.getsockname()
 	while True:
-		if event_shutdown.is_set():
+		if shutting_down():
 			break
 		try:
-			data, addr = sock.recvfrom(1024)
+			data, addr = sock.recvfrom(BROADCAST_LISTENER_BUFFER_SIZE)
 		except socket.timeout:
+			print "timeout"
 			continue
-		print "addr:", addr
-		print "data:", data
+		print "broadcast_listener", "discovery request from:", addr
 		try:
 			msg = msgpack.unpackb(data)
 		except ValueError:
 			continue
-		print "message:", msg
+		print msg
 		if protocol.BROADCAST.SERVICE in msg and msg[protocol.BROADCAST.SERVICE] == protocol.BROADCAST.GM:
 			new_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-			new_sock.sendto(msgpack.packb(response), (addr[0], broadcast_port))
-
-class Namespace(object):
-	def __init__(self, adict):
-		self.__dict__.update(adict)
+			addr = (addr[0], broadcast_port)
+			print "broadcast_listener", "sending response to:", addr
+			new_sock.sendto(msgpack.packb(response), addr)
+	sock.close()
 
 if __name__ == '__main__':
 	main(sys.argv[1:])
