@@ -1,0 +1,70 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context=".MainActivity" >
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/hello_world" />
+
+    <Button
+        android:id="@+id/btnFlickLeft"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/textView1"
+        android:layout_below="@+id/textView1"
+        android:layout_marginTop="59dp"
+        android:text="f_left" />
+
+    <Button
+        android:id="@+id/btnFlickUp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/button3"
+        android:layout_alignBottom="@+id/button3"
+        android:layout_alignLeft="@+id/button2"
+        android:text="f_up" />
+
+    <Button
+        android:id="@+id/btnMouse"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/button3"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="46dp"
+        android:text="mouse" />
+
+    <Button
+        android:id="@+id/btnFlickDown"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/btnFlickLeft"
+        android:layout_alignBottom="@+id/btnFlickLeft"
+        android:layout_centerHorizontal="true"
+        android:text="f_down" />
+
+    <Button
+        android:id="@+id/btnFlickRight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/btnFlickDown"
+        android:layout_alignTop="@+id/textView1"
+        android:text="f_right" />
+
+    <Button
+        android:id="@+id/btnGesture"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/btnMouse"
+        android:layout_alignBottom="@+id/btnMouse"
+        android:layout_alignRight="@+id/btnFlickDown"
+        android:text="Gesture" />
+
+</RelativeLayout>
