@@ -1,106 +1,107 @@
 package com.example.gesturemouseclient;
 
+
+
+
+import java.net.InetSocketAddress;
+import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.List;
+
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.ProgressBar;
 
+import com.example.gesturemouseclient.infra.DeviceDeleteListDisplayAdapter;
+import com.example.gesturemouseclient.infra.DeviceItem;
+import com.example.gesturemouseclient.infra.DeviceListDisplayAdapter;
+import com.example.gesturemouseclient.infra.Logger;
+
+@SuppressLint("NewApi")
 public class MainActivity extends Activity {
+	
+	
+	private ProgressBar progressBar;
+	private ArrayAdapter<DeviceItem> adapter;
+	private ArrayAdapter<DeviceItem> adapterDelete;
+	private String deviceName;
+	
+	
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
-		final Button flickLeftButton = (Button) findViewById(R.id.btnFlickLeft);
-		final Button flickRightButton = (Button) findViewById(R.id.btnFlickRight);
-		final Button flickUpButton = (Button) findViewById(R.id.btnFlickUp);
-		final Button flickDownButton = (Button) findViewById(R.id.btnFlickDown);
-		final Button mouseButton = (Button) findViewById(R.id.btnMouse);
-		final Button gestureButton = (Button) findViewById(R.id.btnGesture);
+		//TODO: check the true device name:
+		deviceName = android.os.Build.MODEL;
+		Logger.printLog("onCreate","host name: "+ deviceName);
+		deviceName = android.os.Build.USER;
+		Logger.printLog("onCreate","host name: "+ deviceName);
 		
-		changeVisability(gestureButton);
-		changeVisability(mouseButton);
-		changeVisability(flickDownButton);
-		changeVisability(flickUpButton);
-		changeVisability(flickLeftButton);
-		changeVisability(flickRightButton);
-	
-	
-		Log.i("initialPcConnection","start1");
-		Log.e("initialPcConnection","start1");
-		Log.d("initialPcConnection","start1");
+		List<DeviceItem> deviceList = new ArrayList<DeviceItem>();
+		ListView deviceListView = (ListView)findViewById(R.id.deviceList);	
+		adapter = new DeviceListDisplayAdapter(this,deviceList);
+		deviceListView.setAdapter(adapter);
 		
+		deviceListView.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				DeviceItem tempItem = adapter.getItem(position);
+				//TODO: go to the next page
+				initConnectionToDevice(tempItem);	
+			}
+		});
+		
+		
+		// TODO: to remove this part and add it to one list.
+		List<DeviceItem> deviceDeleteList = new ArrayList<DeviceItem>();
+		ListView deviceDeleteListView = (ListView)findViewById(R.id.deviceDeleteList);	
+		adapterDelete = new DeviceDeleteListDisplayAdapter(this,deviceDeleteList);
+		deviceDeleteListView.setAdapter(adapterDelete);
+
+		deviceDeleteListView.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				DeviceItem tempItem = adapterDelete.getItem(position);
+				adapterDelete.remove(tempItem);
+				adapter.remove(tempItem);
+			}
+		});
+		
+		progressBar = (ProgressBar) findViewById(R.id.progressBar);
+
+		Logger.printLog("initialPcConnection","start");
+				
 		final FindServer findServer = new FindServer(this);
 		findServer.execute();
-		
-
-		flickLeftButton.setOnClickListener(new OnClickListener(){
-
-			@Override
-			public void onClick(View arg0) {
-				
-				
-			}
-		
-		});
-		flickRightButton.setOnClickListener(new OnClickListener(){
-
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				
-			}
 			
-		});
-		flickUpButton.setOnClickListener(new OnClickListener(){
-
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				
-			}
-		});
-		flickDownButton.setOnClickListener(new OnClickListener(){
-
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				
-			}
-		});
-		mouseButton.setOnClickListener(new OnClickListener(){
-
-			private boolean pauseMouse = true;
-
-			@Override
-			public void onClick(View v) {
-				if(pauseMouse)
-				{
-//					findServer.resumeMouse();
-//					pauseMouse = false;
-				}
-				else
-				{
-//					gestureHandler.pauseMouse();
-//					pauseMouse = true;
-				}
-				
-			}
-		});
-		gestureButton.setOnClickListener(new OnClickListener(){
-
-			@Override
-			public void onClick(View v) {
-//				gestureHandler.closeAll();
-				
-			}
-		});
-		
 	}
+	
+
+
+	/**
+	 * initialize TCP asynchronous connection.
+	 * 
+	 * @param device
+	 */
+	protected void initConnectionToDevice(DeviceItem device) {
+		TcpInitConnection tcpConnection = new TcpInitConnection(device,deviceName,this);
+		tcpConnection.execute();
+	}
+
+
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -109,15 +110,36 @@ public class MainActivity extends Activity {
 		return true;
 	}
 	
-	public void changeVisability(Button b)
+	public void stopProgressBar()
 	{
-		if(b.getVisibility() == b.VISIBLE)
-		{
-			b.setVisibility(b.INVISIBLE);
-		}
-		else
-		{
-			b.setVisibility(b.VISIBLE);
-		}
+
+		progressBar.setVisibility(View.INVISIBLE);
 	}
+	
+	public void startProgressBar()
+	{
+		progressBar.setVisibility(View.VISIBLE);
+	}
+
+	public void addDevice(DeviceItem device) {
+		adapter.add(device);
+		adapterDelete.add(device);
+	}
+
+
+
+	public void setControlSession(InetSocketAddress inetSocketAddress) {
+		FastSensorConnection fastConnection;
+		try {
+			fastConnection = new FastSensorConnection(inetSocketAddress);
+			fastConnection.start();
+		} catch (SocketException e) {
+			Logger.printLog("MainActivet", "failed to open udp socket");
+		}
+		
+	}
+	
+	
+
+	
 }

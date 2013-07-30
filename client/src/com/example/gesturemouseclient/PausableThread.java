@@ -1,17 +1,14 @@
 package com.example.gesturemouseclient;
 
-import java.net.InetAddress;
+import java.net.InetSocketAddress;
 
-public abstract class ConnectionAbs extends Thread{
-	protected int port;
-	protected InetAddress address;
+public abstract class PausableThread extends Thread{
+	
 	protected Boolean pause;
 	protected volatile boolean stop;
 
-	public ConnectionAbs(int port, InetAddress address) {
+	public PausableThread() {
 		super();
-		this.port = port;
-		this.address = address;
 		this.pause = false;
 		this.stop = false;
 	}
@@ -29,9 +26,6 @@ public abstract class ConnectionAbs extends Thread{
 		}
 		notify();
 	}
-
-
-
 
 	@Override
 	public void run(){

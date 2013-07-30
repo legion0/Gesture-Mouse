@@ -8,63 +8,57 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".MainActivity" >
 
+    <ListView
+        android:id="@+id/deviceList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/progressBar"
+        android:layout_alignParentTop="true"
+        android:layout_alignRight="@+id/headLine"
+        android:layout_marginTop="30dp" >
+
+    </ListView>
+
     <TextView
-        android:id="@+id/textView1"
+        android:id="@+id/headLine"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/hello_world" />
+        android:layout_alignParentTop="true"
+        android:layout_alignRight="@+id/progressBar"
+        android:layout_marginRight="18dp"
+        android:text="Devices"
+        android:textColor="#00ccff"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
-    <Button
-        android:id="@+id/btnFlickLeft"
+    <TextView
+        android:id="@+id/searchingForDevicesText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/textView1"
-        android:layout_below="@+id/textView1"
-        android:layout_marginTop="59dp"
-        android:text="f_left" />
-
-    <Button
-        android:id="@+id/btnFlickUp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/button3"
-        android:layout_alignBottom="@+id/button3"
-        android:layout_alignLeft="@+id/button2"
-        android:text="f_up" />
-
-    <Button
-        android:id="@+id/btnMouse"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/button3"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="46dp"
-        android:text="mouse" />
-
-    <Button
-        android:id="@+id/btnFlickDown"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/btnFlickLeft"
-        android:layout_alignBottom="@+id/btnFlickLeft"
         android:layout_centerHorizontal="true"
-        android:text="f_down" />
+        android:layout_marginBottom="48dp"
+        android:text="Searching for devices..."
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="#00ccff"
+        android:textStyle="italic" />
 
-    <Button
-        android:id="@+id/btnFlickRight"
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/btnFlickDown"
-        android:layout_alignTop="@+id/textView1"
-        android:text="f_right" />
+        android:layout_above="@+id/searchingForDevicesText"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="44dp" />
 
-    <Button
-        android:id="@+id/btnGesture"
-        android:layout_width="wrap_content"
+    <ListView
+        android:id="@+id/deviceDeleteList"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/btnMouse"
-        android:layout_alignBottom="@+id/btnMouse"
-        android:layout_alignRight="@+id/btnFlickDown"
-        android:text="Gesture" />
+        android:layout_above="@+id/progressBar"
+        android:layout_below="@+id/headLine"
+        android:layout_toRightOf="@+id/progressBar" >
+
+    </ListView>
 
 </RelativeLayout>
