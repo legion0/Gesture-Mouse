@@ -1,0 +1,64 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context=".FindServerActivety" >
+
+    <ListView
+        android:id="@+id/deviceList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/progressBar"
+        android:layout_alignParentTop="true"
+        android:layout_alignRight="@+id/headLine"
+        android:layout_marginTop="30dp" >
+
+    </ListView>
+
+    <TextView
+        android:id="@+id/headLine"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignRight="@+id/progressBar"
+        android:layout_marginRight="18dp"
+        android:text="Devices"
+        android:textColor="#00ccff"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <TextView
+        android:id="@+id/searchingForDevicesText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="48dp"
+        android:text="Searching for devices..."
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="#00ccff"
+        android:textStyle="italic" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/searchingForDevicesText"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="44dp" />
+
+    <ListView
+        android:id="@+id/deviceDeleteList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/progressBar"
+        android:layout_below="@+id/headLine"
+        android:layout_toRightOf="@+id/progressBar" >
+
+    </ListView>
+
+</RelativeLayout>

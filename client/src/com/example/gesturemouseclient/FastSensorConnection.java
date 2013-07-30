@@ -40,6 +40,7 @@ public class FastSensorConnection extends PausableThread {
 	protected void sendSample() throws IOException {
 		// GyroSample sample = this.queue.poll(500, TimeUnit.MILLISECONDS);
 		if (!this.queue.isEmpty()) {
+			//TODO: check if we want to calc the mouse location
 			GyroSample sample = this.queue.pop();
 			this.message.set(0, sample.getX());
 			this.message.set(1, sample.getY());

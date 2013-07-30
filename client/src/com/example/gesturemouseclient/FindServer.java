@@ -20,9 +20,9 @@ public class FindServer extends AsyncTask<Void,Void,DeviceItem> {
 
 	
 
-	private MainActivity mainActivity;
+	private FindServerActivety mainActivity;
 	
-	public FindServer(MainActivity mainActivity) {
+	public FindServer(FindServerActivety mainActivity) {
 		this.mainActivity = mainActivity;
 	}
 

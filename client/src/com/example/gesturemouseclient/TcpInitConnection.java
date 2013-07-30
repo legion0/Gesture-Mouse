@@ -8,6 +8,8 @@ import org.msgpack.type.RawValue;
 import org.msgpack.type.Value;
 import org.msgpack.type.ValueFactory;
 
+import android.os.AsyncTask;
+
 import com.example.gesturemouseclient.infra.DeviceItem;
 import com.example.gesturemouseclient.infra.Logger;
 import com.example.gesturemouseclient.infra.ResponseReader;
@@ -18,7 +20,7 @@ public class TcpInitConnection extends AsyncTask<Void, Void, Integer> {
 	private InetAddress address;
 	private String deviceName;
 	private final static String TCP_IN_GOING_PORT = "35202";
-	private final MainActivity mainActivity;
+	private final FindServerActivety mainActivity;
 	private DeviceItem device;
 
 	/**
@@ -28,7 +30,7 @@ public class TcpInitConnection extends AsyncTask<Void, Void, Integer> {
 	 * @param mainActivity
 	 */
 	public TcpInitConnection(DeviceItem device, String deviceName,
-			MainActivity mainActivity) {
+			FindServerActivety mainActivity) {
 		this.mainActivity = mainActivity;
 		tcp_outgoing_port = device.getControlPort();
 		address = device.getAddress();
@@ -51,7 +53,7 @@ public class TcpInitConnection extends AsyncTask<Void, Void, Integer> {
 		try {
 
 			serverUdp = client.initControllSession(TCP_IN_GOING_PORT, null);
-			device.setTcpSocket(client.getSocket());
+			device.setControlSocket(client.getSocket());
 			Logger.printLog("TcpInitialConnection", response.udpPort);
 			return serverUdp;
 		} catch (IOException e) {
