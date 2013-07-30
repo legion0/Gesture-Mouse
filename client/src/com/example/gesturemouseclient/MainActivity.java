@@ -38,11 +38,11 @@ public class MainActivity extends Activity{
 		super.onKeyDown(keyCode, event);
 		if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN)
 		{
-			device.getClickQueue().offer(keyCode);			
+			device.getClickQueue().offerLast(keyCode);			
 			return true;
 		}else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP)
 		{
-			device.getClickQueue().offer(keyCode);
+			device.getClickQueue().offerLast(keyCode);
 			return true;
 		}
 		return false;
