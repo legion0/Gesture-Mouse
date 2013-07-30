@@ -19,7 +19,9 @@ public class DeviceItem {
 	private int UDPPort;
 	private final String machineName;
 	private Socket controlSocket;
-	private BlockingDeque<GyroSample> queue;
+	private BlockingDeque<GyroSample> gyroQueue;
+	private BlockingDeque<GyroSample> gestureQueue;
+	private BlockingDeque<Integer> clickQueue;
 
 	/**
 	 * Constructor
@@ -31,7 +33,9 @@ public class DeviceItem {
 		this.controlPort = controlPort;
 		this.address = address;
 		this.machineName = machineName;
-		this.queue = new LinkedBlockingDeque<GyroSample>();
+		this.gyroQueue = new LinkedBlockingDeque<GyroSample>();
+		this.gestureQueue = new LinkedBlockingDeque<GyroSample>();
+		this.clickQueue = new LinkedBlockingDeque<Integer>();
 	}
 
 	public int getControlPort() {
@@ -62,8 +66,16 @@ public class DeviceItem {
 		this.controlSocket = controlSocket;
 	}
 
-	public BlockingDeque<GyroSample> getQueue() {
-		return queue;
+	public BlockingDeque<GyroSample> getGyroQueue() {
+		return gyroQueue;
+	}
+
+	public BlockingDeque<Integer> getClickQueue() {
+		return clickQueue;
+	}
+
+	public BlockingDeque<GyroSample> getGestureQueue() {
+		return gestureQueue;
 	}
 
 }

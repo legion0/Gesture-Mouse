@@ -29,7 +29,7 @@ public class FastSensorConnection extends PausableThread {
 		super();
 		this.socket = new DatagramSocket(device.getUDPPort(),
 				device.getAddress());
-		this.queue = device.getQueue();
+		this.queue = device.getGyroQueue();
 		this.msgpack = new MessagePack();
 		this.message = new ArrayList<Float>(3);
 		this.message.add(0.0f);
@@ -40,8 +40,7 @@ public class FastSensorConnection extends PausableThread {
 	protected void sendSample() throws IOException {
 		// GyroSample sample = this.queue.poll(500, TimeUnit.MILLISECONDS);
 		if (!this.queue.isEmpty()) {
-			//TODO: check if we want to calc the mouse location
-			GyroSample sample = this.queue.pop();
+			GyroSample sample = this.queue.removeFirst();
 			this.message.set(0, sample.getX());
 			this.message.set(1, sample.getY());
 			this.message.set(2, sample.getZ());
