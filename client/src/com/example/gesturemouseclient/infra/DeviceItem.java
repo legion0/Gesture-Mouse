@@ -3,35 +3,39 @@ package com.example.gesturemouseclient.infra;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.LinkedBlockingDeque;
 
 /**
  * @author Yotam & Jonatan
  * 
- * a class to hold the device data we wish to connect with
- *
+ *         a class to hold the device data we wish to connect with
+ * 
  */
 public class DeviceItem {
 
 	private InetAddress address;
-	private int serverPort;
+	private int controlPort;
+	private int UDPPort;
 	private final String machineName;
-	private Socket tcpSocket;
-	private DatagramSocket udpSocket;
-	
+	private Socket controlSocket;
+	private BlockingDeque<GyroSample> queue;
 
 	/**
 	 * Constructor
-	 * @param serverPort
+	 * 
+	 * @param controlPort
 	 * @param inetAddress
 	 */
-	public DeviceItem(int serverPort, InetAddress address,String machineName) {
-		this.serverPort = serverPort;
+	public DeviceItem(int controlPort, InetAddress address, String machineName) {
+		this.controlPort = controlPort;
 		this.address = address;
 		this.machineName = machineName;
+		this.queue = new LinkedBlockingDeque<GyroSample>();
 	}
-	
-	public int getServerPort() {
-		return serverPort;
+
+	public int getControlPort() {
+		return controlPort;
 	}
 
 	public String getMachineName() {
@@ -42,19 +46,24 @@ public class DeviceItem {
 		return address;
 	}
 
-	public void setTcpSocket(Socket socket) {
-		this.tcpSocket = socket;
+	public int getUDPPort() {
+		return UDPPort;
 	}
 
-	public Socket getTcpSocket() {
-		return tcpSocket;
+	public void setUDPPort(int uDPPort) {
+		UDPPort = uDPPort;
 	}
 
-	public void setUdpSocket(DatagramSocket socket) {
-		this.udpSocket = socket;
+	public Socket getControlSocket() {
+		return controlSocket;
 	}
 
-	public DatagramSocket getUdpSocket() {
-		return udpSocket;
+	public void setControlSocket(Socket controlSocket) {
+		this.controlSocket = controlSocket;
 	}
+
+	public BlockingDeque<GyroSample> getQueue() {
+		return queue;
+	}
+
 }

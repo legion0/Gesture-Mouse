@@ -1,9 +1,7 @@
 package com.example.gesturemouseclient;
 
-import java.net.InetSocketAddress;
+public abstract class PausableThread extends Thread {
 
-public abstract class PausableThread extends Thread{
-	
 	protected Boolean pause;
 	protected volatile boolean stop;
 
@@ -13,14 +11,13 @@ public abstract class PausableThread extends Thread{
 		this.stop = false;
 	}
 
-	void pauseRun()
-	{
+	void pauseRun() {
 		synchronized (pause) {
 			pause = true;
 		}
 	}
 
-	public void resumeRun(){
+	public void resumeRun() {
 		synchronized (pause) {
 			pause = false;
 		}
@@ -28,12 +25,10 @@ public abstract class PausableThread extends Thread{
 	}
 
 	@Override
-	public void run(){
-		while(!stop)
-		{
+	public void run() {
+		while (!stop) {
 			synchronized (pause) {
-				if(pause)
-				{
+				if (pause) {
 					try {
 						wait();
 					} catch (InterruptedException e) {
@@ -46,9 +41,5 @@ public abstract class PausableThread extends Thread{
 	}
 
 	protected abstract void innerAction();
-
-
-
-
 
 }
