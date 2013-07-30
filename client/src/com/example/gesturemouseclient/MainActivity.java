@@ -32,6 +32,8 @@ public class MainActivity extends Activity {
 	private ArrayAdapter<DeviceItem> adapter;
 	private ArrayAdapter<DeviceItem> adapterDelete;
 	private String deviceName;
+	FastSensorConnection fastConnection;
+	private DeviceItem device;
 	
 	
 
@@ -56,9 +58,9 @@ public class MainActivity extends Activity {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
-				DeviceItem tempItem = adapter.getItem(position);
+				device = adapter.getItem(position);
 				//TODO: go to the next page
-				initConnectionToDevice(tempItem);	
+				initConnectionToDevice();	
 			}
 		});
 		
@@ -96,7 +98,7 @@ public class MainActivity extends Activity {
 	 * 
 	 * @param device
 	 */
-	protected void initConnectionToDevice(DeviceItem device) {
+	protected void initConnectionToDevice() {
 		TcpInitConnection tcpConnection = new TcpInitConnection(device,deviceName,this);
 		tcpConnection.execute();
 	}
@@ -129,7 +131,6 @@ public class MainActivity extends Activity {
 
 
 	public void setControlSession(InetSocketAddress inetSocketAddress) {
-		FastSensorConnection fastConnection;
 		try {
 			fastConnection = new FastSensorConnection(inetSocketAddress);
 			fastConnection.start();

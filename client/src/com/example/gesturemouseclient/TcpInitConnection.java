@@ -19,9 +19,9 @@ public class TcpInitConnection extends AsyncTask<Void,Void,Integer> {
     private int tcp_outgoing_port;
 	private InetAddress address;
 	private String deviceName;
-	private String serverIp;
 	private final static String TCP_IN_GOING_PORT = "35202";
 	private final MainActivity mainActivity;
+	private DeviceItem device;
 
 	/**
 	 * Constructor:
@@ -34,7 +34,7 @@ public class TcpInitConnection extends AsyncTask<Void,Void,Integer> {
 		tcp_outgoing_port = device.getServerPort();
 		address = device.getAddress();
 		this.deviceName = deviceName;
-		this.serverIp = device.getMachineName();
+		this.device = device;
 	}
 
 	@Override
@@ -51,6 +51,7 @@ public class TcpInitConnection extends AsyncTask<Void,Void,Integer> {
 		try {
 			
 			serverUdp = client.initControllSession(TCP_IN_GOING_PORT,null);
+			device.setTcpSocket(client.getSocket());
 			Logger.printLog("TcpInitialConnection", response.udpPort);
 			return serverUdp;
 		} catch (IOException e) {

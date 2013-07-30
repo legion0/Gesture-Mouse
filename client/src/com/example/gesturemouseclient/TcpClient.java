@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -28,7 +27,7 @@ public class TcpClient {
 	private ResponseReader responseReader = null;
 	private long timeout = -1;
 	
-	private static final RawValue key_extra_info = ValueFactory.createRawValue("extra_info".getBytes());
+
 	private static final RawValue key_features = ValueFactory.createRawValue("features".getBytes());
 	private static final RawValue key_port = ValueFactory.createRawValue("port".getBytes());
 	private static final RawValue key_name = ValueFactory.createRawValue("name".getBytes());
@@ -40,6 +39,10 @@ public class TcpClient {
 	private final int tcp_outgoing_port;
 	private final String deviceName;
 	private final InetAddress address;
+	private Socket socket;
+
+
+
 
 
 	/**
@@ -57,6 +60,8 @@ public class TcpClient {
 		this.deviceName = deviceName;
 		this.address = address;
 	}
+	
+	
 
 
 	public void setTimeout(int seconds) {
@@ -110,7 +115,7 @@ public class TcpClient {
         Logger.printLog("TCP Client", "C: Connecting...");
 
         //create a socket to make the connection with the server
-        Socket socket = new Socket(address, tcp_outgoing_port);
+        socket = new Socket(address, tcp_outgoing_port);
         
         try {
         	 
@@ -143,60 +148,13 @@ public class TcpClient {
 			return new Integer(udpFromServer);
 
         } catch (Exception e) {
-
             Logger.printLog("TCPClient", "S: Error, "+e.getMessage());
-
-        } finally {
-            //the socket must be closed. It is not possible to reconnect to this socket
-            // after it is closed, which means a new socket instance has to be created.
-            socket.close();
         }
-//		InetAddress group = InetAddress.getByName(MULTICAST_GROUP);
-//		MulticastSocket socket = new MulticastSocket();
-//		socket.setTimeToLive(ttl);
-//		DatagramPacket outgoingPacket = new DatagramPacket(msgBuffer, msgBuffer.length, group, NSD_PORT);
-//		DatagramPacket incomingPacket;
-//
-//		byte[] buf;
-//		long end = timeout > -1 ? System.nanoTime() + timeout : Long.MAX_VALUE;
-//		try {
-//			while (System.nanoTime() < end) {
-//				try {
-//					socket.send(outgoingPacket);
-//
-//					buf = new byte[4096];
-//					incomingPacket = new DatagramPacket(buf, buf.length);
-//					socket.setSoTimeout(1000);
-//					socket.receive(incomingPacket);
-//					byte[] tempBuffer = new byte[incomingPacket.getLength()];
-//					System.arraycopy(buf, 0, tempBuffer, 0, incomingPacket.getLength());
-//					buf = tempBuffer;
-//					ByteArrayInputStream in = new ByteArrayInputStream(buf);
-//					Unpacker unpacker = msgpack.createUnpacker(in);
-//					MapValue returnMsg = unpacker.readValue().asMapValue();
-//					String returnServiceName = returnMsg.get(key_service).asRawValue().getString();
-//					if (!serviceName.equals(returnServiceName)) {
-//						throw new MessageTypeException("Invalid Service Name");
-//					}
-//					int port = returnMsg.get(key_port).asIntegerValue().getInt();
-//					if (returnMsg.containsKey(key_extra_info)) {
-//						responseReader.read(returnMsg.get(key_extra_info));
-//					}
-//					return new InetSocketAddress(incomingPacket.getAddress(), port);
-//				} catch (SocketTimeoutException ex) {
-//					// System.out.println("timeout");
-//				} catch (NullPointerException ex) {
-//					ex.printStackTrace();
-//				} catch (MessageTypeException ex) {
-//					ex.printStackTrace();
-//				} catch (Exception ex) {
-//					ex.printStackTrace();
-//				}
-//			}
-//		} finally {
-//			socket.close();
-//		}
 		return null;
+	}
+	
+	public Socket getSocket() {
+		return socket;
 	}
 
 

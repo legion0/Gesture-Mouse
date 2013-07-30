@@ -33,7 +33,6 @@ public class FastSensorConnection extends PausableThread {
 	@Override
 	protected void innerAction() {
 		
-		
 	}
 
 

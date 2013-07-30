@@ -1,6 +1,8 @@
 package com.example.gesturemouseclient.infra;
 
+import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.Socket;
 
 /**
  * @author Yotam & Jonatan
@@ -13,6 +15,9 @@ public class DeviceItem {
 	private InetAddress address;
 	private int serverPort;
 	private final String machineName;
+	private Socket tcpSocket;
+	private DatagramSocket udpSocket;
+	
 
 	/**
 	 * Constructor
@@ -21,11 +26,9 @@ public class DeviceItem {
 	 */
 	public DeviceItem(int serverPort, InetAddress address,String machineName) {
 		this.serverPort = serverPort;
-		this.setAddress(address);
+		this.address = address;
 		this.machineName = machineName;
 	}
-	
-	
 	
 	public int getServerPort() {
 		return serverPort;
@@ -35,20 +38,23 @@ public class DeviceItem {
 		return machineName;
 	}
 
-
-
 	public InetAddress getAddress() {
 		return address;
 	}
 
-
-
-	public void setAddress(InetAddress address) {
-		this.address = address;
+	public void setTcpSocket(Socket socket) {
+		this.tcpSocket = socket;
 	}
 
-	
-	
+	public Socket getTcpSocket() {
+		return tcpSocket;
+	}
 
+	public void setUdpSocket(DatagramSocket socket) {
+		this.udpSocket = socket;
+	}
 
+	public DatagramSocket getUdpSocket() {
+		return udpSocket;
+	}
 }
