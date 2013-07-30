@@ -14,13 +14,13 @@ import com.example.gesturemouseclient.infra.DeviceItem;
 import com.example.gesturemouseclient.infra.Logger;
 import com.example.gesturemouseclient.infra.ResponseReader;
 
-public class TcpInitConnection extends AsyncTask<Void, Void, Integer> {
+public class TcpInitConnection extends AsyncTask<Void, Void, Void> {
 
 	private int tcp_outgoing_port;
 	private InetAddress address;
 	private String deviceName;
 	private final static String TCP_IN_GOING_PORT = "35202";
-	private final FindServerActivety mainActivity;
+	private final MainActivity activity;
 	private DeviceItem device;
 
 	/**
@@ -29,12 +29,11 @@ public class TcpInitConnection extends AsyncTask<Void, Void, Integer> {
 	 * @param device
 	 * @param mainActivity
 	 */
-	public TcpInitConnection(DeviceItem device, String deviceName,
-			FindServerActivety mainActivity) {
-		this.mainActivity = mainActivity;
+	public TcpInitConnection(DeviceItem device,	MainActivity mainActivity) {
+		this.activity = mainActivity;
 		tcp_outgoing_port = device.getControlPort();
 		address = device.getAddress();
-		this.deviceName = deviceName;
+		this.deviceName = device.getMachineName();
 		this.device = device;
 	}
 
@@ -44,23 +43,20 @@ public class TcpInitConnection extends AsyncTask<Void, Void, Integer> {
 	}
 
 	@Override
-	protected Integer doInBackground(Void... params) {
+	protected Void doInBackground(Void... params) {
 		MyResponseReader response = new MyResponseReader();
 		TcpClient client = new TcpClient(response, tcp_outgoing_port,
 				deviceName, address);
 		client.setTimeout(5);
 		int serverUdp;
 		try {
-
-			serverUdp = client.initControllSession(TCP_IN_GOING_PORT, null);
-			device.setControlSocket(client.getSocket());
+			client.initControllSession(TCP_IN_GOING_PORT, null,device);
 			Logger.printLog("TcpInitialConnection", response.udpPort);
-			return serverUdp;
 		} catch (IOException e) {
 			Logger.printLog("TcpInitialConnection",
 					"Failed to find TCP connection.");
-			return null;
 		}
+		return null;
 	}
 
 	static class MyResponseReader implements ResponseReader {
@@ -80,10 +76,11 @@ public class TcpInitConnection extends AsyncTask<Void, Void, Integer> {
 		// TODO: update bar...
 	}
 
-	protected void onPostExecute(Integer result) {
+	protected void onPostExecute() {
 		Logger.printLog("TCPinitialConnection", "onPostExecute");
 
-		mainActivity.setControlSession(new InetSocketAddress(address, result));
+		
+		activity.setControlSession();
 
 	}
 

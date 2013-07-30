@@ -19,6 +19,7 @@ import org.msgpack.type.RawValue;
 import org.msgpack.type.ValueFactory;
 import org.msgpack.unpacker.Unpacker;
 
+import com.example.gesturemouseclient.infra.DeviceItem;
 import com.example.gesturemouseclient.infra.Logger;
 import com.example.gesturemouseclient.infra.ResponseReader;
 
@@ -36,10 +37,12 @@ public class TcpClient {
 	private static final RawValue key_actions = ValueFactory.createRawValue("actions".getBytes());
 	private static final RawValue key_gestures = ValueFactory.createRawValue("gestures".getBytes());
 	private static final RawValue key_udp = ValueFactory.createRawValue("udp".getBytes());
+	private static final RawValue key_session_id = ValueFactory.createRawValue("session_id".getBytes());
 	private final int tcp_outgoing_port;
 	private final String deviceName;
 	private final InetAddress address;
 	private Socket socket;
+	
 
 
 
@@ -68,7 +71,7 @@ public class TcpClient {
 		timeout  = seconds * 1000000000l;
 	}
 	
-	private byte[] createmsg(final String tcpPort, String[] features) throws IOException {
+	private byte[] createMsg(final String tcpPort, String[] features) throws IOException {
 		Map<Object, Object> msg = new LinkedHashMap<Object, Object>() {
 			{
 				put(key_name,deviceName);
@@ -109,8 +112,8 @@ public class TcpClient {
 	
 
 
-	public Integer initControllSession(final String tcpPort, String[] features) throws IOException {
-		byte[] msgBuffer = createmsg(tcpPort,features);
+	public void initControllSession(final String tcpPort, String[] features, DeviceItem device) throws IOException {
+		byte[] msgBuffer = createMsg(tcpPort,features);
 
         Logger.printLog("TCP Client", "C: Connecting...");
 
@@ -139,18 +142,21 @@ public class TcpClient {
 			Unpacker unpacker = msgpack.createUnpacker(in);
 			MapValue returnMsg = unpacker.readValue().asMapValue();
 			int udpFromServer = returnMsg.get(key_udp).asIntegerValue().getInt();
+			String sessionId = returnMsg.get(key_session_id).asRawValue().getString();
 			if (udpFromServer <= 0) {
-				throw new MessageTypeException("Invalid Udp");
+				throw new MessageTypeException("Invalid Udp.");
 			}
+			if(sessionId == null){
+				throw new MessageTypeException("Invalid session id.");
+			}
+			device.setSessionId(sessionId);
+			device.setUDPPort(udpFromServer);
 			
 			Logger.printLog("TCP Client","S: Received udp port: " + udpFromServer);
-			
-			return new Integer(udpFromServer);
-
         } catch (Exception e) {
             Logger.printLog("TCPClient", "S: Error, "+e.getMessage());
         }
-		return null;
+
 	}
 	
 	public Socket getSocket() {

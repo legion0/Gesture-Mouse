@@ -15,10 +15,9 @@ import com.example.gesturemouseclient.infra.GyroSample;
 public class GestureListener extends PausableThread {
 
 	private static final int HISTORY_SIZE = 100;
-	private Socket socket;
 	private BlockingDeque<GyroSample> queue;
 	private MessagePack msgpack;
-	private Map<String, Integer> message;
+	private Map<String, Object> message;
 
 	/**
 	 * Constctur:
@@ -28,10 +27,10 @@ public class GestureListener extends PausableThread {
 	 */
 	public GestureListener(DeviceItem device) throws SocketException {
 		super();
-		this.socket = device.getControlSocket();
 		this.queue = device.getGestureQueue();
 		this.msgpack = new MessagePack();
-		this.message = new LinkedHashMap<String, Integer>(1);
+		this.message = new LinkedHashMap<String, Object>(1);
+		this.message.put("session_id", device.getSessionId());
 	}
 
 	protected void detectGesture() throws IOException {

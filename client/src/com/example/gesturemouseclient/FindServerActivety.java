@@ -10,6 +10,7 @@ import java.util.List;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
@@ -32,7 +33,7 @@ public class FindServerActivety extends Activity {
 	private ArrayAdapter<DeviceItem> adapter;
 	private ArrayAdapter<DeviceItem> adapterDelete;
 	private String deviceName;
-	FastSensorConnection fastConnection;
+	
 	private DeviceItem device;
 	
 	
@@ -99,8 +100,9 @@ public class FindServerActivety extends Activity {
 	 * @param device
 	 */
 	protected void initConnectionToDevice() {
-		TcpInitConnection tcpConnection = new TcpInitConnection(device,deviceName,this);
-		tcpConnection.execute();
+		Intent intent = new Intent(this, MainActivity.class);
+		intent.putExtra("device",device);
+		startActivity(intent);
 	}
 
 
@@ -130,15 +132,7 @@ public class FindServerActivety extends Activity {
 
 
 
-	public void setControlSession(InetSocketAddress inetSocketAddress) {
-		try {
-			fastConnection = new FastSensorConnection(device);
-			fastConnection.start();
-		} catch (SocketException e) {
-			Logger.printLog("MainActivet", "failed to open udp socket");
-		}
-		
-	}
+
 	
 	
 

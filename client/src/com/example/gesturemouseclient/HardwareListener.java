@@ -13,10 +13,10 @@ import com.example.gesturemouseclient.infra.DeviceItem;
 
 public class HardwareListener extends PausableThread {
 
-	private Socket socket;
 	private BlockingDeque<Integer> queue;
 	private MessagePack msgpack;
-	private Map<String, Integer> message;
+	private Map<String, Object> message;
+	private final DeviceItem device;
 
 	/**
 	 * Constctur:
@@ -26,19 +26,21 @@ public class HardwareListener extends PausableThread {
 	 */
 	public HardwareListener(DeviceItem device) throws SocketException {
 		super();
-		this.socket = device.getControlSocket();
+		this.device = device;
 		this.queue = device.getClickQueue();
 		this.msgpack = new MessagePack();
-		this.message = new LinkedHashMap<String, Integer>(1);
+		this.message = new LinkedHashMap<String, Object>(1);
+		this.message.put("session_id", device.getSessionId());
 	}
 
 	protected void sendSample() throws IOException {
 		// GyroSample sample = this.queue.poll(500, TimeUnit.MILLISECONDS);
 		if (!this.queue.isEmpty()) {
+			Socket socket = new Socket(device.getAddress(),device.getControlPort());
 			Integer click = this.queue.removeFirst();
 			this.message.put("click", click);
 			byte[] buffer = msgpack.write(this.message);
-			this.socket.getOutputStream().write(buffer);
+			socket.getOutputStream().write(buffer);
 		}
 	}
 
