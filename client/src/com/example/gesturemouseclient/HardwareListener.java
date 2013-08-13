@@ -10,6 +10,7 @@ import java.util.concurrent.BlockingDeque;
 import org.msgpack.MessagePack;
 
 import com.example.gesturemouseclient.infra.DeviceItem;
+import com.example.gesturemouseclient.infra.Logger;
 
 public class HardwareListener extends PausableThread {
 
@@ -34,11 +35,11 @@ public class HardwareListener extends PausableThread {
 	}
 
 	protected void sendSample() throws IOException {
-		// GyroSample sample = this.queue.poll(500, TimeUnit.MILLISECONDS);
+		// GyroSample sample = this.queue.poll(500, TimeUnit.MILLISECONDS)
 		if (!this.queue.isEmpty()) {
 			Socket socket = new Socket(device.getAddress(),device.getControlPort());
-			Integer click = this.queue.removeFirst();
-			this.message.put("click", click);
+			Integer keyEvent = this.queue.removeFirst();
+			this.message.put("key_event", keyEvent);
 			byte[] buffer = msgpack.write(this.message);
 			socket.getOutputStream().write(buffer);
 		}

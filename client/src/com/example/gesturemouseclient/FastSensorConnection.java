@@ -11,6 +11,7 @@ import org.msgpack.MessagePack;
 
 import com.example.gesturemouseclient.infra.DeviceItem;
 import com.example.gesturemouseclient.infra.GyroSample;
+import com.example.gesturemouseclient.infra.Logger;
 
 public class FastSensorConnection extends PausableThread {
 
@@ -18,6 +19,8 @@ public class FastSensorConnection extends PausableThread {
 	private BlockingDeque<GyroSample> queue;
 	private MessagePack msgpack;
 	private ArrayList<Float> message;
+	private final DeviceItem device;
+	
 
 	/**
 	 * Constctur:
@@ -27,8 +30,8 @@ public class FastSensorConnection extends PausableThread {
 	 */
 	public FastSensorConnection(DeviceItem device) throws SocketException {
 		super();
-		this.socket = new DatagramSocket(device.getUDPPort(),
-				device.getAddress());
+		this.device = device;
+		this.socket = new DatagramSocket();
 		this.queue = device.getGyroQueue();
 		this.msgpack = new MessagePack();
 		this.message = new ArrayList<Float>(3);
@@ -44,8 +47,9 @@ public class FastSensorConnection extends PausableThread {
 			this.message.set(0, sample.getX());
 			this.message.set(1, sample.getY());
 			this.message.set(2, sample.getZ());
+			Logger.printLog("FastSensorConnection : ", "sendSample("+sample.getX()+","+sample.getY()+","+sample.getZ()+")");
 			byte[] buffer = msgpack.write(this.message);
-			DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+			DatagramPacket packet = new DatagramPacket(buffer, buffer.length,device.getAddress(),device.getUDPPort());
 			this.socket.send(packet);
 		}
 	}

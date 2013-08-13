@@ -25,7 +25,7 @@ import com.example.gesturemouseclient.infra.ResponseReader;
 
 public class TcpClient {
 	
-	private ResponseReader responseReader = null;
+	//private ResponseReader responseReader = null;
 	private long timeout = -1;
 	
 
@@ -58,7 +58,7 @@ public class TcpClient {
 	 * @param tcp_port
 	 */
 	public TcpClient(ResponseReader responseReader, int tcp_outgoing_port, String deviceName, InetAddress address) {
-		this.responseReader = responseReader;
+		//this.responseReader = responseReader;
 		this.tcp_outgoing_port = tcp_outgoing_port;
 		this.deviceName = deviceName;
 		this.address = address;

@@ -3,22 +3,26 @@ package com.example.gesturemouseclient;
 
 
 
-import java.net.InetSocketAddress;
-import java.net.SocketException;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.example.gesturemouseclient.infra.DeviceDeleteListDisplayAdapter;
 import com.example.gesturemouseclient.infra.DeviceItem;
@@ -33,8 +37,11 @@ public class FindServerActivety extends Activity {
 	private ArrayAdapter<DeviceItem> adapter;
 	private ArrayAdapter<DeviceItem> adapterDelete;
 	private String deviceName;
+	private TextView searchForDevice;
 	
 	private DeviceItem device;
+	private Button retryBtn;
+	private FindServer findServer;
 	
 	
 
@@ -42,6 +49,7 @@ public class FindServerActivety extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_find_server);
+		
 		
 		//TODO: check the true device name:
 		deviceName = android.os.Build.MODEL;
@@ -65,6 +73,21 @@ public class FindServerActivety extends Activity {
 			}
 		});
 		
+		searchForDevice = (TextView) findViewById(R.id.searchingForDevicesText);
+		retryBtn = (Button) findViewById(R.id.retryBtn);
+		
+		
+		retryBtn.setVisibility(View.INVISIBLE);
+		retryBtn.setClickable(false);
+		
+		retryBtn.setOnClickListener(new OnClickListener(){
+			
+			@Override
+			public void onClick(View v) {
+				startFindServer();
+			}
+		});
+		
 		
 		// TODO: to remove this part and add it to one list.
 		List<DeviceItem> deviceDeleteList = new ArrayList<DeviceItem>();
@@ -83,15 +106,29 @@ public class FindServerActivety extends Activity {
 			}
 		});
 		
+		
+		
+		
 		progressBar = (ProgressBar) findViewById(R.id.progressBar);
-
-		Logger.printLog("initialPcConnection","start");
-				
-		final FindServer findServer = new FindServer(this);
-		findServer.execute();
+		startFindServer();
 			
 	}
 	
+
+	
+
+
+	private void startFindServer() {
+		startProgressBar();
+		Logger.printLog("initialPcConnection","start");
+		findServer = new FindServer(this);
+		retryBtn.setVisibility(View.INVISIBLE);
+		searchForDevice.setText("Searching for devices...");
+		findServer.execute();
+	}
+
+
+
 
 
 	/**
@@ -116,8 +153,18 @@ public class FindServerActivety extends Activity {
 	
 	public void stopProgressBar()
 	{
-
 		progressBar.setVisibility(View.INVISIBLE);
+		if(adapter.getCount() == 0)
+		{
+			retryBtn.setVisibility(View.VISIBLE);
+			retryBtn.setClickable(true);
+			searchForDevice.setText("Did not find any device...\nPlease verify your pc server is on.");
+		}else{
+			searchForDevice.setVisibility(View.INVISIBLE);
+			retryBtn.setVisibility(View.INVISIBLE);
+			retryBtn.setClickable(false);
+			searchForDevice.setText("Searching for devices...");
+		}
 	}
 	
 	public void startProgressBar()
@@ -129,6 +176,7 @@ public class FindServerActivety extends Activity {
 		adapter.add(device);
 		adapterDelete.add(device);
 	}
+
 
 
 

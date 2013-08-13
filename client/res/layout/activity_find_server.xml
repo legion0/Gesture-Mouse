@@ -61,4 +61,13 @@
 
     </ListView>
 
+    <Button
+        android:id="@+id/retryBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/progressBar"
+        android:layout_alignLeft="@+id/progressBar"
+        android:background="@drawable/retry"
+        android:text="" />
+  
 </RelativeLayout>

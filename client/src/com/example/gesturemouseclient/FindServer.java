@@ -3,6 +3,8 @@ package com.example.gesturemouseclient;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.msgpack.type.RawValue;
 import org.msgpack.type.Value;
@@ -16,12 +18,12 @@ import android.os.AsyncTask;
 import android.os.SystemClock;
 
 
-public class FindServer extends AsyncTask<Void,Void,DeviceItem> {
+public class FindServer extends AsyncTask<Void,Void,List<DeviceItem>> {
 
-	
+
 
 	private FindServerActivety mainActivity;
-	
+
 	public FindServer(FindServerActivety mainActivity) {
 		this.mainActivity = mainActivity;
 	}
@@ -32,20 +34,25 @@ public class FindServer extends AsyncTask<Void,Void,DeviceItem> {
 	}
 
 	@Override
-	protected DeviceItem doInBackground(Void... params) {
+	protected List<DeviceItem> doInBackground(Void... params) {
+		List<DeviceItem> deviceList = new LinkedList<DeviceItem>();
 		Logger.printLog("initialPcConnection","doInBackground");
 		SystemClock.sleep(1000);
-		
+
 		MyResponseReader response = new MyResponseReader();
 		Client client = new Client(response);
 		client.setTimeout(5);
 		InetSocketAddress serverAddress;
 		try {
 			serverAddress = client.findFirst("GM");
-			Logger.printLog("initialPcConnection", serverAddress.toString());
-			Logger.printLog("initialPcConnection", response.machineName);
-			
-			return new DeviceItem(serverAddress.getPort(),serverAddress.getAddress(),response.machineName);
+			if(serverAddress != null){
+				Logger.printLog("initialPcConnection", serverAddress.toString());
+				Logger.printLog("initialPcConnection", response.machineName);
+				deviceList.add(new DeviceItem(serverAddress.getPort(),serverAddress.getAddress(),response.machineName));
+			}else{
+				Logger.printLog("initialPcConnection", "no sever is founds");
+			}
+			return deviceList;
 		} catch (IOException e) {
 			Logger.printLog("initialPcConnection", "Failed to find Pc connection.");
 			return null;
@@ -63,26 +70,20 @@ public class FindServer extends AsyncTask<Void,Void,DeviceItem> {
 			machineName = extra_info.asMapValue().get(key_machine_name).asRawValue().getString();
 		}
 	};
-		
 
-	static int deviceCounter = 0;
-	
+
 	protected void onProgressUpdate(Integer... progress) {
-        //TODO: update bar...
-    }
+		//TODO: update bar...
+	}
 
-    protected void onPostExecute(DeviceItem result) {
-    	Logger.printLog("initialPcConnection","onPostExecute");
-    	if(result != null)
-    	{
-    		mainActivity.addDevice(result);
-    	}else{
-    		deviceCounter++;
-        	mainActivity.addDevice(new DeviceItem(23,null,"device"));
-    	}
-   	
-    	mainActivity.stopProgressBar();  	
-    }
-	
-	
+	protected void onPostExecute(List<DeviceItem> result) {
+		Logger.printLog("initialPcConnection","onPostExecute");
+		for (DeviceItem deviceItem : result) {
+			mainActivity.addDevice(deviceItem);
+		}
+					
+		mainActivity.stopProgressBar();  	
+	}
+
+
 }

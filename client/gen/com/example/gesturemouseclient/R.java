@@ -23,15 +23,20 @@ public final class R {
     public static final class drawable {
         public static final int delete=0x7f020000;
         public static final int icon=0x7f020001;
+        public static final int retry=0x7f020002;
     }
     public static final class id {
-        public static final int action_settings=0x7f080007;
+        public static final int action_settings=0x7f08000b;
+        public static final int connectedAppName=0x7f080007;
+        public static final int connectedPcName=0x7f080006;
         public static final int deviceDeleteList=0x7f080004;
         public static final int deviceList=0x7f080000;
-        public static final int deviceName=0x7f080006;
+        public static final int deviceName=0x7f08000a;
         public static final int headLine=0x7f080002;
-        public static final int list_image=0x7f080005;
+        public static final int list_image=0x7f080009;
+        public static final int pcConnectedName=0x7f080008;
         public static final int progressBar=0x7f080001;
+        public static final int retryBtn=0x7f080005;
         public static final int searchingForDevicesText=0x7f080003;
     }
     public static final class layout {

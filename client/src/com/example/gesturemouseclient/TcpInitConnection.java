@@ -27,10 +27,10 @@ public class TcpInitConnection extends AsyncTask<Void, Void, Void> {
 	 * Constructor:
 	 * 
 	 * @param device
-	 * @param mainActivity
+	 * @param activity
 	 */
-	public TcpInitConnection(DeviceItem device,	MainActivity mainActivity) {
-		this.activity = mainActivity;
+	public TcpInitConnection(DeviceItem device,	MainActivity activity) {
+		this.activity = activity;
 		tcp_outgoing_port = device.getControlPort();
 		address = device.getAddress();
 		this.deviceName = device.getMachineName();
@@ -48,22 +48,34 @@ public class TcpInitConnection extends AsyncTask<Void, Void, Void> {
 		TcpClient client = new TcpClient(response, tcp_outgoing_port,
 				deviceName, address);
 		client.setTimeout(5);
-		int serverUdp;
 		try {
 			client.initControllSession(TCP_IN_GOING_PORT, null,device);
-			Logger.printLog("TcpInitialConnection", response.udpPort);
+			Logger.printLog("TcpInitialConnection", device.getUDPPort() + "");
 		} catch (IOException e) {
 			Logger.printLog("TcpInitialConnection",
 					"Failed to find TCP connection.");
 		}
 		return null;
 	}
+	
+	protected void onProgressUpdate(Integer... progress) {
+		// TODO: update bar...
+	}
+
+	protected void onPostExecute(Void v) {
+		Logger.printLog("TCPinitialConnection", "onPostExecute start");
+
+		
+		activity.setControlSession();
+		Logger.printLog("TCPinitialConnection", "onPostExecute end");
+
+	}
 
 	static class MyResponseReader implements ResponseReader {
 
 		public String udpPort;
 		private final RawValue udp_port = ValueFactory
-				.createRawValue("udp_port".getBytes());
+				.createRawValue("udp".getBytes());
 
 		@Override
 		public void read(Value extra_info) {
@@ -72,16 +84,5 @@ public class TcpInitConnection extends AsyncTask<Void, Void, Void> {
 		}
 	};
 
-	protected void onProgressUpdate(Integer... progress) {
-		// TODO: update bar...
-	}
-
-	protected void onPostExecute() {
-		Logger.printLog("TCPinitialConnection", "onPostExecute");
-
-		
-		activity.setControlSession();
-
-	}
 
 }
