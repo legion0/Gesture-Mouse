@@ -16,6 +16,9 @@ import protocol
 #temps
 import time
 from msgpacknsd import NSDServer
+from math import sqrt
+
+from win32api import GetSystemMetrics
 
 SCRIPT_DIR = os.path.dirname(__file__)
 SCRIPT_NAME = os.path.basename(__file__)
@@ -141,6 +144,11 @@ def new_session():
 	udp_port = udp_sock.getsockname()[1]
 	session_id = gen_session_id()
 	session = {"id": session_id, "udp_sock": udp_sock, "udp_port": udp_port, "disconnected": client_disconnect_event, "lock": threading.Lock()}
+	session["settings"] = {
+		"mouse": {
+			"delay_drag": True
+		}
+	}
 	with SESSIONS_LOCK:
 		SESSIONS[session["id"]] = session
 	return session
@@ -176,14 +184,23 @@ def request_handler(sock, addr):
 
 def handle_key_event(session, msg):
 	key_event = msg["key_event"]
+	key_down = False
 	if key_event == 0: # Volume Up pressed
 		win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0,0,0)
+		key_down = True
 	elif key_event == 1: # Volume UP released
 		win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0,0,0)
 	elif key_event == 2: # Volume Down pressed
 		win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,0,0,0,0)
+		key_down = True
 	elif key_event == 3: # Volume Down released
 		win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP,0,0,0,0)
+	if key_down:
+		with session["lock"]:
+			delay_drag = session.get("settings", {}).get("mouse", {}).get("delay_drag", False)
+			if delay_drag:
+				now = get_timestamp()
+				session["mouse_filter_low_end"] = now + 500 # delay mouse input for 100 miliseconds
 
 def client_msg_handler(session, msg):
 	if "key_event" in msg:
@@ -269,6 +286,9 @@ def extract_application(window_title, file_name, apps):
 				break
 	return selected_app
 
+def get_timestamp():
+	return int(time.time() * 1000)
+print GetSystemMetrics(1)
 def mouse_listener(session):
 	sock = session["udp_sock"]
 	client_disconnect_event = session["disconnected"]
@@ -285,10 +305,34 @@ def mouse_listener(session):
 		except ValueError:
 			print >> sys.stderr, "mouse_listener", "cannot unpack:", repr(data)
 			continue
+		now = get_timestamp()
+		filter_low_end = session.get("mouse_filter_low_end", now)
+		current = msg
+		###print current
+		current.append(now)
+		prev = session.get("prev_sample", (current[0], current[1], current[2], current[3]-0.1))
+		speed = (
+			(current[0]-prev[0])/(current[3]-prev[3]),
+			(current[1]-prev[1])/(current[3]-prev[3]),
+			(current[2]-prev[2])/(current[3]-prev[3]),
+			current[3]
+		)
+		speed_size = sqrt(speed[0]*speed[0]+speed[1]*speed[1]+speed[2]*speed[2])
+		if filter_low_end > now and speed_size < 0.5:
+			continue
 		#print "mouse_listener", "msg:", msg
+		sensitivity = speed_size * 10
 		x, y = win32api.GetCursorPos()
-		x += int(-msg[0]*20)
-		y += int(msg[1]*20)
+		#x += int(-msg[0]*sensitivity)
+		y = current[1]
+		half_delta = 0.04
+		if y < 0:
+			y += 2
+		y -= 1-half_delta
+		y *= GetSystemMetrics(1)
+		y /= 2*half_delta
+		y = int(y)
+		print y, current[1]
 		win32api.SetCursorPos((x,y))
 #		time.sleep(0.1)
 	sock.close()
