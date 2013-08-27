@@ -2,13 +2,14 @@ import sys, os
 import threading
 import socket
 import random
-import ctypes
+import ctypes, math
 from ctypes import wintypes
+from copy import deepcopy
 
 import msgpack
 import win32gui, win32process, win32api, win32con
 
-#from SysTrayIcon import SysTrayIcon
+from SysTrayIcon import SysTrayIcon
 
 import settings as SETTINGS
 import protocol
@@ -50,7 +51,7 @@ def main(args):
 	)
 	broadcast_listener_thread = threading.Thread(target=broadcast_listener, args=bl_args)
 	broadcast_listener_thread.start()
-	
+
 	window_monitor_thread = threading.Thread(target=window_monitor)
 	window_monitor_thread.start()
 
@@ -58,12 +59,13 @@ def main(args):
 	client_server_thread.start()
 
 	#Set Tray Icon
-	#tray_thread = threading.Thread(target=tray_handler)
-	#tray_thread.start()
+	tray_thread = threading.Thread(target=tray_handler)
+	tray_thread.start()
 
-	#tray_thread.join()
+	tray_thread.join()
 	#time.sleep(60)
 	#event_shutdown.set()
+
 	client_server_thread.join()
 	broadcast_listener_thread.join()
 	window_monitor_thread.join()
@@ -152,14 +154,14 @@ def new_session():
 	with SESSIONS_LOCK:
 		SESSIONS[session["id"]] = session
 	return session
-	
+
 def request_handler(sock, addr):
 	print "request_handler", "connection from:", addr
 	msg = read_msg(sock)
 	print "request_handler", "msg:", repr(msg)
 	if msg is None:
 		return
-	
+
 	if "name" in msg:
 		session = new_session()
 		mouse_listener_thread = threading.Thread(target=mouse_listener, args=(session,))
@@ -241,7 +243,11 @@ PROCESS_VM_READ = 0x0010
 #SYNCHRONIZE = 0x00100000L
 #PROCESS_ALL_ACCESS = PROCESS_CREATE_PROCESS | PROCESS_CREATE_THREAD | PROCESS_DUP_HANDLE | PROCESS_QUERY_INFORMATION | PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_INFORMATION | PROCESS_SET_QUOTA | PROCESS_SUSPEND_RESUME | PROCESS_TERMINATE | PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE | SYNCHRONIZE
 
+ERROR_ACCESS_DENIED = 5
+
 def window_monitor():
+	old_window_title = None
+	old_file_name = None
 	while not shutting_down():
 		client_list = []
 		handle = win32gui.GetForegroundWindow()
@@ -250,10 +256,20 @@ def window_monitor():
 		file_name = None
 		_, process_id = win32process.GetWindowThreadProcessId(handle)
 		if process_id > 0:
-			process_handle = win32api.OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, False, process_id)
-			file_path = win32process.GetModuleFileNameEx(process_handle, None)
-			file_name = os.path.basename(file_path).lower()
-			process_handle.Close()
+			try:
+				process_handle = win32api.OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, False, process_id)
+				file_path = win32process.GetModuleFileNameEx(process_handle, None)
+				file_name = os.path.basename(file_path).lower()
+				process_handle.Close()
+			except win32api.error as ex:
+				if ex.winerror == ERROR_ACCESS_DENIED:
+					pass
+				else:
+					raise ex
+		if window_title != old_window_title or file_name != old_file_name:
+			old_window_title = window_title
+			old_file_name = file_name
+			print "Switched to: %s (%s)." % (window_title, file_name)
 
 		with SESSIONS_LOCK:
 			for session in SESSIONS.viewvalues():
@@ -265,6 +281,7 @@ def window_monitor():
 						print "window_monitor", "active_app:", app_name
 						client_addr = (session["ip"], session["control_port"])
 						client_list.append((client_addr, app_name))
+
 		for client_addr, app_name in client_list:
 			sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			sock.connect(client_addr)
@@ -276,20 +293,27 @@ def extract_application(window_title, file_name, apps):
 		return None
 	selected_app = None
 	for app in apps: # First try by title
-		if window_title.endswith(app["name"]):
+		if window_title.endswith(app["name"].lower()):
 			selected_app = app
 			break
 	if selected_app is None: # Cannot find by title
 		for app in apps: # First try by title
-			if file_name == app["name"]:
+			if file_name == app["name"].lower():
 				selected_app = app
 				break
 	return selected_app
 
 def get_timestamp():
 	return int(time.time() * 1000)
-print GetSystemMetrics(1)
+SCREEN_WIDTH = GetSystemMetrics(0)
+SCREEN_HEIGHT = GetSystemMetrics(1)
+print_round = 0
+Y_AXIS_STRECH = 90
+X_AXIS_STRECH = 60
+HISTORY_SIZE = 25
+SPEED_SENSITIVITY = 3
 def mouse_listener(session):
+	global print_round
 	sock = session["udp_sock"]
 	client_disconnect_event = session["disconnected"]
 	while True:
@@ -305,35 +329,63 @@ def mouse_listener(session):
 		except ValueError:
 			print >> sys.stderr, "mouse_listener", "cannot unpack:", repr(data)
 			continue
-		now = get_timestamp()
-		filter_low_end = session.get("mouse_filter_low_end", now)
-		current = msg
-		###print current
-		current.append(now)
-		prev = session.get("prev_sample", (current[0], current[1], current[2], current[3]-0.1))
-		speed = (
-			(current[0]-prev[0])/(current[3]-prev[3]),
-			(current[1]-prev[1])/(current[3]-prev[3]),
-			(current[2]-prev[2])/(current[3]-prev[3]),
-			current[3]
-		)
-		speed_size = sqrt(speed[0]*speed[0]+speed[1]*speed[1]+speed[2]*speed[2])
-		if filter_low_end > now and speed_size < 0.5:
-			continue
-		#print "mouse_listener", "msg:", msg
-		sensitivity = speed_size * 10
-		x, y = win32api.GetCursorPos()
-		#x += int(-msg[0]*sensitivity)
-		y = current[1]
-		half_delta = 0.04
-		if y < 0:
-			y += 2
-		y -= 1-half_delta
-		y *= GetSystemMetrics(1)
-		y /= 2*half_delta
-		y = int(y)
-		print y, current[1]
-		win32api.SetCursorPos((x,y))
+		#filter_low_end = session.get("mouse_filter_low_end", now)
+
+		current_x, current_y = win32api.GetCursorPos()
+
+		#Calc New y:
+		pitch = math.degrees(msg[2])
+		pitch = 180-pitch
+		if pitch > 180:
+			pitch -= 360
+		y = int( (-pitch/Y_AXIS_STRECH + 0.5) * SCREEN_HEIGHT)
+
+		#Calc new x
+		roll = math.degrees(msg[1])
+		x = int( (-roll/X_AXIS_STRECH + 0.5) * SCREEN_WIDTH)
+
+
+
+		#Add to history
+		history = session.get("sample_history", [])
+		history.append((float(x),float(y)))
+		if len(history) > HISTORY_SIZE:
+			history = history[-HISTORY_SIZE:]
+		session["sample_history"] = history
+
+#		#Calc avarage
+#		def factor(i):
+#			return 1
+		avg = [0,0]
+#		for i in xrange(len(history)):
+#			avg[0] += factor(i) * history[i][0]
+#			avg[1] += factor(i) * history[i][1]
+#		avg = (avg[0]/len(history), avg[1]/len(history))
+##		avg = (speed[0]/len(diffs), speed[1]/len(diffs))
+#
+#		#Calc speed
+		speed = (0,0)
+#		if len(history) > HISTORY_SIZE/2:
+#			diffs = [0] * (len(history)-1)
+#			for i in xrange(len(diffs)):
+#				diffs[i] = (history[i+1][0] - history[i][0], history[i+1][1] - history[i][1])
+#			speed = reduce(lambda x, y: (x[0]+y[0], x[1]+y[1]), diffs)
+#			speed = (speed[0]/len(diffs), speed[1]/len(diffs))
+#
+#		#Check cursor speed:
+#		if math.fabs(speed[0]) < SPEED_SENSITIVITY:
+#			x = int(avg[0])
+#		if math.fabs(speed[1]) < SPEED_SENSITIVITY:
+#			y = int(avg[1])
+
+		print_round = (print_round + 1) % 10
+		if print_round == 0:
+			print (pitch, roll), x, math.fabs(speed[0]), y, math.fabs(speed[1]), avg
+
+		try:
+			win32api.SetCursorPos((x,y))
+		except win32api.error:
+			pass
 #		time.sleep(0.1)
 	sock.close()
 

@@ -61,7 +61,7 @@ class NSDServer():
 				data, address = sock.recvfrom(4096)
 			except socket.timeout:
 				continue
-			print 'received %s bytes from %s' % (len(data), address)
+			print 'received %r bytes from %r' % (len(data), address)
 			msg = msgpack.unpackb(data)
 			service_name = msg["service"]
 			required_features = msg.get("features", [])
