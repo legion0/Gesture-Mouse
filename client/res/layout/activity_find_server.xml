@@ -8,25 +8,15 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".FindServerActivety" >
 
-    <ListView
-        android:id="@+id/deviceList"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/progressBar"
-        android:layout_alignParentTop="true"
-        android:layout_alignRight="@+id/headLine"
-        android:layout_marginTop="30dp" >
-
-    </ListView>
-
     <TextView
         android:id="@+id/headLine"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
+        android:textSize="30dp"
         android:layout_alignRight="@+id/progressBar"
         android:layout_marginRight="18dp"
-        android:text="Devices"
+        android:text="@string/devices"
         android:textColor="#00ccff"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
@@ -39,17 +29,7 @@
         android:layout_marginBottom="48dp"
         android:text="Searching for devices..."
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="#00ccff"
         android:textStyle="italic" />
-
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyleLarge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/searchingForDevicesText"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="44dp" />
 
     <ListView
         android:id="@+id/deviceDeleteList"
@@ -63,11 +43,28 @@
 
     <Button
         android:id="@+id/retryBtn"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignBottom="@+id/progressBar"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/retry" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/progressBar"
-        android:layout_alignLeft="@+id/progressBar"
-        android:background="@drawable/retry"
-        android:text="" />
+        android:layout_above="@+id/searchingForDevicesText"
+        android:layout_alignRight="@+id/retryBtn" />
+
+    <ListView
+        android:id="@+id/deviceList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/progressBar"
+        android:layout_alignRight="@+id/retryBtn"
+        android:layout_alignTop="@+id/deviceDeleteList" >
+
+    </ListView>
   
 </RelativeLayout>

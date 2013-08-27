@@ -15,5 +15,4 @@
             android:layout_width="30dip"
             android:layout_height="30dip"
             android:src="@drawable/delete" />
-
 </LinearLayout>

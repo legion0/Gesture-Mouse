@@ -34,23 +34,24 @@ public class MainActivity extends Activity implements SensorEventListener{
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+
 		sm = (SensorManager)getSystemService(SENSOR_SERVICE);
-		
+
 		setContentView(R.layout.activity_main);
 		Intent intent = getIntent();
 		device = ((DeviceItem)intent.getExtras().get("device"));
-		
+
 		pcConnectedName = (TextView) findViewById(R.id.connectedPcName);
 		appConnectedName = (TextView) findViewById(R.id.connectedAppName);
-		
+
 		pcConnectedName.setText(device.getMachineName());
 		appConnectedName.setText("Mouse");
-		
+
 		TcpInitConnection tcpConnection = new TcpInitConnection(device,this);
 		tcpConnection.execute();
 	}
-	
+
+	@Override
 	protected void onResume(){
 		super.onResume();
 		List<Sensor> sensorList = sm.getSensorList(Sensor.TYPE_ROTATION_VECTOR);
@@ -60,29 +61,12 @@ public class MainActivity extends Activity implements SensorEventListener{
 		sm.registerListener(this, sensorList.get(0), SensorManager.SENSOR_DELAY_GAME);
 		resumeAllThreads();
 	}
-	
-	protected void onPuase(){
+
+	@Override
+	protected void onPause(){
 		super.onPause();
 		sm.unregisterListener(this);
 		pauseAllThreads();
-	}
-	
-	private void resumeAllThreads() {
-		fastConnection.resumeRun();
-		hardwareListener.resumeRun();
-		gestureListener.resumeRun();
-	}
-	
-	private void pauseAllThreads() {
-		fastConnection.pauseRun();
-		hardwareListener.pauseRun();
-		gestureListener.pauseRun();
-	}
-
-	private void stopAllThreads() {
-		fastConnection.stopRun();
-		hardwareListener.stopRun();
-		gestureListener.stopRun();
 	}
 
 	protected void onStop(){
@@ -90,6 +74,42 @@ public class MainActivity extends Activity implements SensorEventListener{
 		sm.unregisterListener(this);
 		stopAllThreads();
 	}
+
+	@Override
+	protected void onDestroy(){
+		super.onDestroy();
+		sm.unregisterListener(this);
+		stopAllThreads();
+	}
+
+	private void resumeAllThreads() {
+		if(fastConnection != null)
+			fastConnection.resumeRun();
+		if(hardwareListener != null)
+			hardwareListener.resumeRun();
+		if(gestureListener != null)
+			gestureListener.resumeRun();
+	}
+
+	private void pauseAllThreads() {
+		if(fastConnection != null)
+			fastConnection.pauseRun();
+		if(hardwareListener != null)
+			hardwareListener.pauseRun();
+		if(gestureListener != null)
+			gestureListener.pauseRun();
+	}
+
+	private void stopAllThreads() {
+		if(fastConnection != null)
+			fastConnection.stopRun();
+		if(hardwareListener != null)
+			hardwareListener.stopRun();
+		if(gestureListener != null)
+			gestureListener.stopRun();
+	}
+
+
 
 	public void setControlSession() {
 		try {
@@ -149,48 +169,57 @@ public class MainActivity extends Activity implements SensorEventListener{
 		return false;
 	}
 
-public boolean onKeyUp(int keyCode, KeyEvent event) {
-	super.onKeyUp(keyCode, event);
-	if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN)
-	{
-		if(volumeDownIsPressed)
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		super.onKeyUp(keyCode, event);
+		if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN)
 		{
-			volumeDownIsPressed = false;
-			device.getClickQueue().offerLast(3);			
-			return true;
+			if(volumeDownIsPressed)
+			{
+				volumeDownIsPressed = false;
+				device.getClickQueue().offerLast(3);			
+				return true;
+			}
+		}else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP)
+		{
+			if(volumeUpIsPressed)
+			{
+				volumeUpIsPressed = false;
+				device.getClickQueue().offerLast(1);
+				return true;
+			}
 		}
-	}else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP)
-	{
-		if(volumeUpIsPressed)
-		{
-			volumeUpIsPressed = false;
-			device.getClickQueue().offerLast(1);
-			return true;
+		return false;
+	}
+
+	//TODO: remember to check the state of the device, it's possible we dont want to update since we're in anotre state.
+	public void onSensorChanged(SensorEvent event){
+		Logger.printLog("onSensorChanged", Integer.toString(event.sensor.getType()));
+		if(event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR){
+			
+			
+			float[] rotationMatrix = new float[9];
+			SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
+			
+			float[] newValues = new float[3];
+			SensorManager.getOrientation(rotationMatrix, newValues );
+			
+			float x = newValues[0];
+			float y = newValues[1];
+			float z = newValues[2];
+			
+			Logger.printLog("onSensorChanged", "sendSample("+x+","+y+","+z+")");
+			GyroSample sample = new GyroSample(x, y, z);
+
+			device.getGyroQueue().offerLast(sample );
+			device.getGestureQueue().offerLast(sample );
 		}
 	}
-	return false;
-}
 
-//TODO: remember to check the state of the device, it's possible we dont want to update since we're in anotre state.
-public void onSensorChanged(SensorEvent event){
-	Logger.printLog("onSensorChanged", Integer.toString(event.sensor.getType()));
-	if(event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR){
-		float x = event.values[0];
-		float y = event.values[1];
-		float z = event.values[2];
-		Logger.printLog("onSensorChanged", "sendSample("+x+","+y+","+z+")");
-		GyroSample sample = new GyroSample(x, y, z);
+	@Override
+	public void onAccuracyChanged(Sensor sensor, int accuracy) {
+		// TODO Auto-generated method stub
 
-		device.getGyroQueue().offerLast(sample );
-		device.getGestureQueue().offerLast(sample );
 	}
-}
-
-@Override
-public void onAccuracyChanged(Sensor sensor, int accuracy) {
-	// TODO Auto-generated method stub
-	
-}
 
 
 }

@@ -10,6 +10,7 @@ import java.util.List;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.Menu;
@@ -38,6 +39,7 @@ public class FindServerActivety extends Activity {
 	private ArrayAdapter<DeviceItem> adapterDelete;
 	private String deviceName;
 	private TextView searchForDevice;
+	private TextView headLine;
 	
 	private DeviceItem device;
 	private Button retryBtn;
@@ -50,6 +52,9 @@ public class FindServerActivety extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_find_server);
 		
+		Typeface tf = Typeface.createFromAsset(getAssets(), "fonts/BigAppleNF.ttf");
+		headLine = (TextView) findViewById(R.id.headLine);
+		headLine.setTypeface(tf);
 		
 		//TODO: check the true device name:
 		deviceName = android.os.Build.MODEL;

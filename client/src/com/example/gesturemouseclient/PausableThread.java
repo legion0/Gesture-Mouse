@@ -5,7 +5,7 @@ import com.example.gesturemouseclient.infra.Logger;
 public abstract class PausableThread extends Thread {
 
 	protected Boolean pause;
-	protected volatile boolean stop;
+	protected volatile Boolean stop;
 
 	public PausableThread() {
 		super();
@@ -14,34 +14,43 @@ public abstract class PausableThread extends Thread {
 	}
 	
 	public void stopRun(){
-		this.pause = true;
-		this.stop = true;
+		synchronized (this) {
+			this.stop = true;
+		}
+		resumeRun();
+		
 	}
 
 	public void pauseRun() {
-		synchronized (pause) {
+		synchronized (this) {
 			pause = true;
 		}
 	}
 
 	public void resumeRun() {
-		synchronized (pause) {
+		synchronized (this) {
 			pause = false;
+			notify();
 		}
-		notify();
+		
 	}
 
 	@Override
 	public void run() {
 		Logger.printLog("Pauseable run: ", "start running...");
 		while (!stop) {
-			synchronized (pause) {
+			synchronized (this) {
 				if (pause) {
 					try {
 						Logger.printLog("Pauseable run: ", "wait...");
 						wait();
 					} catch (InterruptedException e) {
+						Logger.printLog("Pauseable Thread(InterruptedException): ","errorMSg: "+e.getMessage());
 						continue;
+					} 
+					catch (Exception e) {
+						Logger.printLog("Pauseable Thread(Exception): ","errorMSg: "+e.getMessage());
+						break;
 					}
 				}
 			}

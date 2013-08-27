@@ -6,7 +6,6 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
-
     <uses-sdk
         android:minSdkVersion="9"
         android:targetSdkVersion="17" />
@@ -29,6 +28,10 @@
         <activity
             android:name="com.example.gesturemouseclient.MainActivity"
             android:label="@string/title_activity_main" >
+        </activity>
+        <activity
+            android:name="com.example.gesturemouseclient.FirstTimeLoginActivity"
+            android:label="@string/title_activity_first_time_login" >
         </activity>
     </application>
 
