@@ -8,4 +8,6 @@
 # Java
 .classpath
 *.class
-bin/
+/client/bin/
+/client/gen/
+
