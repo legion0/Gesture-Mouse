@@ -18,7 +18,7 @@ import com.example.gesturemouseclient.infra.DeviceItem;
 import com.example.gesturemouseclient.infra.GyroSample;
 import com.example.gesturemouseclient.infra.Logger;
 
-public class MainActivity extends Activity implements SensorEventListener{
+public class MainActivity extends Activity implements SensorEventListener {
 
 	private DeviceItem device;
 	FastSensorConnection fastConnection;
@@ -35,7 +35,11 @@ public class MainActivity extends Activity implements SensorEventListener{
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		gestureListener = new GestureListener();
 		sm = (SensorManager)getSystemService(SENSOR_SERVICE);
+		List<Sensor> sensorList = sm.getSensorList(Sensor.TYPE_ACCELEROMETER);
+		//TODO: Error checks
+		sm.registerListener(gestureListener, sensorList.get(0), SensorManager.SENSOR_DELAY_GAME);
 
 		setContentView(R.layout.activity_main);
 		Intent intent = getIntent();
@@ -56,9 +60,9 @@ public class MainActivity extends Activity implements SensorEventListener{
 		super.onResume();
 		List<Sensor> sensorList = sm.getSensorList(Sensor.TYPE_ROTATION_VECTOR);
 		if(sensorList == null || sensorList.size() < 1){
-			return;
+			return; // TODO: error for no sensor
 		}
-		sm.registerListener(this, sensorList.get(0), SensorManager.SENSOR_DELAY_GAME);
+//		sm.registerListener(this, sensorList.get(0), SensorManager.SENSOR_DELAY_GAME);
 		resumeAllThreads();
 	}
 
@@ -87,8 +91,6 @@ public class MainActivity extends Activity implements SensorEventListener{
 			fastConnection.resumeRun();
 		if(hardwareListener != null)
 			hardwareListener.resumeRun();
-		if(gestureListener != null)
-			gestureListener.resumeRun();
 	}
 
 	private void pauseAllThreads() {
@@ -96,8 +98,6 @@ public class MainActivity extends Activity implements SensorEventListener{
 			fastConnection.pauseRun();
 		if(hardwareListener != null)
 			hardwareListener.pauseRun();
-		if(gestureListener != null)
-			gestureListener.pauseRun();
 	}
 
 	private void stopAllThreads() {
@@ -105,8 +105,6 @@ public class MainActivity extends Activity implements SensorEventListener{
 			fastConnection.stopRun();
 		if(hardwareListener != null)
 			hardwareListener.stopRun();
-		if(gestureListener != null)
-			gestureListener.stopRun();
 	}
 
 
@@ -119,11 +117,6 @@ public class MainActivity extends Activity implements SensorEventListener{
 
 			hardwareListener = new HardwareListener(device);
 			hardwareListener.start();
-
-			gestureListener = new GestureListener(device);
-			//gestureListener.start();
-
-
 
 		} catch (SocketException e) {
 			Logger.printLog("MainActivet", "failed to open udp socket, "+e.getMessage());

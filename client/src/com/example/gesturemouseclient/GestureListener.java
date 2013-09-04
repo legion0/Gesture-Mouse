@@ -1,23 +1,24 @@
 package com.example.gesturemouseclient;
 
-import java.io.IOException;
-import java.net.Socket;
 import java.net.SocketException;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.concurrent.BlockingDeque;
 
-import org.msgpack.MessagePack;
+import org.wiigee.control.AndroidWiigee;
+import org.wiigee.event.GestureEvent;
 
-import com.example.gesturemouseclient.infra.DeviceItem;
-import com.example.gesturemouseclient.infra.GyroSample;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.view.KeyEvent;
 
-public class GestureListener extends PausableThread {
+import com.example.gesturemouseclient.infra.Logger;
 
-	private static final int HISTORY_SIZE = 100;
-	private BlockingDeque<GyroSample> queue;
-	private MessagePack msgpack;
-	private Map<String, Object> message;
+public class GestureListener implements SensorEventListener, org.wiigee.event.GestureListener {
+
+	private AndroidWiigee androidWiigee;
+	
+	private static final int LEARN_KEY = KeyEvent.KEYCODE_T;
+    private static final int START_KEY = KeyEvent.KEYCODE_SPACE;
+    private static final int STOP_KEY = KeyEvent.KEYCODE_ENTER;
 
 	/**
 	 * Constctur:
@@ -25,31 +26,31 @@ public class GestureListener extends PausableThread {
 	 * @param inetSocketAddress
 	 * @throws SocketException
 	 */
-	public GestureListener(DeviceItem device) throws SocketException {
+	public GestureListener() {
 		super();
-		this.queue = device.getGestureQueue();
-		this.msgpack = new MessagePack();
-		this.message = new LinkedHashMap<String, Object>(1);
-		this.message.put("session_id", device.getSessionId());
-	}
+		this.androidWiigee = new AndroidWiigee();
+		this.androidWiigee.setRecognitionButton(START_KEY);
+		this.androidWiigee.setCloseGestureButton(STOP_KEY);
+		this.androidWiigee.setTrainButton(LEARN_KEY);
+		this.androidWiigee.addGestureListener(this);
 
-	protected void detectGesture() throws IOException {
-		while (this.queue.size() > HISTORY_SIZE) {
-			this.queue.removeFirst();
-		}
-		//GyroSample sample = this.queue.pop();
-		//this.message.put("gesture", click);
-		//byte[] buffer = msgpack.write(this.message);
-		//this.socket.getOutputStream().write(buffer);
+		Logger.printLog("GestureListener", "constructed !");
 	}
 
 	@Override
-	protected void innerAction() {
-		try {
-			detectGesture();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+	public void gestureReceived(GestureEvent event) {
+		Logger.printLog("gestureReceived", "id="+event.getId());
+		Logger.printLog("gestureReceived", "prob="+event.getProbability());
+	}
+
+	@Override
+	public void onSensorChanged(SensorEvent event) {
+		this.androidWiigee.getDevice().onSensorChanged(event);
+	}
+
+	@Override
+	public void onAccuracyChanged(Sensor sensor, int accuracy) {
+		this.androidWiigee.getDevice().onAccuracyChanged(sensor, accuracy);
 	}
 
 }
