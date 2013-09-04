@@ -278,14 +278,17 @@ def window_monitor():
 					if app != session.get("active_app"):
 						session["active_app"] = app
 						app_name = app["name"] if app is not None else None
-						print "window_monitor", "active_app:", app_name
+						print "window_monitor", "active_app:", app_name, "for session:", session["id"]
 						client_addr = (session["ip"], session["control_port"])
 						client_list.append((client_addr, app_name))
 
 		for client_addr, app_name in client_list:
 			sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			sock.connect(client_addr)
-			sock.sendall({"app": app_name})
+			try:
+				sock.connect(client_addr)
+			except socket.error as ex:
+				continue # TODO: errors
+			sock.sendall(msgpack.packb({"app": app_name}))
 		time.sleep(settings[SETTINGS.WINDOW_DETECTION_DELAY])
 
 def extract_application(window_title, file_name, apps):
@@ -383,7 +386,7 @@ def mouse_listener(session):
 			print (pitch, roll), x, math.fabs(speed[0]), y, math.fabs(speed[1]), avg
 
 		try:
-			win32api.SetCursorPos((x,y))
+			pass#win32api.SetCursorPos((x,y))
 		except win32api.error:
 			pass
 #		time.sleep(0.1)
