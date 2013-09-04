@@ -1,15 +1,10 @@
 package com.example.gesturemouseclient.infra;
 
-import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.LinkedBlockingDeque;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.widget.SeekBar;
 
 /**
  * @author Yotam & Jonatan
@@ -17,17 +12,14 @@ import android.widget.SeekBar;
  *         a class to hold the device data we wish to connect with
  * 
  */
-public class DeviceItem implements Parcelable{
+public class DeviceItem implements Parcelable {
 
 	private String sessionId;
 	private InetAddress address;
 	private int controlPort;
 	private int UDPPort;
 	private final String machineName;
-	private Socket controlSocket;
-	private BlockingDeque<GyroSample> gyroQueue;
-	private BlockingDeque<GyroSample> gestureQueue;
-	private BlockingDeque<Integer> clickQueue;
+	private boolean connected;
 
 	/**
 	 * Constructor
@@ -39,9 +31,7 @@ public class DeviceItem implements Parcelable{
 		this.controlPort = controlPort;
 		this.address = address;
 		this.machineName = machineName;
-		this.gyroQueue = new LinkedBlockingDeque<GyroSample>();
-		this.gestureQueue = new LinkedBlockingDeque<GyroSample>();
-		this.clickQueue = new LinkedBlockingDeque<Integer>();
+		connected = false;
 
 	}
 
@@ -56,9 +46,6 @@ public class DeviceItem implements Parcelable{
 		controlPort = in.readInt();
 		UDPPort = in.readInt();
 		machineName = in.readString();
-		this.gyroQueue = new LinkedBlockingDeque<GyroSample>();
-		this.gestureQueue = new LinkedBlockingDeque<GyroSample>();
-		this.clickQueue = new LinkedBlockingDeque<Integer>();
 	}
 
 	public int getControlPort() {
@@ -89,18 +76,6 @@ public class DeviceItem implements Parcelable{
 		this.sessionId = sessionId;
 	}
 
-	public BlockingDeque<GyroSample> getGyroQueue() {
-		return gyroQueue;
-	}
-
-	public BlockingDeque<Integer> getClickQueue() {
-		return clickQueue;
-	}
-
-	public BlockingDeque<GyroSample> getGestureQueue() {
-		return gestureQueue;
-	}
-
 	// 99.9% of the time you can just ignore this
 	public int describeContents() {
 		return 0;
@@ -125,4 +100,12 @@ public class DeviceItem implements Parcelable{
 			return new DeviceItem[size];
 		}
 	};
+
+	public synchronized boolean isConnected() {
+		return connected;
+	}
+
+	public synchronized void setConnected(boolean connected) {
+		this.connected = connected;
+	}
 }

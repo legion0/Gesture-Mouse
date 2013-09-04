@@ -65,7 +65,7 @@ public class TcpInitConnection extends AsyncTask<Void, Void, Void> {
 		Logger.printLog("TCPinitialConnection", "onPostExecute start");
 
 		
-		activity.setControlSession();
+		activity.onConnectionToRemoteDevice();
 		Logger.printLog("TCPinitialConnection", "onPostExecute end");
 
 	}

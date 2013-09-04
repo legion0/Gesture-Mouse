@@ -24,10 +24,9 @@ import com.example.gesturemouseclient.infra.Logger;
 import com.example.gesturemouseclient.infra.ResponseReader;
 
 public class TcpClient {
-	
-	//private ResponseReader responseReader = null;
+
+	// private ResponseReader responseReader = null;
 	private long timeout = -1;
-	
 
 	private static final RawValue key_features = ValueFactory.createRawValue("features".getBytes());
 	private static final RawValue key_port = ValueFactory.createRawValue("port".getBytes());
@@ -42,64 +41,56 @@ public class TcpClient {
 	private final String deviceName;
 	private final InetAddress address;
 	private Socket socket;
-	
-
-
-
-
 
 	/**
 	 * Constructor:
 	 * 
 	 * @param responseReader
-	 * @param deviceName 
-	 * @param tcp_outgoing_port 
-	 * @param address 
+	 * @param deviceName
+	 * @param tcp_outgoing_port
+	 * @param address
 	 * @param tcp_port
 	 */
 	public TcpClient(ResponseReader responseReader, int tcp_outgoing_port, String deviceName, InetAddress address) {
-		//this.responseReader = responseReader;
+		// this.responseReader = responseReader;
 		this.tcp_outgoing_port = tcp_outgoing_port;
 		this.deviceName = deviceName;
 		this.address = address;
 	}
-	
-	
-
 
 	public void setTimeout(int seconds) {
-		timeout  = seconds * 1000000000l;
+		timeout = seconds * 1000000000l;
 	}
-	
+
 	private byte[] createMsg(final String tcpPort, String[] features) throws IOException {
 		Map<Object, Object> msg = new LinkedHashMap<Object, Object>() {
 			{
-				put(key_name,deviceName);
+				put(key_name, deviceName);
 				put(key_port, tcpPort);
 				List<Object> apps = new ArrayList<Object>() {
 					{
 						Map<Object, Object> app = new LinkedHashMap<Object, Object>() {
 							{
-								put(key_name,"browser");
+								put(key_name, "browser");
 								Map<Object, Object> gestures = new LinkedHashMap<Object, Object>() {
 									{
-										put(key_name,"flick left");
-										put(key_gid,"134");
+										put(key_name, "flick left");
+										put(key_gid, "134");
 										List<Object> actions = new ArrayList<Object>() {
 											{
-												add("17");										
+												add("17");
 											}
 										};
-										put(key_actions,actions);										
+										put(key_actions, actions);
 									}
 								};
-								put(key_gestures,gestures);
+								put(key_gestures, gestures);
 							}
 						};
 						add(app);
 					}
 				};
-				put(key_apps,apps);
+				put(key_apps, apps);
 			}
 		};
 		if (features != null && features.length > 0) {
@@ -107,33 +98,30 @@ public class TcpClient {
 		}
 		MessagePack msgpack = new MessagePack();
 		return msgpack.write(msg);
-	} 
-	
-	
-
+	}
 
 	public void initControllSession(final String tcpPort, String[] features, DeviceItem device) throws IOException {
-		byte[] msgBuffer = createMsg(tcpPort,features);
+		byte[] msgBuffer = createMsg(tcpPort, features);
 
-        Logger.printLog("TCP Client", "C: Connecting...");
+		Logger.printLog("TCP Client", "C: Connecting...");
 
-        //create a socket to make the connection with the server
-        socket = new Socket(address, tcp_outgoing_port);
-        
-        try {
-        	 
-            //send the message to the server
-        	OutputStream outputStream = socket.getOutputStream();
-        	outputStream.write(msgBuffer);
-            Logger.printLog("TCP Client", "C: Sent.");
+		// create a socket to make the connection with the server
+		socket = new Socket(address, tcp_outgoing_port);
 
-            //receive the message which the server sends back
-            byte[] bufInput = new byte[4096];
+		try {
+
+			// send the message to the server
+			OutputStream outputStream = socket.getOutputStream();
+			outputStream.write(msgBuffer);
+			Logger.printLog("TCP Client", "C: Sent.");
+
+			// receive the message which the server sends back
+			byte[] bufInput = new byte[4096];
 			DatagramPacket incomingPacket = new DatagramPacket(bufInput, bufInput.length);
 			socket.setSoTimeout(3000);
 			InputStream inputStream = socket.getInputStream();
 			inputStream.read(bufInput);
-			
+
 			byte[] tempBuffer = new byte[incomingPacket.getLength()];
 			System.arraycopy(bufInput, 0, tempBuffer, 0, incomingPacket.getLength());
 			bufInput = tempBuffer;
@@ -146,26 +134,21 @@ public class TcpClient {
 			if (udpFromServer <= 0) {
 				throw new MessageTypeException("Invalid Udp.");
 			}
-			if(sessionId == null){
+			if (sessionId == null) {
 				throw new MessageTypeException("Invalid session id.");
 			}
 			device.setSessionId(sessionId);
 			device.setUDPPort(udpFromServer);
-			
-			Logger.printLog("TCP Client","S: Received udp port: " + udpFromServer);
-        } catch (Exception e) {
-            Logger.printLog("TCPClient", "S: Error, "+e.getMessage());
-        }
+
+			Logger.printLog("TCP Client", "S: Received udp port: " + udpFromServer);
+		} catch (Exception e) {
+			Logger.printLog("TCPClient", "S: Error, " + e.getMessage());
+		}
 
 	}
-	
+
 	public Socket getSocket() {
 		return socket;
 	}
-
-
-	
-	
-	
 
 }

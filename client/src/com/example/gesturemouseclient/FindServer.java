@@ -1,7 +1,6 @@
 package com.example.gesturemouseclient;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.LinkedList;
 import java.util.List;
@@ -10,17 +9,14 @@ import org.msgpack.type.RawValue;
 import org.msgpack.type.Value;
 import org.msgpack.type.ValueFactory;
 
+import android.os.AsyncTask;
+import android.os.SystemClock;
+
 import com.example.gesturemouseclient.infra.DeviceItem;
 import com.example.gesturemouseclient.infra.Logger;
 import com.example.gesturemouseclient.infra.ResponseReader;
 
-import android.os.AsyncTask;
-import android.os.SystemClock;
-
-
-public class FindServer extends AsyncTask<Void,Void,List<DeviceItem>> {
-
-
+public class FindServer extends AsyncTask<Void, Void, List<DeviceItem>> {
 
 	private FindServerActivety mainActivity;
 
@@ -29,14 +25,14 @@ public class FindServer extends AsyncTask<Void,Void,List<DeviceItem>> {
 	}
 
 	@Override
-	protected void onPreExecute(){
-		//TODO: create progress bar
+	protected void onPreExecute() {
+		// TODO: create progress bar
 	}
 
 	@Override
 	protected List<DeviceItem> doInBackground(Void... params) {
 		List<DeviceItem> deviceList = new LinkedList<DeviceItem>();
-		Logger.printLog("initialPcConnection","doInBackground");
+		Logger.printLog("initialPcConnection", "doInBackground");
 		SystemClock.sleep(1000);
 
 		MyResponseReader response = new MyResponseReader();
@@ -45,11 +41,11 @@ public class FindServer extends AsyncTask<Void,Void,List<DeviceItem>> {
 		InetSocketAddress serverAddress;
 		try {
 			serverAddress = client.findFirst("GM");
-			if(serverAddress != null){
+			if (serverAddress != null) {
 				Logger.printLog("initialPcConnection", serverAddress.toString());
 				Logger.printLog("initialPcConnection", response.machineName);
-				deviceList.add(new DeviceItem(serverAddress.getPort(),serverAddress.getAddress(),response.machineName));
-			}else{
+				deviceList.add(new DeviceItem(serverAddress.getPort(), serverAddress.getAddress(), response.machineName));
+			} else {
 				Logger.printLog("initialPcConnection", "no sever is founds");
 			}
 			return deviceList;
@@ -57,7 +53,7 @@ public class FindServer extends AsyncTask<Void,Void,List<DeviceItem>> {
 			Logger.printLog("initialPcConnection", "Failed to find Pc connection.");
 			return null;
 		}
-		//return null;
+		// return null;
 	}
 
 	static class MyResponseReader implements ResponseReader {
@@ -71,19 +67,17 @@ public class FindServer extends AsyncTask<Void,Void,List<DeviceItem>> {
 		}
 	};
 
-
 	protected void onProgressUpdate(Integer... progress) {
-		//TODO: update bar...
+		// TODO: update bar...
 	}
 
 	protected void onPostExecute(List<DeviceItem> result) {
-		Logger.printLog("initialPcConnection","onPostExecute");
+		Logger.printLog("initialPcConnection", "onPostExecute");
 		for (DeviceItem deviceItem : result) {
 			mainActivity.addDevice(deviceItem);
 		}
-					
-		mainActivity.stopProgressBar();  	
-	}
 
+		mainActivity.stopProgressBar();
+	}
 
 }
