@@ -2,7 +2,6 @@ package com.example.gesturemouseclient;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 
 import org.msgpack.type.RawValue;
 import org.msgpack.type.Value;
@@ -12,6 +11,7 @@ import android.os.AsyncTask;
 
 import com.example.gesturemouseclient.infra.DeviceItem;
 import com.example.gesturemouseclient.infra.Logger;
+import com.example.gesturemouseclient.infra.Params;
 import com.example.gesturemouseclient.infra.ResponseReader;
 
 public class TcpInitConnection extends AsyncTask<Void, Void, Void> {
@@ -19,7 +19,6 @@ public class TcpInitConnection extends AsyncTask<Void, Void, Void> {
 	private int tcp_outgoing_port;
 	private InetAddress address;
 	private String deviceName;
-	private final static String TCP_IN_GOING_PORT = "35202";
 	private final MainActivity activity;
 	private DeviceItem device;
 
@@ -49,7 +48,7 @@ public class TcpInitConnection extends AsyncTask<Void, Void, Void> {
 				deviceName, address);
 		client.setTimeout(5);
 		try {
-			client.initControllSession(TCP_IN_GOING_PORT, null,device);
+			client.initControllSession(Params.TCP_IN_GOING_PORT, null,device);
 			Logger.printLog("TcpInitialConnection", device.getUDPPort() + "");
 		} catch (IOException e) {
 			Logger.printLog("TcpInitialConnection",

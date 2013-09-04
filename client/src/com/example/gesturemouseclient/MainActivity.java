@@ -1,6 +1,7 @@
 package com.example.gesturemouseclient;
 
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
@@ -29,12 +30,16 @@ public class MainActivity extends Activity implements SensorEventListener {
 	private boolean volumeDownIsPressed = false;
 	private boolean volumeUpIsPressed = false;
 	private SensorManager sm;
+	private AppListener appListener;
+	private String runningApp;
+	
+	List<PausableThread> threadList;
 
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+	
 		gestureListener = new GestureListener();
 		sm = (SensorManager)getSystemService(SENSOR_SERVICE);
 		List<Sensor> sensorList = sm.getSensorList(Sensor.TYPE_ACCELEROMETER);
@@ -49,10 +54,20 @@ public class MainActivity extends Activity implements SensorEventListener {
 		appConnectedName = (TextView) findViewById(R.id.connectedAppName);
 
 		pcConnectedName.setText(device.getMachineName());
-		appConnectedName.setText("Mouse");
+		
+		setRunningApp("Mouse");
+		
 
 		TcpInitConnection tcpConnection = new TcpInitConnection(device,this);
 		tcpConnection.execute();
+	}
+	
+	public void setRunningApp(String newApp){
+		if(runningApp == null || runningApp != newApp)
+		{
+			runningApp = newApp;
+			appConnectedName.setText(runningApp);
+		}
 	}
 
 	@Override
@@ -87,24 +102,24 @@ public class MainActivity extends Activity implements SensorEventListener {
 	}
 
 	private void resumeAllThreads() {
-		if(fastConnection != null)
-			fastConnection.resumeRun();
-		if(hardwareListener != null)
-			hardwareListener.resumeRun();
+		for (PausableThread pausableThread : threadList) {
+			if(pausableThread != null)
+				pausableThread.resumeRun();
+		}
 	}
 
 	private void pauseAllThreads() {
-		if(fastConnection != null)
-			fastConnection.pauseRun();
-		if(hardwareListener != null)
-			hardwareListener.pauseRun();
+		for (PausableThread pausableThread : threadList) {
+			if(pausableThread != null)
+				pausableThread.pauseRun();
+		}
 	}
 
 	private void stopAllThreads() {
-		if(fastConnection != null)
-			fastConnection.stopRun();
-		if(hardwareListener != null)
-			hardwareListener.stopRun();
+		for (PausableThread pausableThread : threadList) {
+			if(pausableThread != null)
+				pausableThread.stopRun();
+		}
 	}
 
 
@@ -112,11 +127,22 @@ public class MainActivity extends Activity implements SensorEventListener {
 	public void setControlSession() {
 		try {
 			Logger.printLog("main activety : ", "setControlSession");
+			threadList = new ArrayList<PausableThread>();
+			
+			
 			fastConnection = new FastSensorConnection(device);
+			threadList.add(fastConnection);
 			fastConnection.start();
 
 			hardwareListener = new HardwareListener(device);
+			threadList.add(hardwareListener);
 			hardwareListener.start();
+			
+			appListener = new AppListener(device,this);
+			threadList.add(appListener);
+			appListener.start();
+			
+			
 
 		} catch (SocketException e) {
 			Logger.printLog("MainActivet", "failed to open udp socket, "+e.getMessage());
