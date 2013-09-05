@@ -1,27 +1,32 @@
 package Threads;
 
-import com.example.gesturemouseclient.infra.DeviceItem;
+import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 
 public class BackgroundWorkManager {
-	private ControlSessionThread controlSessionThread;
-	private FastSampleSenderThread fastSampleSenderThread;
+	private ControlSessionThread controlSession;
+	private FastSampleSenderThread fastSampleSender;
+	private Thread controlSessionThread;
+	private Thread fastSampleSenderThread;
 
-	public BackgroundWorkManager(DeviceItem remoteDeviceInfo) {
+	public BackgroundWorkManager(RemoteDeviceInfo remoteDeviceInfo) {
 		super();
-		this.controlSessionThread = new ControlSessionThread(remoteDeviceInfo);
-		this.fastSampleSenderThread = new FastSampleSenderThread(remoteDeviceInfo);
+		this.controlSession = new ControlSessionThread(remoteDeviceInfo);
+		this.fastSampleSender = new FastSampleSenderThread(remoteDeviceInfo);
+		
+		this.controlSessionThread = new Thread(controlSession);
+		this.fastSampleSenderThread = new Thread(fastSampleSender);
 	}
 
 	public void sendGesture(int gestureId) {
-		this.controlSessionThread.sendGesture(gestureId);
+		this.controlSession.sendGesture(gestureId);
 	}
 
 	public void sendKey(int keyId) {
-		this.controlSessionThread.sendKey(keyId);
+		this.controlSession.sendKey(keyId);
 	}
 
 	public void sendSample(float[] sample) {
-		this.fastSampleSenderThread.sendSample(sample);
+		this.fastSampleSender.sendSample(sample);
 	}
 
 	public void start() {
@@ -30,17 +35,25 @@ public class BackgroundWorkManager {
 	}
 
 	public void stop() {
-		this.controlSessionThread.stopRun();
-		this.fastSampleSenderThread.stopRun();
+		this.controlSession.stopRun();
+		this.fastSampleSender.stopRun();
 	}
 
 	public void suspend() {
-		this.controlSessionThread.pauseRun();
-		this.fastSampleSenderThread.pauseRun();
+		this.controlSession.pauseRun();
+		this.fastSampleSender.pauseRun();
 	}
 
 	public void resume() {
-		this.controlSessionThread.resumeRun();
-		this.fastSampleSenderThread.resumeRun();
+		this.controlSession.resumeRun();
+		this.fastSampleSender.resumeRun();
+	}
+
+	public void resumeFastSampleSenderThread() {
+		this.fastSampleSender.resumeRun();
+	}
+
+	public void suspendFastSampleSenderThread() {
+		this.fastSampleSender.pauseRun();		
 	}
 }

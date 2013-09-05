@@ -11,15 +11,15 @@ import android.widget.TextView;
 import com.example.gesturemouseclient.FindServerActivety;
 import com.example.gesturemouseclient.R;
 
-public class DeviceListDisplayAdapter extends ArrayAdapter<DeviceItem> {
+public class DeviceListDisplayAdapter extends ArrayAdapter<RemoteDeviceInfo> {
 
-	public DeviceListDisplayAdapter(FindServerActivety activity, List<DeviceItem> deviceList) {
+	public DeviceListDisplayAdapter(FindServerActivety activity, List<RemoteDeviceInfo> deviceList) {
 		super(activity, android.R.layout.activity_list_item, deviceList);
 	}
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		DeviceItem device = getItem(position);
+		RemoteDeviceInfo device = getItem(position);
 		LayoutInflater inflater = LayoutInflater.from(getContext());
 		View view = inflater.inflate(R.layout.row_name, null);
 

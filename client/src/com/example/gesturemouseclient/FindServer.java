@@ -12,11 +12,11 @@ import org.msgpack.type.ValueFactory;
 import android.os.AsyncTask;
 import android.os.SystemClock;
 
-import com.example.gesturemouseclient.infra.DeviceItem;
+import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 import com.example.gesturemouseclient.infra.Logger;
 import com.example.gesturemouseclient.infra.ResponseReader;
 
-public class FindServer extends AsyncTask<Void, Void, List<DeviceItem>> {
+public class FindServer extends AsyncTask<Void, Void, List<RemoteDeviceInfo>> {
 
 	private FindServerActivety mainActivity;
 
@@ -30,8 +30,8 @@ public class FindServer extends AsyncTask<Void, Void, List<DeviceItem>> {
 	}
 
 	@Override
-	protected List<DeviceItem> doInBackground(Void... params) {
-		List<DeviceItem> deviceList = new LinkedList<DeviceItem>();
+	protected List<RemoteDeviceInfo> doInBackground(Void... params) {
+		List<RemoteDeviceInfo> deviceList = new LinkedList<RemoteDeviceInfo>();
 		Logger.printLog("initialPcConnection", "doInBackground");
 		SystemClock.sleep(1000);
 
@@ -44,7 +44,7 @@ public class FindServer extends AsyncTask<Void, Void, List<DeviceItem>> {
 			if (serverAddress != null) {
 				Logger.printLog("initialPcConnection", serverAddress.toString());
 				Logger.printLog("initialPcConnection", response.machineName);
-				deviceList.add(new DeviceItem(serverAddress.getPort(), serverAddress.getAddress(), response.machineName));
+				deviceList.add(new RemoteDeviceInfo(serverAddress.getPort(), serverAddress.getAddress(), response.machineName));
 			} else {
 				Logger.printLog("initialPcConnection", "no sever is founds");
 			}
@@ -71,9 +71,9 @@ public class FindServer extends AsyncTask<Void, Void, List<DeviceItem>> {
 		// TODO: update bar...
 	}
 
-	protected void onPostExecute(List<DeviceItem> result) {
+	protected void onPostExecute(List<RemoteDeviceInfo> result) {
 		Logger.printLog("initialPcConnection", "onPostExecute");
-		for (DeviceItem deviceItem : result) {
+		for (RemoteDeviceInfo deviceItem : result) {
 			mainActivity.addDevice(deviceItem);
 		}
 

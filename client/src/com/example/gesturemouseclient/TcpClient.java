@@ -19,7 +19,7 @@ import org.msgpack.type.RawValue;
 import org.msgpack.type.ValueFactory;
 import org.msgpack.unpacker.Unpacker;
 
-import com.example.gesturemouseclient.infra.DeviceItem;
+import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 import com.example.gesturemouseclient.infra.Logger;
 import com.example.gesturemouseclient.infra.ResponseReader;
 
@@ -62,7 +62,7 @@ public class TcpClient {
 		timeout = seconds * 1000000000l;
 	}
 
-	private byte[] createMsg(final String tcpPort, String[] features) throws IOException {
+	private byte[] createMsg(final int tcpPort, String[] features) throws IOException {
 		Map<Object, Object> msg = new LinkedHashMap<Object, Object>() {
 			{
 				put(key_name, deviceName);
@@ -71,7 +71,7 @@ public class TcpClient {
 					{
 						Map<Object, Object> app = new LinkedHashMap<Object, Object>() {
 							{
-								put(key_name, "browser");
+								put(key_name, "eclipse sdk");
 								Map<Object, Object> gestures = new LinkedHashMap<Object, Object>() {
 									{
 										put(key_name, "flick left");
@@ -85,6 +85,28 @@ public class TcpClient {
 									}
 								};
 								put(key_gestures, gestures);
+								
+							}
+						};
+						add(app);
+						
+						app = new LinkedHashMap<Object, Object>() {
+							{
+								put(key_name, "google chrome");
+								Map<Object, Object> gestures = new LinkedHashMap<Object, Object>() {
+									{
+										put(key_name, "flick left");
+										put(key_gid, "134");
+										List<Object> actions = new ArrayList<Object>() {
+											{
+												add("17");
+											}
+										};
+										put(key_actions, actions);
+									}
+								};
+								put(key_gestures, gestures);
+								
 							}
 						};
 						add(app);
@@ -100,7 +122,7 @@ public class TcpClient {
 		return msgpack.write(msg);
 	}
 
-	public void initControllSession(final String tcpPort, String[] features, DeviceItem device) throws IOException {
+	public void initControllSession(final int tcpPort, String[] features, RemoteDeviceInfo device) throws IOException {
 		byte[] msgBuffer = createMsg(tcpPort, features);
 
 		Logger.printLog("TCP Client", "C: Connecting...");

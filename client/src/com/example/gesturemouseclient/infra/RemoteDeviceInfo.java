@@ -12,7 +12,7 @@ import android.os.Parcelable;
  *         a class to hold the device data we wish to connect with
  * 
  */
-public class DeviceItem implements Parcelable {
+public class RemoteDeviceInfo implements Parcelable {
 
 	private String sessionId;
 	private InetAddress address;
@@ -20,6 +20,7 @@ public class DeviceItem implements Parcelable {
 	private int UDPPort;
 	private final String machineName;
 	private boolean connected;
+	private String activeApplication;
 
 	/**
 	 * Constructor
@@ -27,16 +28,15 @@ public class DeviceItem implements Parcelable {
 	 * @param controlPort
 	 * @param inetAddress
 	 */
-	public DeviceItem(int controlPort, InetAddress address, String machineName) {
+	public RemoteDeviceInfo(int controlPort, InetAddress address, String machineName) {
 		this.controlPort = controlPort;
 		this.address = address;
 		this.machineName = machineName;
 		connected = false;
-
 	}
 
 	// example constructor that takes a Parcel and gives you an object populated with it's values
-	private DeviceItem(Parcel in) {
+	private RemoteDeviceInfo(Parcel in) {
 		sessionId = in.readString();
 		try {
 			address = InetAddress.getByName(in.readString());
@@ -46,6 +46,7 @@ public class DeviceItem implements Parcelable {
 		controlPort = in.readInt();
 		UDPPort = in.readInt();
 		machineName = in.readString();
+		activeApplication = in.readString();
 	}
 
 	public int getControlPort() {
@@ -88,16 +89,17 @@ public class DeviceItem implements Parcelable {
 		out.writeInt(controlPort);
 		out.writeInt(UDPPort);
 		out.writeString(machineName);
+		out.writeString(activeApplication);
 	}
 
 	// this is used to regenerate your object. All Parcelables must have a CREATOR that implements these two methods
-	public static final Parcelable.Creator<DeviceItem> CREATOR = new Parcelable.Creator<DeviceItem>() {
-		public DeviceItem createFromParcel(Parcel in) {
-			return new DeviceItem(in);
+	public static final Parcelable.Creator<RemoteDeviceInfo> CREATOR = new Parcelable.Creator<RemoteDeviceInfo>() {
+		public RemoteDeviceInfo createFromParcel(Parcel in) {
+			return new RemoteDeviceInfo(in);
 		}
 
-		public DeviceItem[] newArray(int size) {
-			return new DeviceItem[size];
+		public RemoteDeviceInfo[] newArray(int size) {
+			return new RemoteDeviceInfo[size];
 		}
 	};
 
@@ -107,5 +109,13 @@ public class DeviceItem implements Parcelable {
 
 	public synchronized void setConnected(boolean connected) {
 		this.connected = connected;
+	}
+
+	public String getActiveApplication() {
+		return activeApplication;
+	}
+
+	public void setActiveApplication(String activeApplication) {
+		this.activeApplication = activeApplication;
 	}
 }

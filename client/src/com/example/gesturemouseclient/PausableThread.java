@@ -2,7 +2,7 @@ package com.example.gesturemouseclient;
 
 import com.example.gesturemouseclient.infra.Logger;
 
-public abstract class PausableThread extends Thread {
+public abstract class PausableThread implements Runnable {
 
 	protected Boolean pause;
 	protected volatile Boolean stop;

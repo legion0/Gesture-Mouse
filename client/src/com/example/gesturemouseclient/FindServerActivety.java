@@ -20,7 +20,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.gesturemouseclient.infra.DeviceDeleteListDisplayAdapter;
-import com.example.gesturemouseclient.infra.DeviceItem;
+import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 import com.example.gesturemouseclient.infra.DeviceListDisplayAdapter;
 import com.example.gesturemouseclient.infra.Logger;
 
@@ -28,13 +28,13 @@ import com.example.gesturemouseclient.infra.Logger;
 public class FindServerActivety extends Activity {
 
 	private ProgressBar progressBar;
-	private ArrayAdapter<DeviceItem> adapter;
-	private ArrayAdapter<DeviceItem> adapterDelete;
+	private ArrayAdapter<RemoteDeviceInfo> adapter;
+	private ArrayAdapter<RemoteDeviceInfo> adapterDelete;
 	private String deviceName;
 	private TextView searchForDevice;
 	private TextView headLine;
 
-	private DeviceItem device;
+	private RemoteDeviceInfo device;
 	private Button retryBtn;
 	private FindServer findServer;
 
@@ -53,7 +53,7 @@ public class FindServerActivety extends Activity {
 		deviceName = android.os.Build.USER;
 		Logger.printLog("onCreate", "host name: " + deviceName);
 
-		List<DeviceItem> deviceList = new ArrayList<DeviceItem>();
+		List<RemoteDeviceInfo> deviceList = new ArrayList<RemoteDeviceInfo>();
 		ListView deviceListView = (ListView) findViewById(R.id.deviceList);
 		adapter = new DeviceListDisplayAdapter(this, deviceList);
 		deviceListView.setAdapter(adapter);
@@ -83,7 +83,7 @@ public class FindServerActivety extends Activity {
 		});
 
 		// TODO: to remove this part and add it to one list.
-		List<DeviceItem> deviceDeleteList = new ArrayList<DeviceItem>();
+		List<RemoteDeviceInfo> deviceDeleteList = new ArrayList<RemoteDeviceInfo>();
 		ListView deviceDeleteListView = (ListView) findViewById(R.id.deviceDeleteList);
 		adapterDelete = new DeviceDeleteListDisplayAdapter(this, deviceDeleteList);
 		deviceDeleteListView.setAdapter(adapterDelete);
@@ -92,7 +92,7 @@ public class FindServerActivety extends Activity {
 
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				DeviceItem tempItem = adapterDelete.getItem(position);
+				RemoteDeviceInfo tempItem = adapterDelete.getItem(position);
 				adapterDelete.remove(tempItem);
 				adapter.remove(tempItem);
 			}
@@ -148,7 +148,7 @@ public class FindServerActivety extends Activity {
 		progressBar.setVisibility(View.VISIBLE);
 	}
 
-	public void addDevice(DeviceItem device) {
+	public void addDevice(RemoteDeviceInfo device) {
 		adapter.add(device);
 		adapterDelete.add(device);
 	}

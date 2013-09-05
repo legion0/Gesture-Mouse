@@ -10,14 +10,14 @@ import java.util.concurrent.LinkedBlockingDeque;
 import org.msgpack.MessagePack;
 
 import com.example.gesturemouseclient.PausableThread;
-import com.example.gesturemouseclient.infra.DeviceItem;
+import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 import com.example.gesturemouseclient.infra.Logger;
 
 public class FastSampleSenderThread extends PausableThread {
 
 	private BlockingDeque<float[]> outgoingSampleQueue;
 	private MessagePack msgpack;
-	private final DeviceItem remoteDeviceInfo;
+	private final RemoteDeviceInfo remoteDeviceInfo;
 
 	/**
 	 * Constctur:
@@ -25,7 +25,7 @@ public class FastSampleSenderThread extends PausableThread {
 	 * @param inetSocketAddress
 	 * @throws SocketException
 	 */
-	public FastSampleSenderThread(DeviceItem remoteDeviceInfo) {
+	public FastSampleSenderThread(RemoteDeviceInfo remoteDeviceInfo) {
 		super();
 		this.remoteDeviceInfo = remoteDeviceInfo;
 		outgoingSampleQueue = new LinkedBlockingDeque<float[]>();
@@ -41,7 +41,7 @@ public class FastSampleSenderThread extends PausableThread {
 		try {
 			float[] sample = outgoingSampleQueue.pollFirst();
 			if (sample != null) {
-				Logger.printLog("FastSensorConnection : ", "sendSample(" + sample[0] + "," + sample[1] + "," + sample[2] + ")");
+//				Logger.printLog("FastSensorConnection : ", "sendSample(" + sample[0] + "," + sample[1] + "," + sample[2] + ")");
 				byte[] buffer = msgpack.write(sample);
 
 				DatagramPacket packet = new DatagramPacket(buffer, buffer.length, remoteDeviceInfo.getAddress(), remoteDeviceInfo.getUDPPort());

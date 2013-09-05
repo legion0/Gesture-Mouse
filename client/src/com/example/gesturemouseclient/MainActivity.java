@@ -4,6 +4,7 @@ import java.util.List;
 
 import Threads.ApplicationListenerThread;
 import Threads.BackgroundWorkManager;
+import Threads.FastSampleSenderThread;
 import android.app.Activity;
 import android.content.Intent;
 import android.hardware.Sensor;
@@ -14,13 +15,19 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.widget.TextView;
 
-import com.example.gesturemouseclient.infra.DeviceItem;
+import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 import com.example.gesturemouseclient.infra.Logger;
 import com.example.gesturemouseclient.infra.interfaces.ApplicationListener;
 
 public class MainActivity extends Activity implements SensorEventListener, ApplicationListener {
-
-	private DeviceItem remoteDeviceInfo;
+	
+	enum State {MOUSE, GESTURE};
+	
+	private State state = State.MOUSE;
+	
+	private boolean isRunning = true;
+	
+	private RemoteDeviceInfo remoteDeviceInfo;
 	private TextView pcConnectedName;
 	private TextView appConnectedName;
 	private boolean volumeDownIsPressed = false;
@@ -32,28 +39,38 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		Logger.printLog("onCreate", "the app is created !");
 		super.onCreate(savedInstanceState);
+		
 		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-		List<Sensor> sensorList = sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER);
-		// TODO: Error checks
-		sensorManager.registerListener(this, sensorList.get(0), SensorManager.SENSOR_DELAY_GAME);
-
+	
 		setContentView(R.layout.activity_main);
 		Intent intent = getIntent();
-		remoteDeviceInfo = ((DeviceItem) intent.getExtras().get("device"));
-		backgroundWorkManager = new BackgroundWorkManager(remoteDeviceInfo);
-
+		remoteDeviceInfo = ((RemoteDeviceInfo) intent.getExtras().get("device"));
+		
 		pcConnectedName = (TextView) findViewById(R.id.connectedPcName);
 		appConnectedName = (TextView) findViewById(R.id.connectedAppName);
-
+		
 		pcConnectedName.setText(remoteDeviceInfo.getMachineName());
-
+		
 		TcpInitConnection tcpConnection = new TcpInitConnection(remoteDeviceInfo, this);
 		tcpConnection.execute();
+	}
+	
+	@Override
+	protected void onStart() {
+		Logger.printLog("onStart", "the app is start !");
+		super.onStart();
+		
+		if (!isRunning) {
+			this.onConnectionToRemoteDevice();
+		}
+		isRunning = true;
 	}
 
 	@Override
 	protected void onResume() {
+		Logger.printLog("onResume", "the app is resumed !");
 		super.onResume();
 		List<Sensor> sensorList = sensorManager.getSensorList(Sensor.TYPE_ROTATION_VECTOR);
 		if (sensorList == null || sensorList.size() < 1) {
@@ -63,11 +80,16 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		if (remoteDeviceInfo.isConnected()) {
 			applicationListenerThread = new ApplicationListenerThread(remoteDeviceInfo, this);
 			applicationListenerThread.execute();
+			if(backgroundWorkManager != null){
+				backgroundWorkManager.resume();
+			}
 		}
+		isRunning = true;
 	}
 
 	@Override
 	protected void onPause() {
+		Logger.printLog("onPause", "the app is paused !");
 		super.onPause();
 		sensorManager.unregisterListener(this);
 		backgroundWorkManager.suspend();
@@ -75,9 +97,11 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			applicationListenerThread.cancel(true);
 			applicationListenerThread = null;
 		}
+		isRunning = false;
 	}
 
 	protected void onStop() {
+		Logger.printLog("onStop", "the app is stoped !");
 		super.onStop();
 		sensorManager.unregisterListener(this);
 		backgroundWorkManager.stop();
@@ -85,10 +109,12 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			applicationListenerThread.cancel(true);
 			applicationListenerThread = null;
 		}
+		isRunning = false;
 	}
 
 	@Override
 	protected void onDestroy() {
+		Logger.printLog("onDestroy", "the app is destroyed !");
 		super.onDestroy();
 		sensorManager.unregisterListener(this);
 		backgroundWorkManager.stop();
@@ -96,13 +122,26 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			applicationListenerThread.cancel(true);
 			applicationListenerThread = null;
 		}
+		isRunning = false;
 	}
 
 	public void onConnectionToRemoteDevice() {
-		Logger.printLog("main activety : ", "setControlSession");
+		Logger.printLog("onConnectionToRemoteDevice", "");
+		
+		// start threads:
+		backgroundWorkManager = new BackgroundWorkManager(remoteDeviceInfo);
 		backgroundWorkManager.start();
 		applicationListenerThread = new ApplicationListenerThread(remoteDeviceInfo, this);
 		applicationListenerThread.execute();
+		
+		//start sensors:
+		List<Sensor> sensorList = sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER);
+		// TODO: Error checks
+		sensorManager.registerListener(this, sensorList.get(0), SensorManager.SENSOR_DELAY_GAME);
+		
+		sensorList = sensorManager.getSensorList(Sensor.TYPE_ROTATION_VECTOR);
+		// TODO: Error checks
+		sensorManager.registerListener(this, sensorList.get(0), SensorManager.SENSOR_DELAY_GAME);
 	}
 
 	// public boolean onKeyLongPress(int keyCode, KeyEvent event) {
@@ -159,7 +198,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	// TODO: remember to check the state of the device, it's possible we dont want to update since we're in anotre state.
 	public void onSensorChanged(SensorEvent event) {
-		Logger.printLog("onSensorChanged", Integer.toString(event.sensor.getType()));
+//		Logger.printLog("onSensorChanged", Integer.toString(event.sensor.getType()));
 		if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
 
 			float[] rotationMatrix = new float[9];
@@ -172,7 +211,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			float y = newValues[1];
 			float z = newValues[2];
 
-			Logger.printLog("onSensorChanged", "sendSample(" + x + "," + y + "," + z + ")");
+//			Logger.printLog("onSensorChanged", "sendSample(" + x + "," + y + "," + z + ")");
 			backgroundWorkManager.sendSample(newValues);
 		}
 	}
@@ -184,10 +223,15 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	@Override
 	public void onApplicationChanged(String applicationName) {
-		if (runningApp == null || runningApp != applicationName) {
-			runningApp = applicationName;
-			appConnectedName.setText(runningApp);
+		Logger.printLog("onApplicationChanged", "");
+		if (applicationName == null) {
+			appConnectedName.setText("Mouse");
+			state = State.MOUSE;
+			backgroundWorkManager.resumeFastSampleSenderThread();
+		}else{
+			appConnectedName.setText(applicationName);
+			state = State.GESTURE;
+			backgroundWorkManager.suspendFastSampleSenderThread();		
 		}
 	}
-
 }

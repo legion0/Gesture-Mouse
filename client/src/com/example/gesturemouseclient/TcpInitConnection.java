@@ -9,7 +9,7 @@ import org.msgpack.type.ValueFactory;
 
 import android.os.AsyncTask;
 
-import com.example.gesturemouseclient.infra.DeviceItem;
+import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 import com.example.gesturemouseclient.infra.Logger;
 import com.example.gesturemouseclient.infra.Params;
 import com.example.gesturemouseclient.infra.ResponseReader;
@@ -20,7 +20,7 @@ public class TcpInitConnection extends AsyncTask<Void, Void, Void> {
 	private InetAddress address;
 	private String deviceName;
 	private final MainActivity activity;
-	private DeviceItem device;
+	private RemoteDeviceInfo device;
 
 	/**
 	 * Constructor:
@@ -28,7 +28,7 @@ public class TcpInitConnection extends AsyncTask<Void, Void, Void> {
 	 * @param device
 	 * @param activity
 	 */
-	public TcpInitConnection(DeviceItem device,	MainActivity activity) {
+	public TcpInitConnection(RemoteDeviceInfo device,	MainActivity activity) {
 		this.activity = activity;
 		tcp_outgoing_port = device.getControlPort();
 		address = device.getAddress();

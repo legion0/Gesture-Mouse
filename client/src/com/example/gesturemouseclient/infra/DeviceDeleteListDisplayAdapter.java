@@ -10,9 +10,9 @@ import android.widget.ArrayAdapter;
 import com.example.gesturemouseclient.FindServerActivety;
 import com.example.gesturemouseclient.R;
 
-public class DeviceDeleteListDisplayAdapter extends ArrayAdapter<DeviceItem> {
+public class DeviceDeleteListDisplayAdapter extends ArrayAdapter<RemoteDeviceInfo> {
 
-	public DeviceDeleteListDisplayAdapter(FindServerActivety activity, List<DeviceItem> deviceList) {
+	public DeviceDeleteListDisplayAdapter(FindServerActivety activity, List<RemoteDeviceInfo> deviceList) {
 		super(activity, android.R.layout.activity_list_item, deviceList);
 	}
 
