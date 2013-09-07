@@ -12,15 +12,16 @@ import org.msgpack.type.ValueFactory;
 import android.os.AsyncTask;
 import android.os.SystemClock;
 
+import com.example.gesturemouseclient.activities.FindServerActivity;
 import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 import com.example.gesturemouseclient.infra.Logger;
 import com.example.gesturemouseclient.infra.ResponseReader;
 
 public class FindServer extends AsyncTask<Void, Void, List<RemoteDeviceInfo>> {
 
-	private FindServerActivety mainActivity;
+	private FindServerActivity mainActivity;
 
-	public FindServer(FindServerActivety mainActivity) {
+	public FindServer(FindServerActivity mainActivity) {
 		this.mainActivity = mainActivity;
 	}
 

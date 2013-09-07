@@ -9,6 +9,7 @@ import org.msgpack.type.ValueFactory;
 
 import android.os.AsyncTask;
 
+import com.example.gesturemouseclient.activities.MainActivity;
 import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 import com.example.gesturemouseclient.infra.Logger;
 import com.example.gesturemouseclient.infra.Params;

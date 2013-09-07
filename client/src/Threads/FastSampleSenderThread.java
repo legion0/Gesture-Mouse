@@ -47,6 +47,7 @@ public class FastSampleSenderThread extends PausableThread {
 				DatagramPacket packet = new DatagramPacket(buffer, buffer.length, remoteDeviceInfo.getAddress(), remoteDeviceInfo.getUDPPort());
 				DatagramSocket socket = new DatagramSocket();
 				socket.send(packet);
+				socket.close();
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

@@ -1,4 +1,4 @@
-package com.example.gesturemouseclient;
+package com.example.gesturemouseclient.activities;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,10 +6,12 @@ import java.util.List;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -19,13 +21,18 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.example.gesturemouseclient.FindServer;
+import com.example.gesturemouseclient.R;
+import com.example.gesturemouseclient.R.id;
+import com.example.gesturemouseclient.R.layout;
+import com.example.gesturemouseclient.R.menu;
 import com.example.gesturemouseclient.infra.DeviceDeleteListDisplayAdapter;
 import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 import com.example.gesturemouseclient.infra.DeviceListDisplayAdapter;
 import com.example.gesturemouseclient.infra.Logger;
 
 @SuppressLint("NewApi")
-public class FindServerActivety extends Activity {
+public class FindServerActivity extends Activity {
 
 	private ProgressBar progressBar;
 	private ArrayAdapter<RemoteDeviceInfo> adapter;
@@ -42,6 +49,9 @@ public class FindServerActivety extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_find_server);
+		
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
 
 		Typeface tf = Typeface.createFromAsset(getAssets(), "fonts/BigAppleNF.ttf");
 		headLine = (TextView) findViewById(R.id.headLine);

@@ -71,7 +71,7 @@ public class TcpClient {
 					{
 						Map<Object, Object> app = new LinkedHashMap<Object, Object>() {
 							{
-								put(key_name, "eclipse sdk");
+								put(key_name, "eclipse.exe");
 								Map<Object, Object> gestures = new LinkedHashMap<Object, Object>() {
 									{
 										put(key_name, "flick left");
@@ -92,7 +92,7 @@ public class TcpClient {
 						
 						app = new LinkedHashMap<Object, Object>() {
 							{
-								put(key_name, "google chrome");
+								put(key_name, "chrome.exe");
 								Map<Object, Object> gestures = new LinkedHashMap<Object, Object>() {
 									{
 										put(key_name, "flick left");

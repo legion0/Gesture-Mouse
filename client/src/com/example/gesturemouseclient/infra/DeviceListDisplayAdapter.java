@@ -8,12 +8,12 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import com.example.gesturemouseclient.FindServerActivety;
 import com.example.gesturemouseclient.R;
+import com.example.gesturemouseclient.activities.FindServerActivity;
 
 public class DeviceListDisplayAdapter extends ArrayAdapter<RemoteDeviceInfo> {
 
-	public DeviceListDisplayAdapter(FindServerActivety activity, List<RemoteDeviceInfo> deviceList) {
+	public DeviceListDisplayAdapter(FindServerActivity activity, List<RemoteDeviceInfo> deviceList) {
 		super(activity, android.R.layout.activity_list_item, deviceList);
 	}
 

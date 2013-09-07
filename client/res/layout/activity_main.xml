@@ -28,4 +28,30 @@
         android:text="App Name"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
+    <Button
+        android:id="@+id/gestureBtn"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:background="@drawable/largebluebutton"
+        android:text="Gesture Activate" />
+
+    <Button
+        android:id="@+id/learnGestureBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:text="Learn" />
+
+    <Button
+        android:id="@+id/goToMouseBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/learnGestureBtn"
+        android:layout_alignBottom="@+id/learnGestureBtn"
+        android:layout_toLeftOf="@+id/learnGestureBtn"
+        android:text="Mouse" />
+
 </RelativeLayout>

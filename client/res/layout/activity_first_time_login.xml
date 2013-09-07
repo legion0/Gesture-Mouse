@@ -15,25 +15,34 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="23dp"
-        android:text="Gesture Mouse 12345678"
+        android:text="Gesture Mouse"
         android:fontFamily="/fonts/airmole.ttf"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <TextView
-        android:id="@+id/textView2"
+        android:id="@+id/instrcutionText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/textView1"
         android:layout_marginTop="26dp"
-        android:text="This is the first time you have launched Gesture Mouse...\nPlease Go to:\nwww.gesturemouse.com\nto download the server application to your desktop computer." />
+        android:text="@string/instructionOne"/>
 
     <Button
-        android:id="@+id/button1"
+        android:id="@+id/nextBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_alignRight="@+id/textView2"
+        android:layout_alignRight="@+id/instrcutionText"
         android:layout_marginBottom="15dp"
         android:text="Next" />
+
+    <CheckBox
+        android:id="@+id/checkBox1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/nextBtn"
+        android:layout_alignBottom="@+id/nextBtn"
+        android:layout_alignLeft="@+id/instrcutionText"
+        android:text="Don't show this again." />
 
 </RelativeLayout>
