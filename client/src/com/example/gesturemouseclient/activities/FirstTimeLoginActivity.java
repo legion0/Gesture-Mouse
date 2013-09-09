@@ -17,8 +17,8 @@ import com.example.gesturemouseclient.R;
 public class FirstTimeLoginActivity extends Activity {
 
 	private Button nextBtn;
-	boolean doneWithInstructions = true;
-	private boolean noInstructions = true;
+	boolean doneWithInstructions = false;
+	private boolean noInstructions = false;
 	private TextView instructionText;
 	private CheckBox removeInstructionCheckBox;
 
