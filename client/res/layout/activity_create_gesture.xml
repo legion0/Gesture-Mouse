@@ -9,44 +9,31 @@
     tools:context=".CreateGestureActivity" >
 
     <TextView
-        android:id="@+id/textView1"
+        android:id="@+id/headLineCreateGesture"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/hello_world" />
+        android:layout_alignParentTop="true"
+        android:textSize="30dp"
+        
+        android:text="@string/createGesture"
+        android:textColor="#00ccff"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <Button
-        android:id="@+id/button1"
+        android:id="@+id/RecordGestureBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/textView1"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="93dp"
-        android:text="Button" />
-
-    <Button
-        android:id="@+id/button2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/button1"
+        android:layout_alignRight="@+id/IdentifyGestureBtn"
         android:layout_centerVertical="true"
-        android:text="Button" />
+        android:text="Record" />
 
     <Button
-        android:id="@+id/button3"
+        android:id="@+id/IdentifyGestureBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/button2"
-        android:layout_below="@+id/button2"
-        android:layout_marginTop="23dp"
-        android:text="Button" />
-
-    <Button
-        android:id="@+id/Button01"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/button2"
-        android:layout_below="@+id/button2"
-        android:layout_marginTop="19dp"
-        android:text="Button" />
-
+        android:layout_above="@+id/RecordGestureBtn"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="31dp"
+        android:text="Identify" />
+    
 </RelativeLayout>

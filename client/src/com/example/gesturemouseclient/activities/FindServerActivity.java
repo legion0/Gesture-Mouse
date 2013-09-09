@@ -11,8 +11,8 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.View.OnClickListener;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
@@ -23,13 +23,10 @@ import android.widget.TextView;
 
 import com.example.gesturemouseclient.FindServer;
 import com.example.gesturemouseclient.R;
-import com.example.gesturemouseclient.R.id;
-import com.example.gesturemouseclient.R.layout;
-import com.example.gesturemouseclient.R.menu;
 import com.example.gesturemouseclient.infra.DeviceDeleteListDisplayAdapter;
-import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 import com.example.gesturemouseclient.infra.DeviceListDisplayAdapter;
 import com.example.gesturemouseclient.infra.Logger;
+import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 
 @SuppressLint("NewApi")
 public class FindServerActivity extends Activity {
@@ -50,6 +47,7 @@ public class FindServerActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_find_server);
 		
+		// disable rotation and keep screen on.
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
 

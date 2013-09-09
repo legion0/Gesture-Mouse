@@ -4,7 +4,6 @@ import java.util.List;
 
 import Threads.ApplicationListenerThread;
 import Threads.BackgroundWorkManager;
-import Threads.FastSampleSenderThread;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -15,18 +14,15 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewGroup.LayoutParams;
-import android.view.WindowManager;
 import android.view.View.OnClickListener;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.gesturemouseclient.R;
 import com.example.gesturemouseclient.TcpInitConnection;
-import com.example.gesturemouseclient.R.id;
-import com.example.gesturemouseclient.R.layout;
-import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 import com.example.gesturemouseclient.infra.Logger;
+import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 import com.example.gesturemouseclient.infra.interfaces.ApplicationListener;
 
 public class MainActivity extends Activity implements SensorEventListener, ApplicationListener {
@@ -58,6 +54,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		Logger.printLog("onCreate", "the app is created !");
 		super.onCreate(savedInstanceState);
 
+		// disable rotation and keep screen on.
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
 
@@ -86,15 +83,40 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		learnGestureBtn = (Button) findViewById(R.id.learnGestureBtn);
 		
 		
-		gestureMode(false);
+		gestureMode(false,"Mouse");
 		gestureBtn.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				Logger.printLog("Gesture onClick Listener", "");							
+				Logger.printLog("Gesture onClick Listener", "");
+				//TODO: Listen to gesture here.
 			}
 		});
+		
+		goToMouseBtn.setOnClickListener(new OnClickListener() {
 
+			@Override
+			public void onClick(View v) {
+				gestureMode(false,"Mouse");
+				Logger.printLog("Main Activity", "Mouse button: "+goToMouseBtn.getText().toString());											
+			}
+		});
+		
+		learnGestureBtn.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				goToGestureActivityActivity();
+			}
+			
+		});
+
+	}
+
+	protected void goToGestureActivityActivity() {
+		Intent intent = new Intent(this, CreateGestureActivity.class);
+		intent.putExtra("device", remoteDeviceInfo);
+		startActivity(intent);
 	}
 
 	@Override
@@ -124,6 +146,14 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 				backgroundWorkManager.resume();
 			}
 		}
+		
+		if(state == State.MOUSE)
+		{
+			gestureMode(false, "Mouse");
+		}else{
+			gestureMode(true, null);
+		}
+		
 		isRunning = true;
 	}
 
@@ -251,32 +281,38 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	public void onApplicationChanged(String applicationName) {
 		Logger.printLog("onApplicationChanged", "");
 		if (applicationName == null) {
-			appConnectedName.setText("Mouse");
-			state = State.MOUSE;
-			gestureMode(false);
-			backgroundWorkManager.resumeFastSampleSenderThread();
+			gestureMode(false,"Mouse");
+			
 		}else{
-			appConnectedName.setText(applicationName);
-			state = State.GESTURE;
-			gestureMode(true);
-			backgroundWorkManager.suspendFastSampleSenderThread();		
+			gestureMode(true,applicationName);
 		}
 	}
 
-	private void gestureMode(boolean activate) {
+	private void gestureMode(boolean activate, String applicationName) {
 		Logger.printLog("MainActivity", "gesture mode = "+activate);
 		gestureBtn.setClickable(activate);
 		goToMouseBtn.setClickable(activate);
 		learnGestureBtn.setClickable(activate);
+		if(applicationName != null)
+		{
+			appConnectedName.setText(applicationName);
+		}
 		if (activate) {
+			state = State.GESTURE;
 			gestureBtn.setVisibility(View.VISIBLE);
 			goToMouseBtn.setVisibility(View.VISIBLE);
 			learnGestureBtn.setVisibility(View.VISIBLE);
+			if(backgroundWorkManager != null){
+				backgroundWorkManager.suspendFastSampleSenderThread();
+			}
 		}else{
+			if(backgroundWorkManager != null){
+				backgroundWorkManager.resumeFastSampleSenderThread();
+			}
 			gestureBtn.setVisibility(View.INVISIBLE);
 			goToMouseBtn.setVisibility(View.INVISIBLE);
 			learnGestureBtn.setVisibility(View.INVISIBLE);
-		}
-		
+			state = State.MOUSE;
+		}	
 	}
 }

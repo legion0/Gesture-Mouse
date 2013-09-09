@@ -38,20 +38,22 @@
         android:text="Gesture Activate" />
 
     <Button
-        android:id="@+id/learnGestureBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:text="Learn" />
+        android:id="@+id/goToMouseBtn"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_alignBaseline="@+id/connectedAppName"
+        android:layout_alignBottom="@+id/connectedAppName"
+        android:layout_alignRight="@+id/connectedPcName"
+        android:background="@drawable/mouse"
+        android:text="" />
 
     <Button
-        android:id="@+id/goToMouseBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/learnGestureBtn"
-        android:layout_alignBottom="@+id/learnGestureBtn"
-        android:layout_toLeftOf="@+id/learnGestureBtn"
-        android:text="Mouse" />
+        android:id="@+id/learnGestureBtn"
+        android:layout_width="53dp"
+        android:layout_height="53dp"
+        android:layout_alignBaseline="@+id/goToMouseBtn"
+        android:layout_alignBottom="@+id/goToMouseBtn"
+        android:layout_toRightOf="@+id/goToMouseBtn"
+        android:background="@drawable/gesture" />
 
 </RelativeLayout>
