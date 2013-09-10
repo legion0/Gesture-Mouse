@@ -1,14 +1,22 @@
 package com.example.gesturemouseclient.dal;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.wiigee.logic.GestureModel;
 import org.wiigee.util.Serializer;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 /**
@@ -31,24 +39,56 @@ public class GestureDAL {
 		this.model = model;
 	}
 
-	public static List<GestureDAL> load(Context context) {
+	public static Set<GestureDAL> load(Context context, int appId) {
 		DBHelper helper = new DBHelper(context);
 		SQLiteDatabase db = helper.getWritableDatabase();
-		
-//		sCursor cursor = db.query(DBHelper.GUSTERS_TABLE_NAME, new String[]);
-//				Cursor cursor =
-//						db.query(“students”, new String[] { “tz”, “name” },
-//								“name like ‘?%’”, new String[] { prefix },
-//										null, null, “tz desc”);
-//				if (cursor.moveToFirst()) {
-//					do {
-//						String name = cursor.getString(1); //...and so on
-//					} while (cursor.moveToNext());
-//				}
-		
-		
-		
-		return null;
+
+		//DBHelper.GUSTERS_TABLE_NAME, new String[] {"id","name","action","model"},null,null);
+
+
+
+		int[] gestureIdArr = getGestureIds(context,appId);
+		String gestureIdStringArr = Arrays.toString(gestureIdArr);
+		gestureIdStringArr = "("+gestureIdStringArr.substring(1,gestureIdStringArr.length()-1)+")";
+
+		String table = DBHelper.GUSTERS_TABLE_NAME;
+		String[] columns = {"id","name","action","model"}; 
+		String selection = "_id IN "+gestureIdStringArr;
+		String[] selectionArgs = null; 
+		String groupBy = null;
+		String having = null;
+		String orderBy = null;
+
+
+
+		Cursor cursor = db.query(table, columns, selection, selectionArgs, groupBy, having,	orderBy);
+
+		Set<GestureDAL> gestureSet = new HashSet<GestureDAL>();
+
+		if (cursor.moveToFirst()) {
+			do {
+				int id = cursor.getInt(0);
+				String name = cursor.getString(1);
+				List<Integer> action = StringToIntegerList(cursor.getString(2));
+				InputStream stream = new ByteArrayInputStream(cursor.getBlob(3));
+				GestureModel model = Serializer.read(stream ); 
+				GestureDAL g = new GestureDAL(id, name, action, model);
+				gestureSet.add(g);
+			} while (cursor.moveToNext());
+		}
+		return gestureSet;
+	}
+
+	private static List<Integer> StringToIntegerList(String str) {
+		str = str.substring(1,str.length()-1);
+
+		String[] strArr = str.split(", ");
+		List<Integer> output = new ArrayList<Integer>();
+
+		for (int i = 0; i < strArr.length; i++) {
+			output.add(Integer.parseInt(strArr[i]));
+		}
+		return output;
 	}
 
 	public void save(Context context) {
@@ -65,7 +105,8 @@ public class GestureDAL {
 			gestureValues.put("name", name);
 			gestureValues.put("action", action.toString());
 			gestureValues.put("model", buffer);
-			db.insert("gestures", null, gestureValues);
+			db.insertWithOnConflict("gestures", null, gestureValues,
+					SQLiteDatabase.CONFLICT_IGNORE);
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
