@@ -138,4 +138,24 @@ public class GestureDAL {
 		this.model = model;
 	}
 
+	static int[] getGestureIds(Context context, int appId) {
+		DBHelper helper = new DBHelper(context);
+		SQLiteDatabase db = helper.getWritableDatabase();
+		Cursor cursor = db.query(
+				DBHelper.M2M_APPLICATION_GESTURE_TABLE_NAME,
+				new String[] {DBHelper.M2M_APPLICATION_GESTURE_COLUMN_GESTURE_ID},
+				String.format("%s = ?", DBHelper.M2M_APPLICATION_GESTURE_COLUMN_APP_ID),
+				new String[] {Integer.toString(appId)},
+				null, null, null);
+		if (!cursor.moveToFirst()) {
+			return new int[0];
+		}
+		int[] gids = new int[cursor.getCount()];
+		int i = 0;
+		do {
+			gids[i++] = cursor.getInt(0);
+		} while (cursor.moveToNext());
+		return gids;
+	}
+
 }
