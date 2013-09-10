@@ -25,8 +25,10 @@
 package org.wiigee.logic;
 
 import java.util.Vector;
+
+import android.util.Log;
+
 import org.wiigee.event.*;
-import org.wiigee.util.Log;
 
 /**
  * This class analyzes the AccelerationEvents emitted from a Wiimote and further creates and manages the different models for each type of gesture.
@@ -79,10 +81,12 @@ public class TriggeredProcessingUnit extends ProcessingUnit {
 
 	public void motionStartReceived(MotionStartEvent event) {
 		// this.handleStartEvent(event);
+		Log.v("TriggeredProcessingUnit", "motionStartReceived");
 	}
 
 	public void motionStopReceived(MotionStopEvent event) {
 		// this.handleStopEvent(event);
+		Log.v("TriggeredProcessingUnit", "motionStopReceived");
 	}
 
 	public boolean startLearning() {
@@ -100,25 +104,25 @@ public class TriggeredProcessingUnit extends ProcessingUnit {
 	public boolean endLearning() {
 		learning = false;
 		if (current.getCountOfData() > 0) {
-			Log.write("Finished recording (training)...");
-			Log.write("Data: " + current.getCountOfData());
+			Log.v("TriggeredProcessingUnit", "Finished recording (training)...");
+			Log.v("TriggeredProcessingUnit", "Data: " + current.getCountOfData());
 			Gesture gesture = new Gesture(current);
 			trainingSequence.add(gesture);
 			current = new Gesture();
 			return true;
 		} else {
-			Log.write("There is no data.");
-			Log.write("Please train the gesture again.");
+			Log.v("TriggeredProcessingUnit", "There is no data.");
+			Log.v("TriggeredProcessingUnit", "Please train the gesture again.");
 			return false;
 		}
 	}
 
 	public boolean saveLearningAsGesture() {
 		if (trainingSequence.size() == 0) {
-			Log.write("There is nothing to do. Please record some gestures first.");
+			Log.v("TriggeredProcessingUnit", "There is nothing to do. Please record some gestures first.");
 			return false;
 		}
-		Log.write("Training the model with " + trainingSequence.size() + " gestures...");
+		Log.v("TriggeredProcessingUnit", "Training the model with " + trainingSequence.size() + " gestures...");
 		// learning = true; // XXX Why is this here ?
 		GestureModel gestureModel = new GestureModel();
 		gestureModel.train(trainingSequence);
@@ -146,25 +150,25 @@ public class TriggeredProcessingUnit extends ProcessingUnit {
 		Gesture gesture = new Gesture(current);
 		current = new Gesture();
 		if (gesture.getCountOfData() > 0) {
-			Log.write("Finished recording (recognition)...");
-			Log.write("Compare gesture with " + classifier.getCountOfGestures() + " other gestures.");
+			Log.v("TriggeredProcessingUnit", "Finished recording (recognition)...");
+			Log.v("TriggeredProcessingUnit", "Compare gesture with " + classifier.getCountOfGestures() + " other gestures.");
 			int recognized = classifier.classifyGesture(gesture);
 			if (recognized != -1) {
 				double recogprob = classifier.getLastProbability();
 				fireGestureEvent(true, recognized, recogprob);
-				Log.write("######");
-				Log.write("Gesture No. " + recognized + " recognized: " + recogprob);
-				Log.write("######");
+				Log.v("TriggeredProcessingUnit", "######");
+				Log.v("TriggeredProcessingUnit", "Gesture No. " + recognized + " recognized: " + recogprob);
+				Log.v("TriggeredProcessingUnit", "######");
 			} else {
 				this.fireGestureEvent(false, 0, 0.0);
-				Log.write("######");
-				Log.write("No gesture recognized.");
-				Log.write("######");
+				Log.v("TriggeredProcessingUnit", "######");
+				Log.v("TriggeredProcessingUnit", "No gesture recognized.");
+				Log.v("TriggeredProcessingUnit", "######");
 			}
 			return true;
 		} else {
-			Log.write("There is no data.");
-			Log.write("Please recognize the gesture again.");
+			Log.v("TriggeredProcessingUnit", "There is no data.");
+			Log.v("TriggeredProcessingUnit", "Please recognize the gesture again.");
 			return false;
 		}
 	}
@@ -177,13 +181,13 @@ public class TriggeredProcessingUnit extends ProcessingUnit {
 
 		// TrainButton = record a gesture for learning
 		if (isIdle() && event.isTrainInitEvent()) {
-			Log.write("Training started!");
+			Log.v("TriggeredProcessingUnit", "Training started!");
 			startLearning();
 		}
 
 		// RecognitionButton = record a gesture for recognition
 		if (isIdle() && event.isRecognitionInitEvent()) {
-			Log.write("Recognition started!");
+			Log.v("TriggeredProcessingUnit", "Recognition started!");
 			startRecognizing();
 		}
 

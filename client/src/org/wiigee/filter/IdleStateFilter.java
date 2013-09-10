@@ -24,6 +24,8 @@
 
 package org.wiigee.filter;
 
+import android.util.Log;
+
 /**
  * Filters if the wiimote is not moved in any way. Be careful in using
  * this filter together with a HighPassFilter.
@@ -57,6 +59,7 @@ public class IdleStateFilter extends Filter {
 				(vector[1]*vector[1])+(vector[2]*vector[2]));
 		
 		// filter formulaes and return values
+		Log.d("IdleStateFilter", "absvalue="+absvalue);
 		if(absvalue > 1+this.sensivity ||
 		   absvalue < 1-this.sensivity) {
 			return vector;
