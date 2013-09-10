@@ -49,6 +49,7 @@ public class XHMM extends HMM {
         return retVal;
     }
 
+    @SuppressWarnings("unused")
     private double[][] getScaledBackward(int[] sequence) {
         double[][] fwd = this.forwardProc(sequence);
         double[][] bwd = this.backwardProc(sequence);
@@ -68,6 +69,7 @@ public class XHMM extends HMM {
         return retVal;
     }
 
+   @SuppressWarnings("unused")
    private double getScalingDenominator(int t, int[] sequence) {
        double retVal = 0.0;
        double[][] fwd = this.forwardProc(sequence);

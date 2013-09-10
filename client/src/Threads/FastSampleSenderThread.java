@@ -11,7 +11,6 @@ import org.msgpack.MessagePack;
 
 import com.example.gesturemouseclient.PausableThread;
 import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
-import com.example.gesturemouseclient.infra.Logger;
 
 public class FastSampleSenderThread extends PausableThread {
 

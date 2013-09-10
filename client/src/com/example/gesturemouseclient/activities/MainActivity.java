@@ -263,11 +263,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			float[] newValues = new float[3];
 			SensorManager.getOrientation(rotationMatrix, newValues);
 
-			float x = newValues[0];
-			float y = newValues[1];
-			float z = newValues[2];
-
-			//			Logger.printLog("onSensorChanged", "sendSample(" + x + "," + y + "," + z + ")");
+//			Logger.printLog("onSensorChanged", Arrays.toString(newValues));
 			backgroundWorkManager.sendSample(newValues);
 		}
 	}
@@ -279,12 +275,14 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	@Override
 	public void onApplicationChanged(String applicationName) {
+		runningApp = applicationName;
 		Logger.printLog("onApplicationChanged", "");
-		if (applicationName == null) {
-			gestureMode(false,"Mouse");
+		if (runningApp == null) {
+			runningApp = "Mouse";
+			gestureMode(false, runningApp);
 			
 		}else{
-			gestureMode(true,applicationName);
+			gestureMode(true,runningApp);
 		}
 	}
 

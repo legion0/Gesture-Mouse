@@ -221,7 +221,7 @@ public class FileIO {
 			hmm.setA(a);
 			hmm.setB(b);
 			ret.setHMM(hmm);
-			
+			in.close();
 			return ret;
 		} catch (Exception e) {
 			System.out.println("Error: Read from File!");
