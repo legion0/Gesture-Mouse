@@ -17,8 +17,8 @@ import com.example.gesturemouseclient.R;
 public class FirstTimeLoginActivity extends Activity {
 
 	private Button nextBtn;
-	boolean doneWithInstructions = false;
-	private boolean noInstructions = false;
+	private boolean doneWithInstructions = false;
+	private boolean noInstructions = true;
 	private TextView instructionText;
 	private CheckBox removeInstructionCheckBox;
 
@@ -40,9 +40,10 @@ public class FirstTimeLoginActivity extends Activity {
 		{
 			goToStartAppPage();
 		}else{
+			initNextButton();
 			showFirstInstruction();
 			initInstructionCheckBox();
-			initNextButton();
+			
 		}
 	}
 

@@ -1,6 +1,11 @@
 package com.example.gesturemouseclient.activities;
 
+import java.io.IOException;
 import java.util.List;
+
+import org.wiigee.control.AndroidWiigee;
+import org.wiigee.event.GestureEvent;
+import org.wiigee.event.GestureListener;
 
 import Threads.ApplicationListenerThread;
 import Threads.BackgroundWorkManager;
@@ -12,9 +17,13 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
+import android.view.View.OnTouchListener;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
@@ -49,10 +58,13 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	private Button learnGestureBtn;
 
+	private AndroidWiigee andgee;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		Logger.printLog("onCreate", "the app is created !");
 		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
 
 		// disable rotation and keep screen on.
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -60,7 +72,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
-		setContentView(R.layout.activity_main);
+
 		Intent intent = getIntent();
 		remoteDeviceInfo = ((RemoteDeviceInfo) intent.getExtras().get("device"));
 
@@ -81,18 +93,45 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		gestureBtn = (Button) findViewById(R.id.gestureBtn);
 		goToMouseBtn = (Button) findViewById(R.id.goToMouseBtn);
 		learnGestureBtn = (Button) findViewById(R.id.learnGestureBtn);
-		
-		
+
+		initAndgee();		
+
 		gestureMode(false,"Mouse");
-		gestureBtn.setOnClickListener(new OnClickListener() {
+
+		//		gestureBtn.setOnTouchListener(new OnTouchListener() {
+		//		    @Override
+		//		    public boolean onTouch(View v, MotionEvent event) {
+		//		        if(event.getAction() == MotionEvent.ACTION_DOWN) {
+		//		            increaseSize();
+		//		        } else if (event.getAction() == MotionEvent.ACTION_UP) {
+		//		            resetSize();
+		//		        }
+		//		    }
+		//		});
+
+		gestureBtn.setOnTouchListener(new OnTouchListener() {
 
 			@Override
-			public void onClick(View v) {
-				Logger.printLog("Gesture onClick Listener", "");
-				//TODO: Listen to gesture here.
+			public boolean onTouch(View v, MotionEvent event) {
+				if(event.getAction() == MotionEvent.ACTION_DOWN) {
+					andgee.getDevice().getProcessingUnit().startRecognizing();
+				} else if (event.getAction() == MotionEvent.ACTION_UP) {
+					andgee.getDevice().getProcessingUnit().endRecognizing();
+				}
+				return true;
+				
 			}
 		});
-		
+
+		//		gestureBtn.setOnClickListener(new OnClickListener() {
+		//
+		//			@Override
+		//			public void onClick(View v) {
+		//				Logger.printLog("Gesture onClick Listener", "");
+		//				//TODO: Listen to gesture here.
+		//			}
+		//		});
+
 		goToMouseBtn.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -101,17 +140,30 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 				Logger.printLog("Main Activity", "Mouse button: "+goToMouseBtn.getText().toString());											
 			}
 		});
-		
+
 		learnGestureBtn.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
 				goToGestureActivityActivity();
 			}
-			
+
 		});
 
 	}
+
+	private void initAndgee() {
+		andgee = new AndroidWiigee();
+		
+		andgee.addGestureListener(new GestureListener() {
+			@Override
+			public void gestureReceived(GestureEvent event) {
+				Logger.printLog("Main activity", "initAndgee(addGestureListener) event id: "+event.getId()+" pr: "+event.getProbability());
+			}
+		});
+	}
+
+
 
 	protected void goToGestureActivityActivity() {
 		Intent intent = new Intent(this, CreateGestureActivity.class);
@@ -146,14 +198,14 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 				backgroundWorkManager.resume();
 			}
 		}
-		
+
 		if(state == State.MOUSE)
 		{
 			gestureMode(false, "Mouse");
 		}else{
 			gestureMode(true, null);
 		}
-		
+
 		isRunning = true;
 	}
 
@@ -252,8 +304,15 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		return false;
 	}
 
+
+
+
+
 	// TODO: remember to check the state of the device, it's possible we dont want to update since we're in anotre state.
+	@Override
 	public void onSensorChanged(SensorEvent event) {
+		andgee.getDevice().onSensorChanged(event);
+
 		//		Logger.printLog("onSensorChanged", Integer.toString(event.sensor.getType()));
 		if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
 
@@ -270,23 +329,23 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
-		// Nothing to do here.
+		andgee.getDevice().onAccuracyChanged(sensor, accuracy);
 	}
 
 	@Override
 	public void onApplicationChanged(String applicationName) {
 		runningApp = applicationName;
 		Logger.printLog("onApplicationChanged", "");
+		
 		if (runningApp == null) {
 			runningApp = "Mouse";
 			gestureMode(false, runningApp);
-			
 		}else{
 			gestureMode(true,runningApp);
 		}
 	}
 
-	private void gestureMode(boolean activate, String applicationName) {
+	private void gestureMode(boolean activate, String applicationName){
 		Logger.printLog("MainActivity", "gesture mode = "+activate);
 		gestureBtn.setClickable(activate);
 		goToMouseBtn.setClickable(activate);
@@ -295,22 +354,31 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		{
 			appConnectedName.setText(applicationName);
 		}
-		if (activate) {
-			state = State.GESTURE;
-			gestureBtn.setVisibility(View.VISIBLE);
-			goToMouseBtn.setVisibility(View.VISIBLE);
-			learnGestureBtn.setVisibility(View.VISIBLE);
-			if(backgroundWorkManager != null){
-				backgroundWorkManager.suspendFastSampleSenderThread();
+		try {
+			if (activate) {
+				state = State.GESTURE;
+				gestureBtn.setVisibility(View.VISIBLE);
+				goToMouseBtn.setVisibility(View.VISIBLE);
+				learnGestureBtn.setVisibility(View.VISIBLE);
+				if(backgroundWorkManager != null){
+					backgroundWorkManager.suspendFastSampleSenderThread();
+				}
+
+				andgee.getDevice().setAccelerationEnabled(true);
+
+			}else{
+				if(backgroundWorkManager != null){
+					backgroundWorkManager.resumeFastSampleSenderThread();
+				}
+				gestureBtn.setVisibility(View.INVISIBLE);
+				goToMouseBtn.setVisibility(View.INVISIBLE);
+				learnGestureBtn.setVisibility(View.INVISIBLE);
+				state = State.MOUSE;
+				andgee.getDevice().setAccelerationEnabled(false);
 			}
-		}else{
-			if(backgroundWorkManager != null){
-				backgroundWorkManager.resumeFastSampleSenderThread();
-			}
-			gestureBtn.setVisibility(View.INVISIBLE);
-			goToMouseBtn.setVisibility(View.INVISIBLE);
-			learnGestureBtn.setVisibility(View.INVISIBLE);
-			state = State.MOUSE;
-		}	
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

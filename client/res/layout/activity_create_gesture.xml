@@ -19,21 +19,39 @@
         android:textColor="#00ccff"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
-    <Button
-        android:id="@+id/RecordGestureBtn"
+    <TextView
+        android:id="@+id/recognizeGestureTxt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignRight="@+id/IdentifyGestureBtn"
-        android:layout_centerVertical="true"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="56dp"
+        android:text="Gesture id: 0 with probablity: 0.0"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <Button
+        android:id="@+id/recordGestureBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/recognizeGestureTxt"
+        android:layout_alignRight="@+id/identifyGestureBtn"
+        android:layout_marginBottom="56dp"
         android:text="Record" />
 
     <Button
-        android:id="@+id/IdentifyGestureBtn"
+        android:id="@+id/identifyGestureBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/RecordGestureBtn"
+        android:layout_above="@+id/saveGestureBtn"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="31dp"
         android:text="Identify" />
+
+    <Button
+        android:id="@+id/saveGestureBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/recordGestureBtn"
+        android:layout_centerHorizontal="true"
+        android:text="Save" />
     
 </RelativeLayout>

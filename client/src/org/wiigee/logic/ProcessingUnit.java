@@ -69,4 +69,18 @@ public abstract class ProcessingUnit implements AccelerationListener, ButtonList
     public abstract void loadGesture(String filename);
 
     public abstract void saveGesture(int id, String filename);
+    
+    public abstract boolean startLearning();
+
+	public abstract boolean isLearning();
+
+	public abstract boolean endLearning();
+
+	public abstract boolean saveLearningAsGesture();
+
+	public abstract boolean startRecognizing();
+
+	public abstract boolean isRecognizing();
+
+	public abstract boolean endRecognizing();
 }

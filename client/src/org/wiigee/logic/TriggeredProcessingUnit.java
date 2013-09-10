@@ -24,6 +24,7 @@
 
 package org.wiigee.logic;
 
+import java.util.Arrays;
 import java.util.Vector;
 
 import android.util.Log;
