@@ -1,6 +1,7 @@
 package com.example.gesturemouseclient.activities;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.wiigee.control.AndroidWiigee;
@@ -8,9 +9,11 @@ import org.wiigee.event.GestureEvent;
 import org.wiigee.event.GestureListener;
 
 import com.example.gesturemouseclient.R;
+import com.example.gesturemouseclient.dal.GestureDAL;
 import com.example.gesturemouseclient.infra.Logger;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -26,7 +29,7 @@ import android.view.View.OnTouchListener;
 import android.widget.Button;
 import android.widget.TextView;
 
-public class CreateGestureActivity extends Activity implements SensorEventListener{
+public class CreateGestureActivity extends Activity implements SensorEventListener {
 
 	private AndroidWiigee andgee;
 	private Button learnGestureBtn;
@@ -46,6 +49,7 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
 
 		initAll();
+
 	}
 
 	private void initAll() {
@@ -61,13 +65,14 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 	private void initSaveGesture() {
 		saveGestureBtn = (Button) findViewById(R.id.saveGestureBtn);
 		saveGestureBtn.setOnClickListener(new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
 				Logger.printLog("Create Gesture", "save gesture.");
-				//andgee.getDevice().getProcessingUnit().saveLearningAsGesture();
-				andgee.getDevice().saveGesture(id, "gesture_"+id);
-				id++;
+				id = andgee.getDevice().getProcessingUnit().saveLearningAsGesture();
+				new GestureDAL("A", new ArrayList<Integer>(), andgee.getDevice().getProcessingUnit().getClassifier().getGestureModel(id))
+						.save(getApplicationContext());
+				Logger.printLog("Create Gesture", "save to db");
 			}
 		});
 	}
@@ -83,7 +88,7 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
-				if(event.getAction() == MotionEvent.ACTION_DOWN) {
+				if (event.getAction() == MotionEvent.ACTION_DOWN) {
 					andgee.getDevice().getProcessingUnit().startRecognizing();
 				} else if (event.getAction() == MotionEvent.ACTION_UP) {
 					andgee.getDevice().getProcessingUnit().endRecognizing();
@@ -92,13 +97,13 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 				return true;
 
 			}
-		});		
+		});
 	}
 
 	private void initSensors() {
 		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
-		Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+		Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 		// TODO: Error checks
 		sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_GAME);
 	}
@@ -110,7 +115,7 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
-				if(event.getAction() == MotionEvent.ACTION_DOWN) {
+				if (event.getAction() == MotionEvent.ACTION_DOWN) {
 					Logger.printLog("Create Gesture Activity", "start learning");
 					andgee.getDevice().getProcessingUnit().startLearning();
 				} else if (event.getAction() == MotionEvent.ACTION_UP) {
@@ -122,7 +127,6 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 			}
 		});
 
-
 	}
 
 	private void initAndgee() {
@@ -131,7 +135,7 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 		andgee.addGestureListener(new GestureListener() {
 			@Override
 			public void gestureReceived(GestureEvent event) {
-				Logger.printLog("Create Gesture Activity", "initAndgee(addGestureListener) event id: "+event.getId()+" pr: "+event.getProbability());
+				Logger.printLog("Create Gesture Activity", "initAndgee(addGestureListener) event id: " + event.getId() + " pr: " + event.getProbability());
 				lblStatus.setText("Gesture id: " + event.getId() + " with Probability: " + event.getProbability());
 			}
 		});
@@ -167,7 +171,5 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 		sensorManager.unregisterListener(this);
 		super.onPause();
 	}
-
-
 
 }

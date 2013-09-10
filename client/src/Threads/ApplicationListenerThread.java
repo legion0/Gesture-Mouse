@@ -62,7 +62,7 @@ public class ApplicationListenerThread extends AsyncTask<Void, String, Void> {
 				try{
 				 socket = tcpServer.accept();
 				}catch (SocketTimeoutException e) {
-					Logger.printLog("Application Listener", "socket time out: "+e.getMessage());
+//					Logger.printLog("Application Listener", "socket time out: "+e.getMessage());
 					continue;
 				}
 				byte[] bufInput = new byte[4096];

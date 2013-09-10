@@ -17,8 +17,8 @@ public abstract class ProcessingUnit implements AccelerationListener, ButtonList
 
     // Classifier
     protected Classifier classifier;
-    
-    // Listener
+
+	// Listener
     private Vector<GestureListener> gesturelistener = new Vector<GestureListener>();
 
     public ProcessingUnit() {
@@ -64,6 +64,10 @@ public abstract class ProcessingUnit implements AccelerationListener, ButtonList
             Log.write("There doesn't exist any data to reset.");
         }
     }
+    
+    public Classifier getClassifier() {
+		return classifier;
+	}
 
     // File IO
     public abstract void loadGesture(String filename);
@@ -76,7 +80,7 @@ public abstract class ProcessingUnit implements AccelerationListener, ButtonList
 
 	public abstract boolean endLearning();
 
-	public abstract boolean saveLearningAsGesture();
+	public abstract int saveLearningAsGesture();
 
 	public abstract boolean startRecognizing();
 

@@ -118,20 +118,20 @@ public class TriggeredProcessingUnit extends ProcessingUnit {
 		}
 	}
 
-	public boolean saveLearningAsGesture() {
+	public int saveLearningAsGesture() {
 		if (trainingSequence.size() == 0) {
 			Log.v("TriggeredProcessingUnit", "There is nothing to do. Please record some gestures first.");
-			return false;
+			return -1;
 		}
 		Log.v("TriggeredProcessingUnit", "Training the model with " + trainingSequence.size() + " gestures...");
 		// learning = true; // XXX Why is this here ?
 		GestureModel gestureModel = new GestureModel();
 		gestureModel.train(trainingSequence);
 		// m.print(); // Prints model details after training
-		classifier.addGestureModel(gestureModel);
+		int id = classifier.addGestureModel(gestureModel);
 		trainingSequence = new Vector<Gesture>();
 		learning = false;
-		return true;
+		return id;
 	}
 
 	public boolean startRecognizing() {

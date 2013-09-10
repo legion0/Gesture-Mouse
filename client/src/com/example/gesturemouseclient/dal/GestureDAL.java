@@ -25,15 +25,14 @@ import android.database.sqlite.SQLiteDatabase;
  */
 public class GestureDAL {
 
-	private int id;
+	private Integer id;
 	private String name;
 	private List<Integer> action;
 	private GestureModel model;
 
-	public GestureDAL(int id, String name, List<Integer> action,
+	public GestureDAL(String name, List<Integer> action,
 			GestureModel model) {
 		super();
-		this.id = id;
 		this.name = name;
 		this.action = action;
 		this.model = model;
@@ -52,8 +51,8 @@ public class GestureDAL {
 		gestureIdStringArr = "("+gestureIdStringArr.substring(1,gestureIdStringArr.length()-1)+")";
 
 		String table = DBHelper.GUSTERS_TABLE_NAME;
-		String[] columns = {"id","name","action","model"}; 
-		String selection = "_id IN "+gestureIdStringArr;
+		String[] columns = {DBHelper.GUSTERS_COLUMN_ID,DBHelper.GUSTERS_COLUMN_NAME,DBHelper.GUSTERS_COLUMN_ACTION,DBHelper.GUSTERS_COLUMN_MODEL}; 
+		String selection = DBHelper.GUSTERS_COLUMN_ID+ " IN "+gestureIdStringArr;
 		String[] selectionArgs = null; 
 		String groupBy = null;
 		String having = null;
@@ -71,8 +70,15 @@ public class GestureDAL {
 				String name = cursor.getString(1);
 				List<Integer> action = StringToIntegerList(cursor.getString(2));
 				InputStream stream = new ByteArrayInputStream(cursor.getBlob(3));
-				GestureModel model = Serializer.read(stream ); 
-				GestureDAL g = new GestureDAL(id, name, action, model);
+				GestureModel model = null;
+				try {
+					model = Serializer.read(stream );
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} 
+				GestureDAL g = new GestureDAL(name, action, model);
+				g.id = id;
 				gestureSet.add(g);
 			} while (cursor.moveToNext());
 		}
@@ -102,11 +108,20 @@ public class GestureDAL {
 			outputStream.write(buffer);
 
 			ContentValues gestureValues = new ContentValues();
-			gestureValues.put("name", name);
-			gestureValues.put("action", action.toString());
-			gestureValues.put("model", buffer);
-			db.insertWithOnConflict("gestures", null, gestureValues,
-					SQLiteDatabase.CONFLICT_IGNORE);
+			if (id != null) {
+				gestureValues.put(DBHelper.APPLICATIONS_COLUMN_ID, id);
+			}
+			gestureValues.put(DBHelper.GUSTERS_COLUMN_NAME, name);
+			gestureValues.put(DBHelper.GUSTERS_COLUMN_ACTION, action.toString());
+			gestureValues.put(DBHelper.GUSTERS_COLUMN_MODEL, buffer);
+			long newId = db.insertWithOnConflict(DBHelper.GUSTERS_TABLE_NAME, null, gestureValues,
+					SQLiteDatabase.CONFLICT_REPLACE);
+			if(newId == -1)
+			{
+				//TODO: handle error
+				return;
+			}
+			id = (int) newId;
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

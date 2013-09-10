@@ -43,7 +43,7 @@ public class IdleStateFilter extends Filter {
 	 */
 	public IdleStateFilter() {
 		super();
-		this.sensivity = 0.1;
+		this.sensivity = 0.2;
 	}
 
     @Override
@@ -59,9 +59,8 @@ public class IdleStateFilter extends Filter {
 				(vector[1]*vector[1])+(vector[2]*vector[2]));
 		
 		// filter formulaes and return values
-		Log.d("IdleStateFilter", "absvalue="+absvalue);
-		if(absvalue > 1+this.sensivity ||
-		   absvalue < 1-this.sensivity) {
+//		Log.d("IdleStateFilter", "absvalue="+absvalue);
+		if(absvalue > this.sensivity) {
 			return vector;
 		} else {
 			return null;	

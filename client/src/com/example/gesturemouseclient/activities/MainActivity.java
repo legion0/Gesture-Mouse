@@ -257,7 +257,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		applicationListenerThread.execute();
 
 		//start sensors:
-		List<Sensor> sensorList = sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER);
+		List<Sensor> sensorList = sensorManager.getSensorList(Sensor.TYPE_GYROSCOPE);
 		// TODO: Error checks
 		sensorManager.registerListener(this, sensorList.get(0), SensorManager.SENSOR_DELAY_GAME);
 
@@ -311,7 +311,9 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	// TODO: remember to check the state of the device, it's possible we dont want to update since we're in anotre state.
 	@Override
 	public void onSensorChanged(SensorEvent event) {
-		andgee.getDevice().onSensorChanged(event);
+		if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
+			andgee.getDevice().onSensorChanged(event);
+		}
 
 		//		Logger.printLog("onSensorChanged", Integer.toString(event.sensor.getType()));
 		if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {

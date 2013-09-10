@@ -85,8 +85,9 @@ public class Classifier {
 		return this.lastprob;
 	}
 	
-	public void addGestureModel(GestureModel gm) {
+	public int addGestureModel(GestureModel gm) {
 		this.gesturemodel.add(gm);
+		return this.gesturemodel.size() - 1;
 	}
 
 	public GestureModel getGestureModel(int id) {
