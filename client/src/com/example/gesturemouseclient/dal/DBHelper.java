@@ -6,18 +6,43 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBHelper extends SQLiteOpenHelper {
 	
-	public static final String GUSTERS_TABLE_NAME = "gestures";
+	static final String DATABASE_NAME = "GesureMouseDB";
+	static final String GUSTERS_TABLE_NAME = "Gestures";
+	static final String APPLICATIONS_TABLE_NAME = "Applications";
+	static final String APPLICATIONS_COLUMN_ID = "id";
+	static final String APPLICATIONS_COLUMN_NAME = "id";
+	static final String APPLICATIONS_COLUMN_PROCESS_NAME = "process_name";
+	static final String APPLICATIONS_COLUMN_WINDOW_TITLE = "window_title";
+	static final String M2M_APPLICATION_GESTURE_TABLE_NAME = "mm_application_gesture";
+	static final String M2M_APPLICATION_GESTURE_COLUMN_APP_ID = "aid";
+	static final String M2M_APPLICATION_GESTURE_COLUMN_GESTURE_ID = "gid";
 	
 	public DBHelper(Context context) {
-		super(context, "gesure_db", null, 1);
+		super(context, DATABASE_NAME, null, 1);
 	}
 	
 	public void onCreate(SQLiteDatabase db) {
-		String sql = "create table "+ GUSTERS_TABLE_NAME +" (_id INTEGER PRIMARY KEY AUTOINCREMENT," +
+		String gesturesTable = "create table "+ GUSTERS_TABLE_NAME +" (_id INTEGER PRIMARY KEY AUTOINCREMENT," +
 				" name STRING," +
 				" action STRING," +
 				" model BLOB)";
-		db.execSQL(sql );
+		db.execSQL(gesturesTable);
+
+		String applicationTable = "create table "+ APPLICATIONS_TABLE_NAME +" (" + APPLICATIONS_COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+				" " + APPLICATIONS_COLUMN_NAME + " STRING," +
+				" " + APPLICATIONS_COLUMN_PROCESS_NAME + " STRING," +
+				" " + APPLICATIONS_COLUMN_WINDOW_TITLE + " STRING)";
+		db.execSQL(applicationTable);
+
+		String m2mApplicationGestureTable = "create table "+ M2M_APPLICATION_GESTURE_TABLE_NAME +" (" +
+				" " + M2M_APPLICATION_GESTURE_COLUMN_GESTURE_ID +" INTEGER," +
+				" " + M2M_APPLICATION_GESTURE_COLUMN_APP_ID     +" INTEGER," +
+				" UNIQUE (" +
+					        M2M_APPLICATION_GESTURE_COLUMN_APP_ID     +
+					", " + 	M2M_APPLICATION_GESTURE_COLUMN_GESTURE_ID +
+				")" +
+			")";
+		db.execSQL(m2mApplicationGestureTable);
 	}
 
 	@Override
