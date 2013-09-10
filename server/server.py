@@ -20,6 +20,7 @@ from msgpacknsd import NSDServer
 from math import sqrt
 
 from win32api import GetSystemMetrics
+import keyboard
 
 SCRIPT_DIR = os.path.dirname(__file__)
 SCRIPT_NAME = os.path.basename(__file__)
@@ -40,6 +41,11 @@ broadcast_listener_thread = None
 
 def main(args):
 	global settings
+# 	seq = [keyboard.KEYS.VK_SHIFT|keyboard.MODEFIERS.HOLD] + ([keyboard.KEYS.VK_RIGHT, 0, 0]*30) + [keyboard.KEYS.VK_SHIFT|keyboard.MODEFIERS.RELEASE]
+# 	time.sleep(3)
+# 	seq = [keyboard.KEYS.VK_SHIFT|keyboard.MODEFIERS.HOLD] + [keyboard.KEYS.VK_LBUTTON] + [keyboard.KEYS.VK_SHIFT|keyboard.MODEFIERS.RELEASE]
+# 	keyboard.execute_sequence(seq)
+# 	exit(0)
 	# Load Settings
 	settings_file_path = os.path.join(SETTINGS_DIR, "settings.yml")
 	settings = SETTINGS.load_settings(settings_file_path)
@@ -227,6 +233,8 @@ def client_msg_handler(session, msg):
 					action = gesture["action"]
 					break
 		print action
+		if action is not None:
+			keyboard.execute_sequence(action)
 
 #PROCESS_CREATE_PROCESS = 0x0080
 #PROCESS_CREATE_THREAD = 0x0002
