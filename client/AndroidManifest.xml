@@ -40,6 +40,10 @@
             android:name="com.example.gesturemouseclient.activities.CreateActionActivity"
             android:label="@string/title_activity_create_action" >
         </activity>
+        <activity
+            android:name="com.example.gesturemouseclient.activities.CreateNewApplicationActivity"
+            android:label="@string/title_activity_create_new_application" >
+        </activity>
     </application>
 
 </manifest>
