@@ -7,8 +7,10 @@ import java.util.List;
 import org.wiigee.control.AndroidWiigee;
 import org.wiigee.event.GestureEvent;
 import org.wiigee.event.GestureListener;
+import org.wiigee.logic.GestureModel;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.hardware.Sensor;
@@ -19,31 +21,34 @@ import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnFocusChangeListener;
 import android.view.View.OnTouchListener;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.example.gesturemouseclient.R;
 import com.example.gesturemouseclient.dal.GestureDAL;
 import com.example.gesturemouseclient.infra.Logger;
 import com.example.gesturemouseclient.infra.Params;
-import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 
 public class CreateGestureActivity extends Activity implements SensorEventListener {
 
 	private AndroidWiigee andgee;
 	private Button learnGestureBtn;
 	private SensorManager sensorManager;
-	private Button recognizeGestureBtn;
 	protected TextView lblStatus;
 	private Button saveGestureBtn;
-	private int id = 0;
+	private GestureDAL gesture;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_create_gesture);
+		gesture = new GestureDAL(null, null, null);
+		Intent intent = getIntent();
+		final int appId = intent.getIntExtra("app_id", -1);
 
 		// disable rotation and keep screen on.
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -51,6 +56,40 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 
 		initAll();
 
+		final EditText gestureNameEditText = (EditText) findViewById(R.id.gestureName);
+		gestureNameEditText.setOnFocusChangeListener(new OnFocusChangeListener() {
+			public void onFocusChange(View v, boolean hasFocus) {
+				if (!hasFocus) {
+					gesture.setName(gestureNameEditText.getText().toString());
+				}
+			}
+		});
+
+		Button setActionBtn = (Button) findViewById(R.id.setActionBtn);
+		final Intent setActionIntent = new Intent(this, CreateActionActivity.class);
+		setActionBtn.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				startActivityForResult(setActionIntent, Params.PICK_ACTION_REQUEST);
+			}
+		});
+
+		saveGestureBtn = (Button) findViewById(R.id.saveGestureBtn);
+		final Context context = getApplicationContext();
+		saveGestureBtn.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Logger.printLog("Create Gesture", "save gesture.");
+				int id = andgee.getDevice().getProcessingUnit().saveLearningAsGesture();
+				GestureModel gestureModel = andgee.getDevice().getProcessingUnit().getClassifier().getGestureModel(id);
+				gesture.setModel(gestureModel);
+				gesture.save(context);
+				gesture.addToApplication(context, appId);
+				andgee.getDevice().getProcessingUnit().getClassifier().clear();
+				gestureNameEditText.getText().clear();
+				gesture = new GestureDAL(null, null, null);
+			}
+		});
 	}
 
 	private void initAll() {
@@ -59,68 +98,26 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 		initSensors();
 		initAndgee();
 		initLearnGesture();
-		initRecognizeGesture();
-		initSaveGesture();
-	}
-
-	private void initSaveGesture() {
-		saveGestureBtn = (Button) findViewById(R.id.saveGestureBtn);
-		final Intent intent = new Intent(this, CreateActionActivity.class);
-		saveGestureBtn.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				Logger.printLog("Create Gesture", "save gesture.");
-		
-				startActivityForResult(intent, Params.PICK_ACTION_REQUEST);
-				
-				id = andgee.getDevice().getProcessingUnit().saveLearningAsGesture();
-				new GestureDAL("A", new ArrayList<Integer>(), andgee.getDevice().getProcessingUnit().getClassifier().getGestureModel(id))
-						.save(getApplicationContext());
-
-			}
-		});
 	}
 
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == Params.PICK_ACTION_REQUEST) {
 			if (resultCode == RESULT_OK) {
 				Logger.printLog("Create Gesture", "save to db");
-				
-				String action = (String) data.getExtras().get("action");
-				List<Integer> actions = new ArrayList<Integer>();
-				String[] actionSplited = action.split(",");
+
+				String actionStr = (String) data.getExtras().get("action");
+				List<Integer> action = new ArrayList<Integer>();
+				String[] actionSplited = actionStr.split(",");
 				for (int i = 0; i < actionSplited.length; i++) {
-					actions.add(Integer.parseInt(actionSplited[i]));
+					action.add(Integer.parseInt(actionSplited[i]));
 				}
-				
-				
-				
+				gesture.setAction(action);
 			}
 		}
 	}
 
 	private void initTextAttributes() {
 		lblStatus = (TextView) findViewById(R.id.recognizeGestureTxt);
-	}
-
-	private void initRecognizeGesture() {
-		recognizeGestureBtn = (Button) findViewById(R.id.identifyGestureBtn);
-
-		recognizeGestureBtn.setOnTouchListener(new OnTouchListener() {
-
-			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				if (event.getAction() == MotionEvent.ACTION_DOWN) {
-					andgee.getDevice().getProcessingUnit().startRecognizing();
-				} else if (event.getAction() == MotionEvent.ACTION_UP) {
-					andgee.getDevice().getProcessingUnit().endRecognizing();
-
-				}
-				return true;
-
-			}
-		});
 	}
 
 	private void initSensors() {

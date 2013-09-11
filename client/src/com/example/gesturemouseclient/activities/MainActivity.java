@@ -1,7 +1,6 @@
 package com.example.gesturemouseclient.activities;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +35,7 @@ import com.example.gesturemouseclient.TcpInitConnection;
 import com.example.gesturemouseclient.dal.ApplicationDAL;
 import com.example.gesturemouseclient.dal.GestureDAL;
 import com.example.gesturemouseclient.infra.Logger;
+import com.example.gesturemouseclient.infra.Params;
 import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 import com.example.gesturemouseclient.infra.interfaces.ApplicationListener;
 
@@ -152,16 +152,38 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 				Logger.printLog("Main Activity", "Mouse button: " + goToMouseBtn.getText().toString());
 			}
 		});
+		final Activity this_ = this;
 
 		learnGestureBtn.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				goToGestureActivityActivity();
+				if (runningApp.getId() != -1) {
+					Intent intent = new Intent(this_, CreateGestureActivity.class);
+					intent.putExtra("app_id", runningApp.getId());
+					startActivity(intent);
+				} else {
+					Intent intent = new Intent(this_, CreateNewApplicationActivity.class);
+					intent.putExtra("window_title", runningApp.getWindowTitle());
+					intent.putExtra("process_name", runningApp.getProcessName());
+					startActivityForResult(intent, Params.PICK_APPLICATION_REQUEST);
+				}
 			}
 
 		});
 
+	}
+
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		Activity this_ = this;
+		if (requestCode == Params.PICK_APPLICATION_REQUEST) {
+			if (resultCode == RESULT_OK) {
+				int app_id = data.getIntExtra("app_id", -1);
+				Intent intent = new Intent(this_, CreateGestureActivity.class);
+				intent.putExtra("app_id", runningApp.getId());
+				startActivity(intent);
+			}
+		}
 	}
 
 	private void initAndgee() {
@@ -173,12 +195,6 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 				Logger.printLog("Main activity", "initAndgee(addGestureListener) event id: " + event.getId() + " pr: " + event.getProbability());
 			}
 		});
-	}
-
-	protected void goToGestureActivityActivity() {
-		Intent intent = new Intent(this, CreateGestureActivity.class);
-		intent.putExtra("device", remoteDeviceInfo);
-		startActivity(intent);
 	}
 
 	@Override
@@ -383,7 +399,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		goToMouseBtn.setClickable(false);
 		learnGestureBtn.setClickable(false);
 		String displayText = runningApp.getWindowTitle();
-		displayText = displayText.substring(0,Math.min(displayText.length(), 20));
+		displayText = displayText.substring(0, Math.min(displayText.length(), 20));
 		appConnectedName.setText(displayText);
 		try {
 			if (backgroundWorkManager != null) {

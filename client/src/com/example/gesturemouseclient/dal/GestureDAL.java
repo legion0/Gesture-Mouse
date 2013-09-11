@@ -184,4 +184,14 @@ public class GestureDAL {
 		return gids;
 	}
 
+	public void addToApplication(Context context, int appId) {
+		DBHelper helper = new DBHelper(context);
+		SQLiteDatabase db = helper.getWritableDatabase();
+		ContentValues values = new ContentValues();
+		values.put(DBHelper.M2M_APPLICATION_GESTURE_COLUMN_GESTURE_ID, id);
+		values.put(DBHelper.M2M_APPLICATION_GESTURE_COLUMN_APP_ID, appId);
+		db.insertWithOnConflict(DBHelper.M2M_APPLICATION_GESTURE_TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+		db.close();
+	}
+
 }
