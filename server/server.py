@@ -21,6 +21,7 @@ from math import sqrt
 
 from win32api import GetSystemMetrics
 import keyboard
+import json
 
 SCRIPT_DIR = os.path.dirname(__file__)
 SCRIPT_NAME = os.path.basename(__file__)
@@ -169,6 +170,7 @@ def request_handler(sock, addr):
 		return
 
 	if "name" in msg:
+		print json.dumps(msg["apps"], sort_keys=True, indent=4, separators=(',', ': ')) # XXX
 		session = new_session()
 		mouse_listener_thread = threading.Thread(target=mouse_listener, args=(session,))
 		with session["lock"]:
@@ -253,51 +255,75 @@ PROCESS_VM_READ = 0x0010
 
 ERROR_ACCESS_DENIED = 5
 
+def get_active_window_data():
+	handle = win32gui.GetForegroundWindow()
+	window_title = win32gui.GetWindowText(handle).lower()
+
+	process_name = ""
+	_, process_id = win32process.GetWindowThreadProcessId(handle)
+	if process_id > 0:
+		try:
+			process_handle = win32api.OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, False, process_id)
+			file_path = win32process.GetModuleFileNameEx(process_handle, None)
+			process_name = os.path.basename(file_path).lower()
+			process_handle.Close()
+		except win32api.error as ex:
+			if ex.winerror == ERROR_ACCESS_DENIED:
+				pass
+			else:
+				raise ex
+	return window_title, process_name
+
+def application_finder(window_title, process_name):
+	def the_finder(item):
+		return window_title.startswith(item["window_title"]) or window_title.endswith(item["window_title"])
+	return the_finder
+
 def window_monitor():
 	old_window_title = None
-	old_file_name = None
+	old_process_name = None
 	while not shutting_down():
 		client_list = []
-		handle = win32gui.GetForegroundWindow()
-		window_title = win32gui.GetWindowText(handle).lower()
-
-		file_name = None
-		_, process_id = win32process.GetWindowThreadProcessId(handle)
-		if process_id > 0:
-			try:
-				process_handle = win32api.OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, False, process_id)
-				file_path = win32process.GetModuleFileNameEx(process_handle, None)
-				file_name = os.path.basename(file_path).lower()
-				process_handle.Close()
-			except win32api.error as ex:
-				if ex.winerror == ERROR_ACCESS_DENIED:
-					pass
-				else:
-					raise ex
-		if window_title != old_window_title or file_name != old_file_name:
+		window_title, process_name = get_active_window_data()
+		if window_title != old_window_title or process_name != old_process_name:
 			old_window_title = window_title
-			old_file_name = file_name
-			print "Switched to: %s (%s)." % (window_title, file_name)
-
-		with SESSIONS_LOCK:
-			for session in SESSIONS.viewvalues():
-				with session["lock"]:
-					app = extract_application(window_title, file_name, session["apps"])
-					if app != session.get("active_app"):
-						session["active_app"] = app
-						app_name = app["name"] if app is not None else None
-						print "window_monitor", "active_app:", app_name, "for session:", session["id"]
-						client_addr = (session["ip"], session["control_port"])
-						client_list.append((client_addr, app_name))
-
-		for client_addr, app_name in client_list:
-			sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			try:
-				sock.connect(client_addr)
-			except socket.error as ex:
-				continue # TODO: errors
-			sock.sendall(msgpack.packb({"app": app_name}))
+			old_process_name = process_name
+			print "Switched to: %s (%s)." % (window_title, process_name)
+		
+			client_list = []
+			with SESSIONS_LOCK:
+				for session in SESSIONS.viewvalues():
+					client_list.append({"addr":(session["ip"], session["control_port"]), "apps": deepcopy(session["apps"])})
+	# 					app = extract_application(window_title, file_name, session["apps"])
+	# 					if app != session.get("active_app"):
+	# 						session["active_app"] = app
+	# 						app_name = app["name"] if app is not None else None
+	# 						print "window_monitor", "active_app:", app_name, "for session:", session["id"]
+	# 						client_addr = (session["ip"], session["control_port"])
+	# 						client_list.append((client_addr, app_name))
+	
+			for client in client_list:
+				app = find_in_list(client["apps"], application_finder(window_title, process_name))
+				appId = -1
+				if app is not None:
+					msg = {"app_id": app["id"]}
+				else:
+					msg = {"window_title": window_title, "process_name": process_name}
+				print "Sending", msg, "to", client["addr"]
+				try:
+					sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+					sock.connect(client["addr"])
+					sock.sendall(msgpack.packb(msg))
+					sock.close()
+				except socket.error as ex:
+					continue # TODO: errors
 		time.sleep(settings[SETTINGS.WINDOW_DETECTION_DELAY])
+
+def find_in_list(l, selector):
+	for item in l:
+		if selector(item):
+			return item
+	return None
 
 def extract_application(window_title, file_name, apps):
 	if window_title == "" and file_name == "explorer.exe": # Desktop
