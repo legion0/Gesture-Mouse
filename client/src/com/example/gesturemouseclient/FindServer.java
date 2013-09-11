@@ -13,8 +13,8 @@ import android.os.AsyncTask;
 import android.os.SystemClock;
 
 import com.example.gesturemouseclient.activities.FindServerActivity;
-import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 import com.example.gesturemouseclient.infra.Logger;
+import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 import com.example.gesturemouseclient.infra.ResponseReader;
 
 public class FindServer extends AsyncTask<Void, Void, List<RemoteDeviceInfo>> {

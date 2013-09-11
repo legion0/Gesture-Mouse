@@ -1,6 +1,5 @@
 package com.example.gesturemouseclient.dal;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -127,6 +126,10 @@ public class GestureDAL {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	public Integer getId() {
+		return id;
 	}
 
 	public String getName() {

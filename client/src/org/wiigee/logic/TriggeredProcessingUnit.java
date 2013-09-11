@@ -24,12 +24,17 @@
 
 package org.wiigee.logic;
 
-import java.util.Arrays;
 import java.util.Vector;
 
-import android.util.Log;
+import org.wiigee.event.AccelerationEvent;
+import org.wiigee.event.ActionStartEvent;
+import org.wiigee.event.ActionStopEvent;
+import org.wiigee.event.ButtonPressedEvent;
+import org.wiigee.event.ButtonReleasedEvent;
+import org.wiigee.event.MotionStartEvent;
+import org.wiigee.event.MotionStopEvent;
 
-import org.wiigee.event.*;
+import android.util.Log;
 
 /**
  * This class analyzes the AccelerationEvents emitted from a Wiimote and further creates and manages the different models for each type of gesture.

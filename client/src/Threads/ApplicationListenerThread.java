@@ -18,8 +18,8 @@ import org.msgpack.unpacker.Unpacker;
 import android.os.AsyncTask;
 
 import com.example.gesturemouseclient.infra.Logger;
-import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 import com.example.gesturemouseclient.infra.Params;
+import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 import com.example.gesturemouseclient.infra.interfaces.ApplicationListener;
 
 public class ApplicationListenerThread extends AsyncTask<Void, String, Void> {

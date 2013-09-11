@@ -26,9 +26,20 @@ package org.wiigee.device;
 import java.io.IOException;
 import java.util.Vector;
 
-import org.wiigee.logic.*;
-import org.wiigee.event.*;
-import org.wiigee.filter.*;
+import org.wiigee.event.AccelerationEvent;
+import org.wiigee.event.AccelerationListener;
+import org.wiigee.event.ButtonListener;
+import org.wiigee.event.ButtonPressedEvent;
+import org.wiigee.event.ButtonReleasedEvent;
+import org.wiigee.event.GestureListener;
+import org.wiigee.event.MotionStartEvent;
+import org.wiigee.event.MotionStopEvent;
+import org.wiigee.filter.DirectionalEquivalenceFilter;
+import org.wiigee.filter.Filter;
+import org.wiigee.filter.IdleStateFilter;
+import org.wiigee.filter.MotionDetectFilter;
+import org.wiigee.logic.ProcessingUnit;
+import org.wiigee.logic.TriggeredProcessingUnit;
 
 /**
  * Abstract representation of a device with very basic functionalities. This

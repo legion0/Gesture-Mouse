@@ -23,9 +23,9 @@
  */
 
 package org.wiigee.logic;
-import java.text.*;
+import java.text.DecimalFormat;
 import java.util.Vector;
-import java.lang.Math;
+
 import org.wiigee.util.Log;
 
 /**

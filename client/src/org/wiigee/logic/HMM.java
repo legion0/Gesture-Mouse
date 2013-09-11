@@ -25,6 +25,7 @@
 package org.wiigee.logic;
 import java.text.DecimalFormat;
 import java.util.Vector;
+
 import org.wiigee.util.Log;
 
 /**

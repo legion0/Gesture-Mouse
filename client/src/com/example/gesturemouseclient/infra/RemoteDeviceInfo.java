@@ -118,4 +118,8 @@ public class RemoteDeviceInfo implements Parcelable {
 	public void setActiveApplication(String activeApplication) {
 		this.activeApplication = activeApplication;
 	}
+
+	public Object getName() {
+		return getMachineName();
+	}
 }

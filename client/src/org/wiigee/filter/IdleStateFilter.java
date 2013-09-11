@@ -24,7 +24,6 @@
 
 package org.wiigee.filter;
 
-import android.util.Log;
 
 /**
  * Filters if the wiimote is not moved in any way. Be careful in using

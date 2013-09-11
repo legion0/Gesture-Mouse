@@ -1,40 +1,28 @@
 package com.example.gesturemouseclient;
 
 import java.io.IOException;
-import java.net.InetAddress;
-
-import org.msgpack.type.RawValue;
-import org.msgpack.type.Value;
-import org.msgpack.type.ValueFactory;
 
 import android.os.AsyncTask;
 
 import com.example.gesturemouseclient.activities.MainActivity;
-import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 import com.example.gesturemouseclient.infra.Logger;
 import com.example.gesturemouseclient.infra.Params;
-import com.example.gesturemouseclient.infra.ResponseReader;
+import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 
 public class TcpInitConnection extends AsyncTask<Void, Void, Void> {
 
-	private int tcp_outgoing_port;
-	private InetAddress address;
-	private String deviceName;
 	private final MainActivity activity;
-	private RemoteDeviceInfo device;
+	private RemoteDeviceInfo remoteDevice;
 
 	/**
 	 * Constructor:
 	 * 
-	 * @param device
+	 * @param remoteDevice
 	 * @param activity
 	 */
-	public TcpInitConnection(RemoteDeviceInfo device,	MainActivity activity) {
+	public TcpInitConnection(RemoteDeviceInfo remoteDevice,	MainActivity activity) {
 		this.activity = activity;
-		tcp_outgoing_port = device.getControlPort();
-		address = device.getAddress();
-		this.deviceName = device.getMachineName();
-		this.device = device;
+		this.remoteDevice = remoteDevice;
 	}
 
 	@Override
@@ -44,13 +32,11 @@ public class TcpInitConnection extends AsyncTask<Void, Void, Void> {
 
 	@Override
 	protected Void doInBackground(Void... params) {
-		MyResponseReader response = new MyResponseReader();
-		TcpClient client = new TcpClient(response, tcp_outgoing_port,
-				deviceName, address);
+		TcpClient client = new TcpClient(remoteDevice, activity.getApplicationContext());
 		client.setTimeout(5);
 		try {
-			client.initControllSession(Params.TCP_IN_GOING_PORT, null,device);
-			Logger.printLog("TcpInitialConnection", device.getUDPPort() + "");
+			client.initControllSession(Params.TCP_IN_GOING_PORT, null,remoteDevice);
+			Logger.printLog("TcpInitialConnection", remoteDevice.getUDPPort() + "");
 		} catch (IOException e) {
 			Logger.printLog("TcpInitialConnection",
 					"Failed to find TCP connection.");
@@ -70,19 +56,4 @@ public class TcpInitConnection extends AsyncTask<Void, Void, Void> {
 		Logger.printLog("TCPinitialConnection", "onPostExecute end");
 
 	}
-
-	static class MyResponseReader implements ResponseReader {
-
-		public String udpPort;
-		private final RawValue udp_port = ValueFactory
-				.createRawValue("udp".getBytes());
-
-		@Override
-		public void read(Value extra_info) {
-			udpPort = extra_info.asMapValue().get(udp_port).asRawValue()
-					.getString();
-		}
-	};
-
-
 }

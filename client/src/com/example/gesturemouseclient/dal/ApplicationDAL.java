@@ -14,6 +14,7 @@ public class ApplicationDAL {
 			DBHelper.APPLICATIONS_COLUMN_PROCESS_NAME, DBHelper.APPLICATIONS_COLUMN_WINDOW_TITLE };
 
 	private Integer id;
+
 	private String name;
 	private String processName;
 	private String windowTitle;
@@ -24,6 +25,10 @@ public class ApplicationDAL {
 		this.name = name;
 		this.processName = processName;
 		this.windowTitle = windowTitle;
+	}
+
+	public Integer getId() {
+		return id;
 	}
 
 	public String getName() {

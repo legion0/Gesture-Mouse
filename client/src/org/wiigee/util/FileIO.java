@@ -29,6 +29,7 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+
 import org.wiigee.logic.GestureModel;
 import org.wiigee.logic.HMM;
 import org.wiigee.logic.Quantizer;

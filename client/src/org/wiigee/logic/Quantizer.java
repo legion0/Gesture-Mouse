@@ -25,6 +25,7 @@
 package org.wiigee.logic;
 
 import java.util.Vector;
+
 import org.wiigee.event.AccelerationEvent;
 import org.wiigee.util.Log;
 

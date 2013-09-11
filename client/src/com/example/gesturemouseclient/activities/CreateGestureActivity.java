@@ -8,26 +8,24 @@ import org.wiigee.control.AndroidWiigee;
 import org.wiigee.event.GestureEvent;
 import org.wiigee.event.GestureListener;
 
-import com.example.gesturemouseclient.R;
-import com.example.gesturemouseclient.dal.GestureDAL;
-import com.example.gesturemouseclient.infra.Logger;
-
 import android.app.Activity;
-import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.WindowManager;
 import android.view.View.OnTouchListener;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.example.gesturemouseclient.R;
+import com.example.gesturemouseclient.dal.GestureDAL;
+import com.example.gesturemouseclient.infra.Logger;
 
 public class CreateGestureActivity extends Activity implements SensorEventListener {
 

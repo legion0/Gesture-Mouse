@@ -26,7 +26,7 @@ package org.wiigee.event;
 
 import java.util.EventObject;
 
-import org.wiigee.device.*;
+import org.wiigee.device.Device;
 
 /**
  * This Event would be generated if an acceleration has been detected.

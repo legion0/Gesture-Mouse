@@ -5,12 +5,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.DatagramPacket;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.msgpack.MessagePack;
 import org.msgpack.MessageTypeException;
@@ -19,28 +20,32 @@ import org.msgpack.type.RawValue;
 import org.msgpack.type.ValueFactory;
 import org.msgpack.unpacker.Unpacker;
 
-import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
+import android.content.Context;
+
+import com.example.gesturemouseclient.dal.ApplicationDAL;
+import com.example.gesturemouseclient.dal.GestureDAL;
 import com.example.gesturemouseclient.infra.Logger;
-import com.example.gesturemouseclient.infra.ResponseReader;
+import com.example.gesturemouseclient.infra.Params;
+import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 
 public class TcpClient {
 
 	// private ResponseReader responseReader = null;
 	private long timeout = -1;
 
-	private static final RawValue key_features = ValueFactory.createRawValue("features".getBytes());
 	private static final RawValue key_port = ValueFactory.createRawValue("port".getBytes());
 	private static final RawValue key_name = ValueFactory.createRawValue("name".getBytes());
-	private static final RawValue key_gid = ValueFactory.createRawValue("gid".getBytes());
+	private static final RawValue key_process_name = ValueFactory.createRawValue("process_name".getBytes());
+	private static final RawValue key_window_title = ValueFactory.createRawValue("window_title".getBytes());
+	private static final RawValue key_id = ValueFactory.createRawValue("id".getBytes());
 	private static final RawValue key_apps = ValueFactory.createRawValue("apps".getBytes());
-	private static final RawValue key_actions = ValueFactory.createRawValue("actions".getBytes());
+	private static final RawValue key_action = ValueFactory.createRawValue("action".getBytes());
 	private static final RawValue key_gestures = ValueFactory.createRawValue("gestures".getBytes());
 	private static final RawValue key_udp = ValueFactory.createRawValue("udp".getBytes());
 	private static final RawValue key_session_id = ValueFactory.createRawValue("session_id".getBytes());
-	private final int tcp_outgoing_port;
-	private final String deviceName;
-	private final InetAddress address;
-	private Socket socket;
+	private Context applicationContext;
+
+	private RemoteDeviceInfo remoteDevice;
 
 	/**
 	 * Constructor:
@@ -51,84 +56,58 @@ public class TcpClient {
 	 * @param address
 	 * @param tcp_port
 	 */
-	public TcpClient(ResponseReader responseReader, int tcp_outgoing_port, String deviceName, InetAddress address) {
-		// this.responseReader = responseReader;
-		this.tcp_outgoing_port = tcp_outgoing_port;
-		this.deviceName = deviceName;
-		this.address = address;
+	public TcpClient(RemoteDeviceInfo remoteDevice, Context applicationContext) {
+		this.remoteDevice = remoteDevice;
+		this.applicationContext = applicationContext;
 	}
 
 	public void setTimeout(int seconds) {
 		timeout = seconds * 1000000000l;
 	}
 
-	private byte[] createMsg(final int tcpPort, String[] features) throws IOException {
-		Map<Object, Object> msg = new LinkedHashMap<Object, Object>() {
-			{
-				put(key_name, deviceName);
-				put(key_port, tcpPort);
-				List<Object> apps = new ArrayList<Object>() {
-					{
-						Map<Object, Object> app = new LinkedHashMap<Object, Object>() {
-							{
-								put(key_name, "eclipse.exe");
-								Map<Object, Object> gestures = new LinkedHashMap<Object, Object>() {
-									{
-										put(key_name, "flick left");
-										put(key_gid, "134");
-										List<Object> actions = new ArrayList<Object>() {
-											{
-												add("17");
-											}
-										};
-										put(key_actions, actions);
-									}
-								};
-								put(key_gestures, gestures);
-								
-							}
-						};
-						add(app);
-						
-						app = new LinkedHashMap<Object, Object>() {
-							{
-								put(key_name, "chrome.exe");
-								Map<Object, Object> gestures = new LinkedHashMap<Object, Object>() {
-									{
-										put(key_name, "flick left");
-										put(key_gid, "134");
-										List<Object> actions = new ArrayList<Object>() {
-											{
-												add("17");
-											}
-										};
-										put(key_actions, actions);
-									}
-								};
-								put(key_gestures, gestures);
-								
-							}
-						};
-						add(app);
-					}
-				};
-				put(key_apps, apps);
+	private byte[] createMsg() throws IOException {
+		Map<Object, Object> msg = new LinkedHashMap<Object, Object>();
+		String localHostname = java.net.InetAddress.getLocalHost().getHostName();
+		msg.put(key_name, localHostname); // TODO: self name not remote name
+		msg.put(key_port, Params.TCP_IN_GOING_PORT);
+		List<Object> apps = new ArrayList<Object>();
+		Set<ApplicationDAL> applications = ApplicationDAL.loadWithGestures(applicationContext);
+		Iterator<ApplicationDAL> appIter = applications.iterator();
+		while (appIter.hasNext()) {
+			ApplicationDAL app = appIter.next();
+			Map<Object, Object> appMsg = new LinkedHashMap<Object, Object>();
+			appMsg.put(key_id, app.getId());
+			appMsg.put(key_name, app.getName());
+			appMsg.put(key_process_name, app.getProcessName());
+			appMsg.put(key_window_title, app.getWindowTitle());
+			Map<Object, Object> appGesturesMsg = new LinkedHashMap<Object, Object>();
+			Set<GestureDAL> gestures = app.getGestures();
+			Iterator<GestureDAL> gestIter = gestures.iterator();
+			while (gestIter.hasNext()) {
+				GestureDAL gesture = gestIter.next();
+				appGesturesMsg.put(key_id, gesture.getId());
+				appGesturesMsg.put(key_name, gesture.getName());
+				List<Object> actionMsg = new ArrayList<Object>();
+				List<Integer> action = gesture.getAction();
+				for (Integer keyCode : action) {
+					actionMsg.add(keyCode);
+				}
+				appGesturesMsg.put(key_action, actionMsg);
 			}
-		};
-		if (features != null && features.length > 0) {
-			msg.put(key_features, features);
+			appMsg.put(key_gestures, appGesturesMsg);
 		}
+		msg.put(key_apps, apps);
 		MessagePack msgpack = new MessagePack();
 		return msgpack.write(msg);
 	}
 
 	public void initControllSession(final int tcpPort, String[] features, RemoteDeviceInfo device) throws IOException {
-		byte[] msgBuffer = createMsg(tcpPort, features);
+		byte[] msgBuffer = createMsg();
 
 		Logger.printLog("TCP Client", "C: Connecting...");
 
 		// create a socket to make the connection with the server
-		socket = new Socket(address, tcp_outgoing_port);
+		Socket socket = new Socket(remoteDevice.getAddress(), remoteDevice.getControlPort());
 
 		try {
 
@@ -165,12 +144,9 @@ public class TcpClient {
 			Logger.printLog("TCP Client", "S: Received udp port: " + udpFromServer);
 		} catch (Exception e) {
 			Logger.printLog("TCPClient", "S: Error, " + e.getMessage());
+		} finally {
+			socket.close();
 		}
 
 	}
-
-	public Socket getSocket() {
-		return socket;
-	}
-
 }

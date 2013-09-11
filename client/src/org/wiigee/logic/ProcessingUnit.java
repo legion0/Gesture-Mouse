@@ -3,10 +3,10 @@ package org.wiigee.logic;
 import java.util.Vector;
 
 import org.wiigee.event.AccelerationEvent;
-import org.wiigee.event.ButtonPressedEvent;
-import org.wiigee.event.ButtonReleasedEvent;
 import org.wiigee.event.AccelerationListener;
 import org.wiigee.event.ButtonListener;
+import org.wiigee.event.ButtonPressedEvent;
+import org.wiigee.event.ButtonReleasedEvent;
 import org.wiigee.event.GestureEvent;
 import org.wiigee.event.GestureListener;
 import org.wiigee.event.MotionStartEvent;

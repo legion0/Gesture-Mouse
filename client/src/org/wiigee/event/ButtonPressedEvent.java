@@ -24,7 +24,7 @@
 
 package org.wiigee.event;
 
-import org.wiigee.device.*;
+import org.wiigee.device.Device;
 
 /**
  * 

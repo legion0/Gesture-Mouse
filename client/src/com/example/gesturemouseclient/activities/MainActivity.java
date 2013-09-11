@@ -1,7 +1,10 @@
 package com.example.gesturemouseclient.activities;
 
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.wiigee.control.AndroidWiigee;
 import org.wiigee.event.GestureEvent;
@@ -17,12 +20,10 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -30,6 +31,8 @@ import android.widget.TextView;
 
 import com.example.gesturemouseclient.R;
 import com.example.gesturemouseclient.TcpInitConnection;
+import com.example.gesturemouseclient.dal.ApplicationDAL;
+import com.example.gesturemouseclient.dal.GestureDAL;
 import com.example.gesturemouseclient.infra.Logger;
 import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 import com.example.gesturemouseclient.infra.interfaces.ApplicationListener;
@@ -60,6 +63,10 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	private AndroidWiigee andgee;
 
+	private Set<ApplicationDAL> applications;
+
+	private Map<Integer, Integer> classifierIdMap;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		Logger.printLog("onCreate", "the app is created !");
@@ -86,6 +93,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 		TcpInitConnection tcpConnection = new TcpInitConnection(remoteDeviceInfo, this);
 		tcpConnection.execute();
+		classifierIdMap = new LinkedHashMap<Integer, Integer>();
 	}
 
 	private void initGestureMode() {
@@ -173,6 +181,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	@Override
 	protected void onStart() {
+		applications = ApplicationDAL.load(getApplicationContext());
 		Logger.printLog("onStart", "the app is start !");
 		super.onStart();
 
@@ -186,8 +195,8 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	protected void onResume() {
 		Logger.printLog("onResume", "the app is resumed !");
 		super.onResume();
-		List<Sensor> sensorList = sensorManager.getSensorList(Sensor.TYPE_ROTATION_VECTOR);
-		if (sensorList == null || sensorList.size() < 1) {
+		Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+		if (sensor == null) {
 			return; // TODO: error for no sensor
 		}
 		// sm.registerListener(this, sensorList.get(0), SensorManager.SENSOR_DELAY_GAME);
@@ -336,15 +345,34 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	@Override
 	public void onApplicationChanged(String applicationName) {
+		if (applicationName == runningApp) {
+			return;
+		}
 		runningApp = applicationName;
 		Logger.printLog("onApplicationChanged", "");
-		
 		if (runningApp == null) {
 			runningApp = "Mouse";
 			gestureMode(false, runningApp);
 		}else{
+			ApplicationDAL app = findApp(runningApp);
+			classifierIdMap.clear();
+			for (GestureDAL gesture : app.getGestures()) {
+				int classifierId = andgee.getDevice().getProcessingUnit().getClassifier().addGestureModel(gesture.getModel());
+				classifierIdMap.put(classifierId, gesture.getId());
+			}
 			gestureMode(true,runningApp);
 		}
+	}
+
+	private ApplicationDAL findApp(String applicationName) {
+		ApplicationDAL application = null;
+		for (ApplicationDAL app : applications) {
+			if (app.getName().equals(applicationName)) {
+				application = app;
+				break;
+			}
+		}
+		return application;
 	}
 
 	private void gestureMode(boolean activate, String applicationName){

@@ -25,6 +25,7 @@
 package org.wiigee.event;
 
 import java.util.EventObject;
+
 import org.wiigee.device.Device;
 
 /**
