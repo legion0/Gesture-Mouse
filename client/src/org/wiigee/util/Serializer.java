@@ -52,6 +52,7 @@ public class Serializer {
 				out.writeDouble(b[i][j]);
 			}
 		}
+		out.flush();
 	}
 
 	public static GestureModel read(InputStream stream) throws IOException {

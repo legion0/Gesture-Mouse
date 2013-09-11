@@ -10,6 +10,7 @@ import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -47,12 +48,16 @@ public class CreateNewApplicationActivity extends Activity {
 				
 				
 				if (windowTitle.startsWith(newApplicationName) || windowTitle.endsWith(newApplicationName)) {
-					if(newApplicationName.length() > 15){
+					if(newApplicationName.length() < 15){
 						ApplicationDAL applicationDAL = new ApplicationDAL(newApplicationName, processName, newApplicationName);
 						applicationDAL.save(getApplicationContext());
 						goBackToMainActivity(applicationDAL.getId());
+						Log.v("Create New Application", "app name is legal");
+					}else{
+						Log.w("Create New Application", "app name is not legal");
 					}
-					
+				}else{
+					Log.w("Create New Application", "app name is not legal");
 				}
 				
 				
@@ -63,7 +68,8 @@ public class CreateNewApplicationActivity extends Activity {
 	protected void goBackToMainActivity(Integer applicationId) {
 		Intent intent = new Intent(this, CreateGestureActivity.class);
 		intent.putExtra("app_id", applicationId);
-		finishActivity(Params.PICK_APPLICATION_REQUEST);
+		setResult(RESULT_OK, intent);
+		finish();
 	}
 
 }

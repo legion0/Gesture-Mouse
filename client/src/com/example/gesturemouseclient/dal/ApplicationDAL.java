@@ -25,6 +25,7 @@ public class ApplicationDAL {
 		this.name = name;
 		this.processName = processName;
 		this.windowTitle = windowTitle;
+		gestures = new HashSet<GestureDAL>();
 	}
 
 	public Integer getId() {

@@ -158,7 +158,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 			@Override
 			public void onClick(View v) {
-				if (runningApp.getId() != -1) {
+				if (runningApp.getId() != null) {
 					Intent intent = new Intent(this_, CreateGestureActivity.class);
 					intent.putExtra("app_id", runningApp.getId());
 					startActivity(intent);
@@ -180,7 +180,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			if (resultCode == RESULT_OK) {
 				int app_id = data.getIntExtra("app_id", -1);
 				Intent intent = new Intent(this_, CreateGestureActivity.class);
-				intent.putExtra("app_id", runningApp.getId());
+				intent.putExtra("app_id", app_id);
 				startActivity(intent);
 			}
 		}
@@ -199,7 +199,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	@Override
 	protected void onStart() {
-		applications = ApplicationDAL.load(getApplicationContext());
+		applications = ApplicationDAL.loadWithGestures(getApplicationContext());
 		Logger.printLog("onStart", "the app is start !");
 		super.onStart();
 
@@ -363,8 +363,10 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	@Override
 	public void onApplicationChanged(ApplicationDAL fakeApp) {
 		Log.v("Main Activity", "application changed: " + fakeApp.getId());
-		if (fakeApp.getId() != -1) {
+		if (fakeApp.getId() != null) {
+			Log.v("MaintActivity", "searching for app " + fakeApp.getId());
 			runningApp = findApp(fakeApp.getId());
+			Log.v("MaintActivity", "runningApp="+runningApp.getId());
 			toGestureMode();
 		} else {
 			runningApp = fakeApp;
@@ -397,7 +399,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	private void toMouseMode() {
 		gestureBtn.setClickable(false);
 		goToMouseBtn.setClickable(false);
-		learnGestureBtn.setClickable(false);
+//		learnGestureBtn.setClickable(false);
 		String displayText = runningApp.getWindowTitle();
 		displayText = displayText.substring(0, Math.min(displayText.length(), 20));
 		appConnectedName.setText(displayText);
@@ -407,7 +409,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			}
 			gestureBtn.setVisibility(View.INVISIBLE);
 			goToMouseBtn.setVisibility(View.INVISIBLE);
-			learnGestureBtn.setVisibility(View.INVISIBLE);
+//			learnGestureBtn.setVisibility(View.INVISIBLE);
 			state = State.MOUSE;
 			andgee.getDevice().setAccelerationEnabled(false);
 		} catch (IOException e) {
@@ -419,14 +421,14 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	private void toGestureMode() {
 		gestureBtn.setClickable(true);
 		goToMouseBtn.setClickable(true);
-		learnGestureBtn.setClickable(true);
+//		learnGestureBtn.setClickable(true);
 		String displayText = runningApp.getName();
 		appConnectedName.setText(displayText);
 		try {
 			state = State.GESTURE;
 			gestureBtn.setVisibility(View.VISIBLE);
 			goToMouseBtn.setVisibility(View.VISIBLE);
-			learnGestureBtn.setVisibility(View.VISIBLE);
+//			learnGestureBtn.setVisibility(View.VISIBLE);
 			if (backgroundWorkManager != null) {
 				backgroundWorkManager.suspendFastSampleSenderThread();
 			}
@@ -437,6 +439,8 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			e.printStackTrace();
 		}
 		classifierIdMap.clear();
+		andgee.getDevice().getProcessingUnit().getClassifier().clear();
+		
 		for (GestureDAL gesture : runningApp.getGestures()) {
 			int classifierId = andgee.getDevice().getProcessingUnit().getClassifier().addGestureModel(gesture.getModel());
 			classifierIdMap.put(classifierId, gesture.getId());

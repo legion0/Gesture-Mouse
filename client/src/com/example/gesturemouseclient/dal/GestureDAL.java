@@ -17,6 +17,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 /**
  * how our gesture lookes like
@@ -68,14 +69,19 @@ public class GestureDAL {
 				int id = cursor.getInt(0);
 				String name = cursor.getString(1);
 				List<Integer> action = StringToIntegerList(cursor.getString(2));
-				InputStream stream = new ByteArrayInputStream(cursor.getBlob(3));
+				byte[] buffer = cursor.getBlob(3);
+				InputStream stream = new ByteArrayInputStream(buffer);
 				GestureModel model = null;
 				try {
 					model = Serializer.read(stream );
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
-					e.printStackTrace();
+//					throw new RuntimeException(e);
+					//e.printStackTrace();
 				} 
+				
+				Log.d("GestureDal","model: "+model);
+				
 				GestureDAL g = new GestureDAL(name, action, model);
 				g.id = id;
 				gestureSet.add(g);
@@ -107,6 +113,7 @@ public class GestureDAL {
 			Serializer.write(model, outputStream);
 			byte[] buffer = new byte[outputStream.size()];
 			outputStream.write(buffer);
+			Log.d("GestureDAL", "saving gesture model " + id + " as " + buffer.length + " bytes");
 
 			ContentValues gestureValues = new ContentValues();
 			if (id != null) {

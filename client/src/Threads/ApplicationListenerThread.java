@@ -65,10 +65,8 @@ public class ApplicationListenerThread extends AsyncTask<Void, ApplicationDAL, V
 				try{
 				 socket = tcpServer.accept();
 				}catch (SocketTimeoutException e) {
-					Logger.printLog("Application Listener", "socket time out: "+e.getMessage());
 					continue;
 				}
-				Log.d("Application Listener Thread"," socket did not time out");
 				byte[] bufInput = new byte[4096];
 				socket.setSoTimeout(1000);
 				InputStream inputStream = socket.getInputStream();
@@ -83,15 +81,16 @@ public class ApplicationListenerThread extends AsyncTask<Void, ApplicationDAL, V
 				Unpacker unpacker = msgpack.createUnpacker(in);
 				MapValue returnMsg = unpacker.readValue().asMapValue();
 				
-				Log.d("Application Listener Thread",returnMsg.toString());
+				Log.d("Application Listener","return msg: "+returnMsg.toString());
 				
 				ApplicationDAL appData = new ApplicationDAL(null, null, null);
+				
+				
 				
 				if(returnMsg.containsKey(key_app_id))
 				{
 					appData.setId(returnMsg.get(key_app_id).asIntegerValue().getInt());
 				}else{
-					appData.setId(-1);
 					appData.setProcessName(returnMsg.get(key_process_name).asRawValue().getString());
 					appData.setWindowTitle(returnMsg.get(key_window_title).asRawValue().getString());
 				}

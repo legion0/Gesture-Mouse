@@ -38,9 +38,8 @@ public class CreateActionActivity extends Activity {
 	protected void goBackToCreateGestureActivity(String action) {
 		Intent intent = new Intent(this, CreateGestureActivity.class);
 		intent.putExtra("action", action);
-		finishActivity(Params.PICK_ACTION_REQUEST);
+		setResult(RESULT_OK, intent);
+		finish();
 	}
-
-	
 
 }

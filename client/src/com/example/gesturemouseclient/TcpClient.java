@@ -70,7 +70,7 @@ public class TcpClient {
 		String localHostname = java.net.InetAddress.getLocalHost().getHostName();
 		msg.put(key_name, localHostname); // TODO: self name not remote name
 		msg.put(key_port, Params.TCP_IN_GOING_PORT);
-		List<Object> apps = new ArrayList<Object>();
+		List<Object> appsMsg = new ArrayList<Object>();
 		Set<ApplicationDAL> applications = ApplicationDAL.loadWithGestures(applicationContext);
 		Iterator<ApplicationDAL> appIter = applications.iterator();
 		while (appIter.hasNext()) {
@@ -80,23 +80,26 @@ public class TcpClient {
 			appMsg.put(key_name, app.getName());
 			appMsg.put(key_process_name, app.getProcessName());
 			appMsg.put(key_window_title, app.getWindowTitle());
-			Map<Object, Object> appGesturesMsg = new LinkedHashMap<Object, Object>();
+			List<Object> gesturesMsg = new ArrayList<Object>();
 			Set<GestureDAL> gestures = app.getGestures();
 			Iterator<GestureDAL> gestIter = gestures.iterator();
 			while (gestIter.hasNext()) {
+				Map<Object, Object> gestureMsg = new LinkedHashMap<Object, Object>();
 				GestureDAL gesture = gestIter.next();
-				appGesturesMsg.put(key_id, gesture.getId());
-				appGesturesMsg.put(key_name, gesture.getName());
+				gestureMsg.put(key_id, gesture.getId());
+				gestureMsg.put(key_name, gesture.getName());
 				List<Object> actionMsg = new ArrayList<Object>();
 				List<Integer> action = gesture.getAction();
 				for (Integer keyCode : action) {
 					actionMsg.add(keyCode);
 				}
-				appGesturesMsg.put(key_action, actionMsg);
+				gestureMsg.put(key_action, actionMsg);
+				gesturesMsg.add(gestureMsg);
 			}
-			appMsg.put(key_gestures, appGesturesMsg);
+			appMsg.put(key_gestures, gesturesMsg);
+			appsMsg.add(appMsg);
 		}
-		msg.put(key_apps, apps);
+		msg.put(key_apps, appsMsg);
 		MessagePack msgpack = new MessagePack();
 		return msgpack.write(msg);
 	}

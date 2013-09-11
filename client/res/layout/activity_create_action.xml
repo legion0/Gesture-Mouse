@@ -16,6 +16,8 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="122dp"
+        android:inputType="text"
+        android:imeOptions="actionDone"
         android:ems="10" >
 
         <requestFocus />

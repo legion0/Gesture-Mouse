@@ -18,10 +18,12 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
+import android.view.View.OnKeyListener;
 import android.view.View.OnTouchListener;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -41,6 +43,7 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 	protected TextView lblStatus;
 	private Button saveGestureBtn;
 	private GestureDAL gesture;
+	private int learnSessions = 0;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -80,8 +83,8 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 			@Override
 			public void onClick(View v) {
 				Logger.printLog("Create Gesture", "save gesture.");
-				int id = andgee.getDevice().getProcessingUnit().saveLearningAsGesture();
-				GestureModel gestureModel = andgee.getDevice().getProcessingUnit().getClassifier().getGestureModel(id);
+				int classifierGestureId = andgee.getDevice().getProcessingUnit().saveLearningAsGesture();
+				GestureModel gestureModel = andgee.getDevice().getProcessingUnit().getClassifier().getGestureModel(classifierGestureId);
 				gesture.setModel(gestureModel);
 				gesture.save(context);
 				gesture.addToApplication(context, appId);
@@ -94,7 +97,6 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 
 	private void initAll() {
 		// method order is important.
-		initTextAttributes();
 		initSensors();
 		initAndgee();
 		initLearnGesture();
@@ -114,10 +116,6 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 				gesture.setAction(action);
 			}
 		}
-	}
-
-	private void initTextAttributes() {
-		lblStatus = (TextView) findViewById(R.id.recognizeGestureTxt);
 	}
 
 	private void initSensors() {
@@ -141,6 +139,9 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 				} else if (event.getAction() == MotionEvent.ACTION_UP) {
 					Logger.printLog("Create Gesture Activity", "stop learning");
 					andgee.getDevice().getProcessingUnit().endLearning();
+					learnSessions++;
+					lblStatus = (TextView) findViewById(R.id.recognizeGestureTxt);
+					lblStatus.setText(String.format("session %s/10", learnSessions));
 				}
 				return true;
 

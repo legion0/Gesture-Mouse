@@ -26,6 +26,8 @@ package org.wiigee.logic;
 
 import java.util.Vector;
 
+import android.util.Log;
+
 public class Classifier {
 
 	private Vector<GestureModel> gesturemodel; // each gesturetype got its own 
@@ -49,6 +51,12 @@ public class Classifier {
 		// Wert im Nenner berechnen, nach Bayes
 		double sum = 0;
 		for(int i=0; i<this.gesturemodel.size(); i++) {
+			
+			Log.d("Classefier","i: "+i);
+			Log.d("Classefier","gesturemodel: "+gesturemodel);
+			Log.d("Classefier","gesturemodel.elementAt(i): "+gesturemodel.elementAt(i));
+			
+			
 			sum+=this.gesturemodel.elementAt(i).getDefaultProbability()*
 					this.gesturemodel.elementAt(i).matches(g);
 		}

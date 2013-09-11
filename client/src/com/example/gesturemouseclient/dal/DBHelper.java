@@ -8,12 +8,12 @@ public class DBHelper extends SQLiteOpenHelper {
 	
 	static final String DATABASE_NAME = "GesureMouseDB";
 	static final String GUSTERS_TABLE_NAME = "Gestures";
-	static final String GUSTERS_COLUMN_ID = "id";
+	static final String GUSTERS_COLUMN_ID = "_id";
 	static final String GUSTERS_COLUMN_NAME = "name";
 	static final String GUSTERS_COLUMN_ACTION = "action";
 	static final String GUSTERS_COLUMN_MODEL = "model";
 	static final String APPLICATIONS_TABLE_NAME = "Applications";
-	static final String APPLICATIONS_COLUMN_ID = "id";
+	static final String APPLICATIONS_COLUMN_ID = "_id";
 	static final String APPLICATIONS_COLUMN_NAME = "name";
 	static final String APPLICATIONS_COLUMN_PROCESS_NAME = "process_name";
 	static final String APPLICATIONS_COLUMN_WINDOW_TITLE = "window_title";
@@ -26,7 +26,8 @@ public class DBHelper extends SQLiteOpenHelper {
 	}
 	
 	public void onCreate(SQLiteDatabase db) {
-		String gesturesTable = "create table "+ GUSTERS_TABLE_NAME +" (_id INTEGER PRIMARY KEY AUTOINCREMENT," +
+		String gesturesTable = "create table "+ GUSTERS_TABLE_NAME +" (" +
+				GUSTERS_COLUMN_ID +" INTEGER PRIMARY KEY AUTOINCREMENT," +
 				GUSTERS_COLUMN_NAME +" STRING," +
 				GUSTERS_COLUMN_ACTION+ " STRING," +
 				GUSTERS_COLUMN_MODEL +" BLOB)";
