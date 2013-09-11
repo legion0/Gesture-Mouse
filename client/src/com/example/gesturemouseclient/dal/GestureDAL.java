@@ -81,6 +81,8 @@ public class GestureDAL {
 				gestureSet.add(g);
 			} while (cursor.moveToNext());
 		}
+		cursor.close();
+		db.close();
 		return gestureSet;
 	}
 
@@ -118,9 +120,11 @@ public class GestureDAL {
 			if(newId == -1)
 			{
 				//TODO: handle error
+				db.close();
 				return;
 			}
 			id = (int) newId;
+			db.close();
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -166,6 +170,8 @@ public class GestureDAL {
 				new String[] {Integer.toString(appId)},
 				null, null, null);
 		if (!cursor.moveToFirst()) {
+			cursor.close();
+			db.close();
 			return new int[0];
 		}
 		int[] gids = new int[cursor.getCount()];
@@ -173,6 +179,8 @@ public class GestureDAL {
 		do {
 			gids[i++] = cursor.getInt(0);
 		} while (cursor.moveToNext());
+		cursor.close();
+		db.close();
 		return gids;
 	}
 

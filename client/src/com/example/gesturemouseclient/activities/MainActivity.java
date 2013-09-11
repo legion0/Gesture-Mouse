@@ -1,6 +1,7 @@
 package com.example.gesturemouseclient.activities;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -39,7 +41,9 @@ import com.example.gesturemouseclient.infra.interfaces.ApplicationListener;
 
 public class MainActivity extends Activity implements SensorEventListener, ApplicationListener {
 
-	enum State {MOUSE, GESTURE};
+	enum State {
+		MOUSE, GESTURE
+	};
 
 	private State state = State.MOUSE;
 
@@ -50,7 +54,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	private TextView appConnectedName;
 	private boolean volumeDownIsPressed = false;
 	private boolean volumeUpIsPressed = false;
-	private String runningApp;
+	private ApplicationDAL runningApp;
 	private SensorManager sensorManager;
 	private BackgroundWorkManager backgroundWorkManager;
 	private ApplicationListenerThread applicationListenerThread;
@@ -79,7 +83,6 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
-
 		Intent intent = getIntent();
 		remoteDeviceInfo = ((RemoteDeviceInfo) intent.getExtras().get("device"));
 
@@ -88,7 +91,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 		pcConnectedName.setText(remoteDeviceInfo.getMachineName());
 
-
+		runningApp = new ApplicationDAL(null, null, "unknown");
 		initGestureMode();
 
 		TcpInitConnection tcpConnection = new TcpInitConnection(remoteDeviceInfo, this);
@@ -97,55 +100,56 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	}
 
 	private void initGestureMode() {
+
 		Logger.printLog("MainActivity", "initGestureMode");
 		gestureBtn = (Button) findViewById(R.id.gestureBtn);
 		goToMouseBtn = (Button) findViewById(R.id.goToMouseBtn);
 		learnGestureBtn = (Button) findViewById(R.id.learnGestureBtn);
 
-		initAndgee();		
+		initAndgee();
 
-		gestureMode(false,"Mouse");
+		toMouseMode();
 
-		//		gestureBtn.setOnTouchListener(new OnTouchListener() {
-		//		    @Override
-		//		    public boolean onTouch(View v, MotionEvent event) {
-		//		        if(event.getAction() == MotionEvent.ACTION_DOWN) {
-		//		            increaseSize();
-		//		        } else if (event.getAction() == MotionEvent.ACTION_UP) {
-		//		            resetSize();
-		//		        }
-		//		    }
-		//		});
+		// gestureBtn.setOnTouchListener(new OnTouchListener() {
+		// @Override
+		// public boolean onTouch(View v, MotionEvent event) {
+		// if(event.getAction() == MotionEvent.ACTION_DOWN) {
+		// increaseSize();
+		// } else if (event.getAction() == MotionEvent.ACTION_UP) {
+		// resetSize();
+		// }
+		// }
+		// });
 
 		gestureBtn.setOnTouchListener(new OnTouchListener() {
 
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
-				if(event.getAction() == MotionEvent.ACTION_DOWN) {
+				if (event.getAction() == MotionEvent.ACTION_DOWN) {
 					andgee.getDevice().getProcessingUnit().startRecognizing();
 				} else if (event.getAction() == MotionEvent.ACTION_UP) {
 					andgee.getDevice().getProcessingUnit().endRecognizing();
 				}
 				return true;
-				
+
 			}
 		});
 
-		//		gestureBtn.setOnClickListener(new OnClickListener() {
+		// gestureBtn.setOnClickListener(new OnClickListener() {
 		//
-		//			@Override
-		//			public void onClick(View v) {
-		//				Logger.printLog("Gesture onClick Listener", "");
-		//				//TODO: Listen to gesture here.
-		//			}
-		//		});
+		// @Override
+		// public void onClick(View v) {
+		// Logger.printLog("Gesture onClick Listener", "");
+		// //TODO: Listen to gesture here.
+		// }
+		// });
 
 		goToMouseBtn.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				gestureMode(false,"Mouse");
-				Logger.printLog("Main Activity", "Mouse button: "+goToMouseBtn.getText().toString());											
+				toMouseMode();
+				Logger.printLog("Main Activity", "Mouse button: " + goToMouseBtn.getText().toString());
 			}
 		});
 
@@ -162,16 +166,14 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	private void initAndgee() {
 		andgee = new AndroidWiigee();
-		
+
 		andgee.addGestureListener(new GestureListener() {
 			@Override
 			public void gestureReceived(GestureEvent event) {
-				Logger.printLog("Main activity", "initAndgee(addGestureListener) event id: "+event.getId()+" pr: "+event.getProbability());
+				Logger.printLog("Main activity", "initAndgee(addGestureListener) event id: " + event.getId() + " pr: " + event.getProbability());
 			}
 		});
 	}
-
-
 
 	protected void goToGestureActivityActivity() {
 		Intent intent = new Intent(this, CreateGestureActivity.class);
@@ -199,20 +201,20 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		if (sensor == null) {
 			return; // TODO: error for no sensor
 		}
-		// sm.registerListener(this, sensorList.get(0), SensorManager.SENSOR_DELAY_GAME);
+		// sm.registerListener(this, sensorList.get(0),
+		// SensorManager.SENSOR_DELAY_GAME);
 		if (remoteDeviceInfo.isConnected()) {
 			applicationListenerThread = new ApplicationListenerThread(remoteDeviceInfo, this);
 			applicationListenerThread.execute();
-			if(backgroundWorkManager != null){
+			if (backgroundWorkManager != null) {
 				backgroundWorkManager.resume();
 			}
 		}
 
-		if(state == State.MOUSE)
-		{
-			gestureMode(false, "Mouse");
-		}else{
-			gestureMode(true, null);
+		if (state == State.MOUSE) {
+			toMouseMode();
+		} else {
+			toGestureMode();
 		}
 
 		isRunning = true;
@@ -265,7 +267,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		applicationListenerThread = new ApplicationListenerThread(remoteDeviceInfo, this);
 		applicationListenerThread.execute();
 
-		//start sensors:
+		// start sensors:
 		List<Sensor> sensorList = sensorManager.getSensorList(Sensor.TYPE_GYROSCOPE);
 		// TODO: Error checks
 		sensorManager.registerListener(this, sensorList.get(0), SensorManager.SENSOR_DELAY_GAME);
@@ -275,7 +277,8 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		sensorManager.registerListener(this, sensorList.get(0), SensorManager.SENSOR_DELAY_GAME);
 	}
 
-	// TODO: remember to check the state of the device, it's possible we dont want to update since we're in anotre state.
+	// TODO: remember to check the state of the device, it's possible we dont
+	// want to update since we're in anotre state.
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		super.onKeyDown(keyCode, event);
 
@@ -313,18 +316,16 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		return false;
 	}
 
-
-
-
-
-	// TODO: remember to check the state of the device, it's possible we dont want to update since we're in anotre state.
+	// TODO: remember to check the state of the device, it's possible we dont
+	// want to update since we're in anotre state.
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 		if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
 			andgee.getDevice().onSensorChanged(event);
 		}
 
-		//		Logger.printLog("onSensorChanged", Integer.toString(event.sensor.getType()));
+		// Logger.printLog("onSensorChanged",
+		// Integer.toString(event.sensor.getType()));
 		if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
 
 			float[] rotationMatrix = new float[9];
@@ -333,7 +334,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			float[] newValues = new float[3];
 			SensorManager.getOrientation(rotationMatrix, newValues);
 
-//			Logger.printLog("onSensorChanged", Arrays.toString(newValues));
+			// Logger.printLog("onSensorChanged", Arrays.toString(newValues));
 			backgroundWorkManager.sendSample(newValues);
 		}
 	}
@@ -344,23 +345,14 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	}
 
 	@Override
-	public void onApplicationChanged(String applicationName) {
-		if (applicationName == runningApp) {
-			return;
-		}
-		runningApp = applicationName;
-		Logger.printLog("onApplicationChanged", "");
-		if (runningApp == null) {
-			runningApp = "Mouse";
-			gestureMode(false, runningApp);
-		}else{
-			ApplicationDAL app = findApp(runningApp);
-			classifierIdMap.clear();
-			for (GestureDAL gesture : app.getGestures()) {
-				int classifierId = andgee.getDevice().getProcessingUnit().getClassifier().addGestureModel(gesture.getModel());
-				classifierIdMap.put(classifierId, gesture.getId());
-			}
-			gestureMode(true,runningApp);
+	public void onApplicationChanged(ApplicationDAL fakeApp) {
+		Log.v("Main Activity", "application changed: " + fakeApp.getId());
+		if (fakeApp.getId() != -1) {
+			runningApp = findApp(fakeApp.getId());
+			toGestureMode();
+		} else {
+			runningApp = fakeApp;
+			toMouseMode();
 		}
 	}
 
@@ -375,40 +367,63 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		return application;
 	}
 
-	private void gestureMode(boolean activate, String applicationName){
-		Logger.printLog("MainActivity", "gesture mode = "+activate);
-		gestureBtn.setClickable(activate);
-		goToMouseBtn.setClickable(activate);
-		learnGestureBtn.setClickable(activate);
-		if(applicationName != null)
-		{
-			appConnectedName.setText(applicationName);
-		}
-		try {
-			if (activate) {
-				state = State.GESTURE;
-				gestureBtn.setVisibility(View.VISIBLE);
-				goToMouseBtn.setVisibility(View.VISIBLE);
-				learnGestureBtn.setVisibility(View.VISIBLE);
-				if(backgroundWorkManager != null){
-					backgroundWorkManager.suspendFastSampleSenderThread();
-				}
-
-				andgee.getDevice().setAccelerationEnabled(true);
-
-			}else{
-				if(backgroundWorkManager != null){
-					backgroundWorkManager.resumeFastSampleSenderThread();
-				}
-				gestureBtn.setVisibility(View.INVISIBLE);
-				goToMouseBtn.setVisibility(View.INVISIBLE);
-				learnGestureBtn.setVisibility(View.INVISIBLE);
-				state = State.MOUSE;
-				andgee.getDevice().setAccelerationEnabled(false);
+	private ApplicationDAL findApp(int id) {
+		ApplicationDAL application = null;
+		for (ApplicationDAL app : applications) {
+			if (app.getId() == id) {
+				application = app;
+				break;
 			}
+		}
+		return application;
+	}
+
+	private void toMouseMode() {
+		gestureBtn.setClickable(false);
+		goToMouseBtn.setClickable(false);
+		learnGestureBtn.setClickable(false);
+		String displayText = runningApp.getWindowTitle();
+		displayText = displayText.substring(0,Math.min(displayText.length(), 20));
+		appConnectedName.setText(displayText);
+		try {
+			if (backgroundWorkManager != null) {
+				backgroundWorkManager.resumeFastSampleSenderThread();
+			}
+			gestureBtn.setVisibility(View.INVISIBLE);
+			goToMouseBtn.setVisibility(View.INVISIBLE);
+			learnGestureBtn.setVisibility(View.INVISIBLE);
+			state = State.MOUSE;
+			andgee.getDevice().setAccelerationEnabled(false);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+	}
+
+	private void toGestureMode() {
+		gestureBtn.setClickable(true);
+		goToMouseBtn.setClickable(true);
+		learnGestureBtn.setClickable(true);
+		String displayText = runningApp.getName();
+		appConnectedName.setText(displayText);
+		try {
+			state = State.GESTURE;
+			gestureBtn.setVisibility(View.VISIBLE);
+			goToMouseBtn.setVisibility(View.VISIBLE);
+			learnGestureBtn.setVisibility(View.VISIBLE);
+			if (backgroundWorkManager != null) {
+				backgroundWorkManager.suspendFastSampleSenderThread();
+			}
+
+			andgee.getDevice().setAccelerationEnabled(true);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		classifierIdMap.clear();
+		for (GestureDAL gesture : runningApp.getGestures()) {
+			int classifierId = andgee.getDevice().getProcessingUnit().getClassifier().addGestureModel(gesture.getModel());
+			classifierIdMap.put(classifierId, gesture.getId());
 		}
 	}
 }

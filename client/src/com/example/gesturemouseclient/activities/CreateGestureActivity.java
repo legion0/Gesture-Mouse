@@ -9,6 +9,7 @@ import org.wiigee.event.GestureEvent;
 import org.wiigee.event.GestureListener;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -26,6 +27,8 @@ import android.widget.TextView;
 import com.example.gesturemouseclient.R;
 import com.example.gesturemouseclient.dal.GestureDAL;
 import com.example.gesturemouseclient.infra.Logger;
+import com.example.gesturemouseclient.infra.Params;
+import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 
 public class CreateGestureActivity extends Activity implements SensorEventListener {
 
@@ -62,17 +65,39 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 
 	private void initSaveGesture() {
 		saveGestureBtn = (Button) findViewById(R.id.saveGestureBtn);
+		final Intent intent = new Intent(this, CreateActionActivity.class);
 		saveGestureBtn.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
 				Logger.printLog("Create Gesture", "save gesture.");
+		
+				startActivityForResult(intent, Params.PICK_ACTION_REQUEST);
+				
 				id = andgee.getDevice().getProcessingUnit().saveLearningAsGesture();
 				new GestureDAL("A", new ArrayList<Integer>(), andgee.getDevice().getProcessingUnit().getClassifier().getGestureModel(id))
 						.save(getApplicationContext());
-				Logger.printLog("Create Gesture", "save to db");
+
 			}
 		});
+	}
+
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode == Params.PICK_ACTION_REQUEST) {
+			if (resultCode == RESULT_OK) {
+				Logger.printLog("Create Gesture", "save to db");
+				
+				String action = (String) data.getExtras().get("action");
+				List<Integer> actions = new ArrayList<Integer>();
+				String[] actionSplited = action.split(",");
+				for (int i = 0; i < actionSplited.length; i++) {
+					actions.add(Integer.parseInt(actionSplited[i]));
+				}
+				
+				
+				
+			}
+		}
 	}
 
 	private void initTextAttributes() {

@@ -13,7 +13,7 @@ public class ApplicationDAL {
 	private static final String[] APPLICATIONS_COLUMNS = { DBHelper.APPLICATIONS_COLUMN_ID, DBHelper.APPLICATIONS_COLUMN_NAME,
 			DBHelper.APPLICATIONS_COLUMN_PROCESS_NAME, DBHelper.APPLICATIONS_COLUMN_WINDOW_TITLE };
 
-	private Integer id;
+	private Integer id = null;
 
 	private String name;
 	private String processName;
@@ -29,6 +29,10 @@ public class ApplicationDAL {
 
 	public Integer getId() {
 		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
 	}
 
 	public String getName() {
@@ -72,6 +76,7 @@ public class ApplicationDAL {
 			return;
 		}
 		id = (int) newId;
+		db.close();
 	}
 
 	public Set<GestureDAL> getGestures() {
@@ -88,6 +93,8 @@ public class ApplicationDAL {
 		SQLiteDatabase db = helper.getWritableDatabase();
 		Cursor cursor = db.query(DBHelper.APPLICATIONS_TABLE_NAME, APPLICATIONS_COLUMNS, null, null, null, null, null);
 		if (!cursor.moveToFirst()) {
+			cursor.close();
+			db.close();
 			return apps;
 		}
 		do {
@@ -99,6 +106,8 @@ public class ApplicationDAL {
 			app.id = id;
 			apps.add(app);
 		} while (cursor.moveToNext());
+		cursor.close();
+		db.close();
 		return apps;
 	}
 

@@ -12,6 +12,6 @@
     <string name="title_activity_create_gesture">CreateGestureActivity</string>
     <string name="mouseBtnTxt">Mouse</string>
     <string name="createGesture">Create New Gesture</string>
-    
+    <string name="title_activity_create_action">CreateActionActivity</string>
 
 </resources>

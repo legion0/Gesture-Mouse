@@ -11,20 +11,23 @@ import java.net.SocketTimeoutException;
 import org.msgpack.MessagePack;
 import org.msgpack.type.MapValue;
 import org.msgpack.type.RawValue;
-import org.msgpack.type.Value;
 import org.msgpack.type.ValueFactory;
 import org.msgpack.unpacker.Unpacker;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
+import com.example.gesturemouseclient.dal.ApplicationDAL;
 import com.example.gesturemouseclient.infra.Logger;
 import com.example.gesturemouseclient.infra.Params;
 import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 import com.example.gesturemouseclient.infra.interfaces.ApplicationListener;
 
-public class ApplicationListenerThread extends AsyncTask<Void, String, Void> {
+public class ApplicationListenerThread extends AsyncTask<Void, ApplicationDAL, Void> {
 
-	private static final RawValue key_app = ValueFactory.createRawValue("app".getBytes());
+	private static final RawValue key_app_id = ValueFactory.createRawValue("app_id".getBytes());
+	private static final RawValue key_window_title = ValueFactory.createRawValue("window_title".getBytes());
+	private static final RawValue key_process_name = ValueFactory.createRawValue("process_name".getBytes());
 
 	private ServerSocket tcpServer;
 
@@ -62,9 +65,10 @@ public class ApplicationListenerThread extends AsyncTask<Void, String, Void> {
 				try{
 				 socket = tcpServer.accept();
 				}catch (SocketTimeoutException e) {
-//					Logger.printLog("Application Listener", "socket time out: "+e.getMessage());
+					Logger.printLog("Application Listener", "socket time out: "+e.getMessage());
 					continue;
 				}
+				Log.d("Application Listener Thread"," socket did not time out");
 				byte[] bufInput = new byte[4096];
 				socket.setSoTimeout(1000);
 				InputStream inputStream = socket.getInputStream();
@@ -78,15 +82,20 @@ public class ApplicationListenerThread extends AsyncTask<Void, String, Void> {
 				MessagePack msgpack = new MessagePack();
 				Unpacker unpacker = msgpack.createUnpacker(in);
 				MapValue returnMsg = unpacker.readValue().asMapValue();
-				 Value value = returnMsg.get(key_app);
-				 String appName;
-				 if(value.isNilValue()){
-					 appName = null;
-				 }else{
-					 appName = value.asRawValue().getString();
-				 }
-			
-				publishProgress(appName);
+				
+				Log.d("Application Listener Thread",returnMsg.toString());
+				
+				ApplicationDAL appData = new ApplicationDAL(null, null, null);
+				
+				if(returnMsg.containsKey(key_app_id))
+				{
+					appData.setId(returnMsg.get(key_app_id).asIntegerValue().getInt());
+				}else{
+					appData.setId(-1);
+					appData.setProcessName(returnMsg.get(key_process_name).asRawValue().getString());
+					appData.setWindowTitle(returnMsg.get(key_window_title).asRawValue().getString());
+				}
+				publishProgress(appData);
 				socket.close();
 			} catch (SocketException e) {
 				// TODO Auto-generated catch block
@@ -106,8 +115,7 @@ public class ApplicationListenerThread extends AsyncTask<Void, String, Void> {
 	}
 
 	@Override
-	protected void onProgressUpdate(String... values) {
-		Logger.printLog("Application Listener", "value: "+values[0]);
+	protected void onProgressUpdate(ApplicationDAL... values) {
 		applicationListener.onApplicationChanged(values[0]);
 		super.onProgressUpdate(values);
 	}
