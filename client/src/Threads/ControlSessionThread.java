@@ -10,7 +10,6 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 import org.msgpack.MessagePack;
 
-import com.example.gesturemouseclient.PausableThread;
 import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 
 public class ControlSessionThread extends PausableThread {
@@ -35,7 +34,7 @@ public class ControlSessionThread extends PausableThread {
 		try {
 			buffer = msgpack.write(msg);
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 		msg.remove("gesture");
 		if (buffer != null) {
@@ -49,7 +48,7 @@ public class ControlSessionThread extends PausableThread {
 		try {
 			buffer = msgpack.write(msg);
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 		msg.remove("key_event");
 		if (buffer != null) {
@@ -67,7 +66,7 @@ public class ControlSessionThread extends PausableThread {
 				outputStream.write(buffer);
 				socket.close();
 			} catch (IOException e) {
-				e.printStackTrace();
+				throw new RuntimeException(e);
 			}
 		}
 	}

@@ -5,13 +5,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import org.wiigee.control.AndroidWiigee;
 import org.wiigee.event.GestureEvent;
 import org.wiigee.event.GestureListener;
 
-import Threads.ApplicationListenerThread;
+import Threads.ApplicationListenerTask;
 import Threads.BackgroundWorkManager;
+import Threads.TcpInitConnectionTask;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -31,7 +33,6 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.gesturemouseclient.R;
-import com.example.gesturemouseclient.TcpInitConnection;
 import com.example.gesturemouseclient.dal.ApplicationDAL;
 import com.example.gesturemouseclient.dal.GestureDAL;
 import com.example.gesturemouseclient.infra.Logger;
@@ -57,7 +58,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	private ApplicationDAL runningApp;
 	private SensorManager sensorManager;
 	private BackgroundWorkManager backgroundWorkManager;
-	private ApplicationListenerThread applicationListenerThread;
+	private ApplicationListenerTask applicationListenerThread;
 
 	private Button gestureBtn;
 
@@ -71,7 +72,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	private Map<Integer, Integer> classifierIdMap;
 
-	private TcpInitConnection tcpConnection;
+	private TcpInitConnectionTask tcpConnection;
 
 	private boolean wasStartedOnce = false;
 
@@ -98,7 +99,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		runningApp = new ApplicationDAL(null, null, "unknown");
 		initGestureMode();
 
-		tcpConnection = new TcpInitConnection(remoteDeviceInfo, this);
+		tcpConnection = new TcpInitConnectionTask(remoteDeviceInfo, this);
 		tcpConnection.execute(false);
 		classifierIdMap = new LinkedHashMap<Integer, Integer>();
 	}
@@ -212,11 +213,9 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		super.onStart();
 
 		if (!isRunning) {
-			tcpConnection = new TcpInitConnection(remoteDeviceInfo, this);
-			tcpConnection.execute(true);
-			tcpConnection = new TcpInitConnection(remoteDeviceInfo, this);
+			tcpConnection = new TcpInitConnectionTask(remoteDeviceInfo, this);
 			tcpConnection.execute(false);
-			this.onConnectionToRemoteDevice();
+			//this.onConnectionToRemoteDevice();
 		}
 		isRunning = true;
 	}
@@ -232,8 +231,6 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		// sm.registerListener(this, sensorList.get(0),
 		// SensorManager.SENSOR_DELAY_GAME);
 		if (remoteDeviceInfo.isConnected()) {
-			applicationListenerThread = new ApplicationListenerThread(remoteDeviceInfo, this);
-			applicationListenerThread.execute();
 			if (backgroundWorkManager != null) {
 				backgroundWorkManager.resume();
 			}
@@ -254,10 +251,10 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		super.onPause();
 		sensorManager.unregisterListener(this);
 		backgroundWorkManager.suspend();
-		if (applicationListenerThread != null) {
-			applicationListenerThread.cancel(true);
-			applicationListenerThread = null;
-		}
+//		if (applicationListenerThread != null) {
+//			applicationListenerThread.cancel(true);
+//			applicationListenerThread = null;
+//		}
 		isRunning = false;
 	}
 
@@ -266,6 +263,8 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		super.onStop();
 		sensorManager.unregisterListener(this);
 		backgroundWorkManager.stop();
+		tcpConnection = new TcpInitConnectionTask(remoteDeviceInfo, this);
+		tcpConnection.execute(true);
 		if (applicationListenerThread != null) {
 			applicationListenerThread.cancel(true);
 			applicationListenerThread = null;
@@ -288,24 +287,20 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	public void onConnectionToRemoteDevice() {
 		Logger.printLog("onConnectionToRemoteDevice", "");
+		// start threads:
+		backgroundWorkManager = new BackgroundWorkManager(remoteDeviceInfo);
+		backgroundWorkManager.start();
+		applicationListenerThread = new ApplicationListenerTask(remoteDeviceInfo, this);
+		applicationListenerThread.execute();
 
-		if(! wasStartedOnce ){
-			wasStartedOnce = true;
-			// start threads:
-			backgroundWorkManager = new BackgroundWorkManager(remoteDeviceInfo);
-			backgroundWorkManager.start();
-			applicationListenerThread = new ApplicationListenerThread(remoteDeviceInfo, this);
-			applicationListenerThread.execute();
+		// start sensors:
+		List<Sensor> sensorList = sensorManager.getSensorList(Sensor.TYPE_GYROSCOPE);
+		// TODO: Error checks
+		sensorManager.registerListener(this, sensorList.get(0), SensorManager.SENSOR_DELAY_GAME);
 
-			// start sensors:
-			List<Sensor> sensorList = sensorManager.getSensorList(Sensor.TYPE_GYROSCOPE);
-			// TODO: Error checks
-			sensorManager.registerListener(this, sensorList.get(0), SensorManager.SENSOR_DELAY_GAME);
-
-			sensorList = sensorManager.getSensorList(Sensor.TYPE_ROTATION_VECTOR);
-			// TODO: Error checks
-			sensorManager.registerListener(this, sensorList.get(0), SensorManager.SENSOR_DELAY_GAME);
-		}
+		sensorList = sensorManager.getSensorList(Sensor.TYPE_ROTATION_VECTOR);
+		// TODO: Error checks
+		sensorManager.registerListener(this, sensorList.get(0), SensorManager.SENSOR_DELAY_GAME);
 	}
 
 	// TODO: remember to check the state of the device, it's possible we dont
@@ -381,7 +376,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		if (fakeApp.getId() != null) {
 			Log.v("MaintActivity", "searching for app " + fakeApp.getId());
 			runningApp = findApp(fakeApp.getId());
-			Log.v("MaintActivity", "runningApp="+runningApp.getId());
+			Log.v("MaintActivity", "runningApp=" + runningApp.getId());
 			toGestureMode();
 		} else {
 			runningApp = fakeApp;
@@ -414,7 +409,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	private void toMouseMode() {
 		gestureBtn.setClickable(false);
 		goToMouseBtn.setClickable(false);
-		//		learnGestureBtn.setClickable(false);
+		// learnGestureBtn.setClickable(false);
 		String displayText = runningApp.getWindowTitle();
 		displayText = displayText.substring(0, Math.min(displayText.length(), 20));
 		appConnectedName.setText(displayText);
@@ -424,34 +419,32 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			}
 			gestureBtn.setVisibility(View.INVISIBLE);
 			goToMouseBtn.setVisibility(View.INVISIBLE);
-			//			learnGestureBtn.setVisibility(View.INVISIBLE);
+			// learnGestureBtn.setVisibility(View.INVISIBLE);
 			state = State.MOUSE;
 			andgee.getDevice().setAccelerationEnabled(false);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 	}
 
 	private void toGestureMode() {
 		gestureBtn.setClickable(true);
 		goToMouseBtn.setClickable(true);
-		//		learnGestureBtn.setClickable(true);
+		// learnGestureBtn.setClickable(true);
 		String displayText = runningApp.getName();
 		appConnectedName.setText(displayText);
 		try {
 			state = State.GESTURE;
 			gestureBtn.setVisibility(View.VISIBLE);
 			goToMouseBtn.setVisibility(View.VISIBLE);
-			//			learnGestureBtn.setVisibility(View.VISIBLE);
+			// learnGestureBtn.setVisibility(View.VISIBLE);
 			if (backgroundWorkManager != null) {
 				backgroundWorkManager.suspendFastSampleSenderThread();
 			}
 
 			andgee.getDevice().setAccelerationEnabled(true);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 		classifierIdMap.clear();
 		andgee.getDevice().getProcessingUnit().getClassifier().clear();

@@ -153,8 +153,7 @@ public class AndgeeTest extends Activity implements SensorEventListener {
 		try {
 			andgee.getDevice().setAccelerationEnabled(true);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -163,8 +162,7 @@ public class AndgeeTest extends Activity implements SensorEventListener {
 		try {
 			andgee.getDevice().setAccelerationEnabled(false);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 		mSensorManager.unregisterListener(andgee.getDevice());
 		super.onPause();

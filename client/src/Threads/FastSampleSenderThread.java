@@ -9,7 +9,6 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 import org.msgpack.MessagePack;
 
-import com.example.gesturemouseclient.PausableThread;
 import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 
 public class FastSampleSenderThread extends PausableThread {
@@ -49,8 +48,7 @@ public class FastSampleSenderThread extends PausableThread {
 				socket.close();
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 	}
 

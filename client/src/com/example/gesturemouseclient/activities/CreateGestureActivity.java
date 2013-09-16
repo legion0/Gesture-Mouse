@@ -17,6 +17,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -28,12 +29,16 @@ import android.view.View.OnTouchListener;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
+
 import com.example.gesturemouseclient.R;
+import com.example.gesturemouseclient.dal.ApplicationDAL;
 import com.example.gesturemouseclient.dal.GestureDAL;
 import com.example.gesturemouseclient.infra.Logger;
 import com.example.gesturemouseclient.infra.Params;
+import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 
 public class CreateGestureActivity extends Activity implements SensorEventListener {
 
@@ -44,6 +49,7 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 	private Button saveGestureBtn;
 	private GestureDAL gesture;
 	private int learnSessions = 0;
+	private ProgressBar saveProgressBar;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -77,29 +83,70 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 			}
 		});
 
+		saveProgressBar = (ProgressBar) findViewById(R.id.saveProgressBar);
+		stopProgressBar();
+
 		saveGestureBtn = (Button) findViewById(R.id.saveGestureBtn);
 		final Context context = getApplicationContext();
 		saveGestureBtn.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				startProgressBar();
+				saveGestureBtn.setClickable(false);
+
 				Logger.printLog("Create Gesture", "save gesture.");
 				int classifierGestureId = andgee.getDevice().getProcessingUnit().saveLearningAsGesture();
 				GestureModel gestureModel = andgee.getDevice().getProcessingUnit().getClassifier().getGestureModel(classifierGestureId);
 				gesture.setModel(gestureModel);
-				gesture.save(context);
+//				gesture.save(context);
+				
+				SaveAsyncTask save = new SaveAsyncTask();
+				save.execute(gesture);
+
+
+
+				
+
+
 				gesture.addToApplication(context, appId);
 				andgee.getDevice().getProcessingUnit().getClassifier().clear();
 				gestureNameEditText.getText().clear();
 				gesture = new GestureDAL(null, null, null);
+				//				stopProgressBar();
 			}
 		});
 	}
+	
+	class SaveAsyncTask extends AsyncTask<GestureDAL, Void, Void>{
+
+		@Override
+		protected Void doInBackground(GestureDAL... params) {
+			GestureDAL gesture = params[0];
+			Context context = getApplicationContext();
+			gesture.save(context);
+			return null;
+		}
+		
+		@Override
+		protected void onPostExecute(Void v) {
+			stopProgressBar();
+		}
+	}
+
 
 	private void initAll() {
 		// method order is important.
 		initSensors();
 		initAndgee();
 		initLearnGesture();
+	}
+
+	public void stopProgressBar() {
+		saveProgressBar.setVisibility(View.INVISIBLE);
+	}
+
+	public void startProgressBar() {
+		saveProgressBar.setVisibility(View.VISIBLE);
 	}
 
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -181,8 +228,7 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 			Logger.printLog("Create Gesture: ", "on resume");
 			andgee.getDevice().setAccelerationEnabled(true);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 	}
 

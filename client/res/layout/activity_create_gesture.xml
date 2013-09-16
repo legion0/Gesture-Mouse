@@ -1,4 +1,4 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/LinearLayout1"
     android:layout_width="match_parent"
@@ -20,22 +20,11 @@
         android:textSize="30dp" />
 
     <TextView
+        android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text=""
         android:textAppearance="?android:attr/textAppearanceSmall" />
-
-    <EditText
-        android:id="@+id/gestureName"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="text"
-        android:imeOptions="actionDone"
-        android:hint="Gesture Name" >
-
-        <requestFocus />
-    </EditText>
 
     <TextView
         android:layout_width="wrap_content"
@@ -46,38 +35,68 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
-
-        <Button
-            android:id="@+id/recordGestureBtn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Record" />
-
     </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+    </LinearLayout>
+
+    <LinearLayout>
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/gestureName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/textView1"
+        android:layout_below="@+id/textView1"
+        android:layout_marginTop="17dp"
+        android:ems="10"
+        android:hint="Gesture Name"
+        android:imeOptions="actionDone"
+        android:inputType="text" />
 
     <TextView
         android:id="@+id/recognizeGestureTxt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/gestureName"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="19dp"
         android:text="Gesture id: 0 with probablity: 0.0"
         android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text=""
-        android:textAppearance="?android:attr/textAppearanceSmall" />
-
-    <Button
-        android:id="@+id/setActionBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Set Action" />
 
     <Button
         android:id="@+id/saveGestureBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="15dp"
         android:text="Save" />
 
-</LinearLayout>
+    <Button
+        android:id="@+id/setActionBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/saveGestureBtn"
+        android:layout_centerHorizontal="true"
+        android:text="Set Action" />
+
+    <Button
+        android:id="@+id/recordGestureBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/setActionBtn"
+        android:layout_centerHorizontal="true"
+        android:text="Record" />
+
+    <ProgressBar
+        android:id="@+id/saveProgressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/recognizeGestureTxt"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="14dp" />
+

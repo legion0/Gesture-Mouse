@@ -129,8 +129,7 @@ public class FileIO {
 			out.flush();
 			out.close();
 		} catch (IOException e) {
-			System.out.println("Error: Write to File!");
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -225,10 +224,8 @@ public class FileIO {
 			in.close();
 			return ret;
 		} catch (Exception e) {
-			System.out.println("Error: Read from File!");
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
-		return null; // bad error case
 	}
 
 }

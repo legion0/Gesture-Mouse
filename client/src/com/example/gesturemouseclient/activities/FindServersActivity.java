@@ -3,6 +3,7 @@ package com.example.gesturemouseclient.activities;
 import java.util.ArrayList;
 import java.util.List;
 
+import Threads.FindServersTask;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
@@ -21,7 +22,6 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.example.gesturemouseclient.FindServers;
 import com.example.gesturemouseclient.R;
 import com.example.gesturemouseclient.infra.DeviceDeleteListDisplayAdapter;
 import com.example.gesturemouseclient.infra.DeviceListDisplayAdapter;
@@ -40,7 +40,7 @@ public class FindServersActivity extends Activity {
 
 	private RemoteDeviceInfo device;
 	private Button retryBtn;
-	private FindServers findServer;
+	private FindServersTask findServer;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -114,7 +114,7 @@ public class FindServersActivity extends Activity {
 	private void startFindServer() {
 		startProgressBar();
 		Logger.printLog("initialPcConnection", "start");
-		findServer = new FindServers(this);
+		findServer = new FindServersTask(this);
 		retryBtn.setVisibility(View.INVISIBLE);
 		searchForDevice.setText("Searching for devices...");
 		findServer.execute();

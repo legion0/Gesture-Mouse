@@ -110,11 +110,11 @@ public class Client {
 				} catch (SocketTimeoutException ex) {
 					// System.out.println("timeout");
 				} catch (NullPointerException ex) {
-					ex.printStackTrace();
+					throw new RuntimeException(ex);
 				} catch (MessageTypeException ex) {
-					ex.printStackTrace();
+					throw new RuntimeException(ex);
 				} catch (Exception ex) {
-					ex.printStackTrace();
+					throw new RuntimeException(ex);
 				}
 			}
 		} finally {
@@ -171,13 +171,13 @@ public class Client {
 						return result;
 					}
 				} catch (SocketTimeoutException ex) {
-					// System.out.println("timeout");
+					
 				} catch (NullPointerException ex) {
-					ex.printStackTrace();
+					throw new RuntimeException(ex);
 				} catch (MessageTypeException ex) {
-					ex.printStackTrace();
+					throw new RuntimeException(ex);
 				} catch (Exception ex) {
-					ex.printStackTrace();
+					throw new RuntimeException(ex);
 				}
 			}
 		} finally {
