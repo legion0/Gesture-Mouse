@@ -2,6 +2,7 @@ package com.example.gesturemouseclient;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -12,16 +13,17 @@ import org.msgpack.type.ValueFactory;
 import android.os.AsyncTask;
 import android.os.SystemClock;
 
-import com.example.gesturemouseclient.activities.FindServerActivity;
+import com.example.gesturemouseclient.Client.Result;
+import com.example.gesturemouseclient.activities.FindServersActivity;
 import com.example.gesturemouseclient.infra.Logger;
 import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 import com.example.gesturemouseclient.infra.ResponseReader;
 
-public class FindServer extends AsyncTask<Void, Void, List<RemoteDeviceInfo>> {
+public class FindServers extends AsyncTask<Void, Void, List<RemoteDeviceInfo>> {
 
-	private FindServerActivity mainActivity;
+	private FindServersActivity mainActivity;
 
-	public FindServer(FindServerActivity mainActivity) {
+	public FindServers(FindServersActivity mainActivity) {
 		this.mainActivity = mainActivity;
 	}
 
@@ -32,29 +34,23 @@ public class FindServer extends AsyncTask<Void, Void, List<RemoteDeviceInfo>> {
 
 	@Override
 	protected List<RemoteDeviceInfo> doInBackground(Void... params) {
-		List<RemoteDeviceInfo> deviceList = new LinkedList<RemoteDeviceInfo>();
 		Logger.printLog("initialPcConnection", "doInBackground");
-		SystemClock.sleep(1000);
-
+		List<RemoteDeviceInfo> deviceList = new LinkedList<RemoteDeviceInfo>();
 		MyResponseReader response = new MyResponseReader();
-		Client client = new Client(response);
+		Client client = new Client();
 		client.setTimeout(5);
-		InetSocketAddress serverAddress;
+		Result[] results = new Result[0];
 		try {
-			serverAddress = client.findFirst("GM");
-			if (serverAddress != null) {
-				Logger.printLog("initialPcConnection", serverAddress.toString());
-				Logger.printLog("initialPcConnection", response.machineName);
-				deviceList.add(new RemoteDeviceInfo(serverAddress.getPort(), serverAddress.getAddress(), response.machineName));
-			} else {
-				Logger.printLog("initialPcConnection", "no sever is founds");
+			results = client.findAll("GM");
+			for (Result res : results) {
+				response.read(res.extraInfo);
+				deviceList.add(new RemoteDeviceInfo(res.inetSocketAddress.getPort(), res.inetSocketAddress.getAddress(), response.machineName));
 			}
 			return deviceList;
 		} catch (IOException e) {
 			Logger.printLog("initialPcConnection", "Failed to find Pc connection.");
 			return null;
 		}
-		// return null;
 	}
 
 	static class MyResponseReader implements ResponseReader {
@@ -67,10 +63,6 @@ public class FindServer extends AsyncTask<Void, Void, List<RemoteDeviceInfo>> {
 			machineName = extra_info.asMapValue().get(key_machine_name).asRawValue().getString();
 		}
 	};
-
-	protected void onProgressUpdate(Integer... progress) {
-		// TODO: update bar...
-	}
 
 	protected void onPostExecute(List<RemoteDeviceInfo> result) {
 		Logger.printLog("initialPcConnection", "onPostExecute");

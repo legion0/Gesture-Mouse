@@ -21,7 +21,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.example.gesturemouseclient.FindServer;
+import com.example.gesturemouseclient.FindServers;
 import com.example.gesturemouseclient.R;
 import com.example.gesturemouseclient.infra.DeviceDeleteListDisplayAdapter;
 import com.example.gesturemouseclient.infra.DeviceListDisplayAdapter;
@@ -29,7 +29,7 @@ import com.example.gesturemouseclient.infra.Logger;
 import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 
 @SuppressLint("NewApi")
-public class FindServerActivity extends Activity {
+public class FindServersActivity extends Activity {
 
 	private ProgressBar progressBar;
 	private ArrayAdapter<RemoteDeviceInfo> adapter;
@@ -40,7 +40,7 @@ public class FindServerActivity extends Activity {
 
 	private RemoteDeviceInfo device;
 	private Button retryBtn;
-	private FindServer findServer;
+	private FindServers findServer;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -114,7 +114,7 @@ public class FindServerActivity extends Activity {
 	private void startFindServer() {
 		startProgressBar();
 		Logger.printLog("initialPcConnection", "start");
-		findServer = new FindServer(this);
+		findServer = new FindServers(this);
 		retryBtn.setVisibility(View.INVISIBLE);
 		searchForDevice.setText("Searching for devices...");
 		findServer.execute();

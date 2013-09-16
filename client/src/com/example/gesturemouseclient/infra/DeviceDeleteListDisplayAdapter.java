@@ -8,11 +8,11 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 
 import com.example.gesturemouseclient.R;
-import com.example.gesturemouseclient.activities.FindServerActivity;
+import com.example.gesturemouseclient.activities.FindServersActivity;
 
 public class DeviceDeleteListDisplayAdapter extends ArrayAdapter<RemoteDeviceInfo> {
 
-	public DeviceDeleteListDisplayAdapter(FindServerActivity activity, List<RemoteDeviceInfo> deviceList) {
+	public DeviceDeleteListDisplayAdapter(FindServersActivity activity, List<RemoteDeviceInfo> deviceList) {
 		super(activity, android.R.layout.activity_list_item, deviceList);
 	}
 

@@ -83,7 +83,7 @@ public class FirstTimeLoginActivity extends Activity {
 	 * go to the find server activity where you'll locate the device to connect with.
 	 */
 	private void goToStartAppPage() {
-		Intent intent = new Intent(this, FindServerActivity.class);
+		Intent intent = new Intent(this, FindServersActivity.class);
 		startActivity(intent);		
 	}
 
