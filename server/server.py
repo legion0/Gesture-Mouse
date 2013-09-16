@@ -223,15 +223,16 @@ def client_msg_handler(session, msg):
 		with SESSIONS_LOCK:
 			del SESSIONS[session_id]
 		print "bye, bye", session_id
-	elif "gid" in msg:
+	elif "gesture" in msg:
 		action = None
-		gid = msg["gid"]
-		print "client_msg_handler", "gid:", repr(gid)
+		gesture_id = msg["gesture"]
+		print "client_msg_handler", "gesture_id:", repr(gesture_id)
 		with session["lock"]:
-			active_app = session["active_app"]
+			window_title, process_name = get_active_window_data()
+			active_app = find_in_list(session["apps"], application_finder(window_title, process_name))
 		if active_app is not None:
 			for gesture in active_app["gestures"]:
-				if gesture["gid"] == gid:
+				if gesture["id"] == gesture_id:
 					action = gesture["action"]
 					break
 		print action
@@ -283,40 +284,37 @@ def window_monitor():
 	old_window_title = None
 	old_process_name = None
 	while not shutting_down():
-		client_list = []
 		window_title, process_name = get_active_window_data()
 		if window_title != old_window_title or process_name != old_process_name:
 			old_window_title = window_title
 			old_process_name = process_name
 			print "Switched to: %s (%s)." % (window_title, process_name)
-		
-			client_list = []
-			with SESSIONS_LOCK:
-				for session in SESSIONS.viewvalues():
-					client_list.append({"addr":(session["ip"], session["control_port"]), "apps": deepcopy(session["apps"])})
-	# 					app = extract_application(window_title, file_name, session["apps"])
-	# 					if app != session.get("active_app"):
-	# 						session["active_app"] = app
-	# 						app_name = app["name"] if app is not None else None
-	# 						print "window_monitor", "active_app:", app_name, "for session:", session["id"]
-	# 						client_addr = (session["ip"], session["control_port"])
-	# 						client_list.append((client_addr, app_name))
-	
-			for client in client_list:
-				app = find_in_list(client["apps"], application_finder(window_title, process_name))
-				appId = -1
-				if app is not None:
-					msg = {"app_id": app["id"]}
-				else:
-					msg = {"window_title": window_title, "process_name": process_name}
-				print "Sending", msg, "to", client["addr"]
-				try:
-					sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-					sock.connect(client["addr"])
-					sock.sendall(msgpack.packb(msg))
-					sock.close()
-				except socket.error as ex:
-					continue # TODO: errors
+
+		with SESSIONS_LOCK:
+			for session in SESSIONS.viewvalues():
+				with session["lock"]:
+					app = find_in_list(session["apps"], application_finder(window_title, process_name))
+					msg = None
+					if app is not None and app != session.get("active_app"):
+						session["active_app"] = app
+						msg = {"app_id": app["id"]}
+					elif app is None and (window_title != session.get("current_window_title") or process_name != session.get("current_process_name")):
+						session["current_window_title"] = window_title
+						session["current_process_name"] = process_name
+						msg = {"window_title": window_title, "process_name": process_name}
+					if msg is not None:
+						addr = (session["ip"], session["control_port"])
+						print "Sending", msg, "to", addr
+						try:
+							sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+							sock.connect(addr)
+							sock.sendall(msgpack.packb(msg))
+							sock.close()
+						#except socket.error as ex:
+						except Exception as ex:
+							if type(ex) == socket.error:
+								continue
+							raise ex
 		time.sleep(settings[SETTINGS.WINDOW_DETECTION_DELAY])
 
 def find_in_list(l, selector):
@@ -415,9 +413,9 @@ def mouse_listener(session):
 #		if math.fabs(speed[1]) < SPEED_SENSITIVITY:
 #			y = int(avg[1])
 
-		print_round = (print_round + 1) % 10
-		if print_round == 0:
-			print (pitch, roll), x, math.fabs(speed[0]), y, math.fabs(speed[1]), avg
+#		print_round = (print_round + 1) % 10
+#		if print_round == 0:
+#			print (pitch, roll), x, math.fabs(speed[0]), y, math.fabs(speed[1]), avg
 
 		try:
 			pass#win32api.SetCursorPos((x,y))

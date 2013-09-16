@@ -59,7 +59,7 @@ class NSDServer():
 				break
 			try:
 				data, address = sock.recvfrom(4096)
-			except socket.timeout:
+			except (socket.timeout, socket.error):
 				continue
 			print 'received %r bytes from %r' % (len(data), address)
 			msg = msgpack.unpackb(data)
