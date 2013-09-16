@@ -12,6 +12,8 @@ import org.wiigee.logic.GestureModel;
 import org.wiigee.logic.HMM;
 import org.wiigee.logic.Quantizer;
 
+import android.util.Log;
+
 public class Serializer {
 
 	public static void write(GestureModel gestureModel, OutputStream outputStream) throws IOException {

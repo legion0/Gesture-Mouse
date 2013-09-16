@@ -192,7 +192,10 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		andgee.addGestureListener(new GestureListener() {
 			@Override
 			public void gestureReceived(GestureEvent event) {
-				Logger.printLog("Main activity", "initAndgee(addGestureListener) event id: " + event.getId() + " pr: " + event.getProbability());
+				int gestureId = classifierIdMap.get(event.getId());
+				Log.d("Main activity", "Recognized gesture " + gestureId + " with probability " + event.getProbability());
+				Log.d("Main activity", "Sending Gesture id: " + gestureId);
+				backgroundWorkManager.sendGesture(gestureId);
 			}
 		});
 	}

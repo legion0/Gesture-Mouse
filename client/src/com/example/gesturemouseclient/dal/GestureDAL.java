@@ -111,8 +111,8 @@ public class GestureDAL {
 
 		try {
 			Serializer.write(model, outputStream);
-			byte[] buffer = new byte[outputStream.size()];
-			outputStream.write(buffer);
+			byte[] buffer = outputStream.toByteArray();
+			outputStream.close();
 			Log.d("GestureDAL", "saving gesture model " + id + " as " + buffer.length + " bytes");
 
 			ContentValues gestureValues = new ContentValues();
