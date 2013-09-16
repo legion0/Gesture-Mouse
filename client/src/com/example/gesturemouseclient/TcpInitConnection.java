@@ -9,7 +9,7 @@ import com.example.gesturemouseclient.infra.Logger;
 import com.example.gesturemouseclient.infra.Params;
 import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 
-public class TcpInitConnection extends AsyncTask<Void, Void, Void> {
+public class TcpInitConnection extends AsyncTask<Boolean, Void, Void> {
 
 	private final MainActivity activity;
 	private RemoteDeviceInfo remoteDevice;
@@ -31,19 +31,28 @@ public class TcpInitConnection extends AsyncTask<Void, Void, Void> {
 	}
 
 	@Override
-	protected Void doInBackground(Void... params) {
+	protected Void doInBackground(Boolean... params) {
+		boolean close = params[0];
+
 		TcpClient client = new TcpClient(remoteDevice, activity.getApplicationContext());
 		client.setTimeout(5);
 		try {
-			client.initControllSession(Params.TCP_IN_GOING_PORT, null,remoteDevice);
-			Logger.printLog("TcpInitialConnection", remoteDevice.getUDPPort() + "");
+			if(!close)
+			{
+				client.initControllSession(Params.TCP_IN_GOING_PORT, null,remoteDevice);
+				Logger.printLog("TcpInitialConnection", remoteDevice.getUDPPort() + "");
+			}else{
+				client.closeSession(Params.TCP_IN_GOING_PORT, null,remoteDevice);
+				Logger.printLog("TcpInitialConnection", "close connection with "+remoteDevice.getUDPPort());
+			}
 		} catch (IOException e) {
-			Logger.printLog("TcpInitialConnection",
-					"Failed to find TCP connection.");
+
 		}
 		return null;
 	}
-	
+
+
+
 	protected void onProgressUpdate(Integer... progress) {
 		// TODO: update bar...
 	}
@@ -51,7 +60,7 @@ public class TcpInitConnection extends AsyncTask<Void, Void, Void> {
 	protected void onPostExecute(Void v) {
 		Logger.printLog("TCPinitialConnection", "onPostExecute start");
 
-		
+
 		activity.onConnectionToRemoteDevice();
 		Logger.printLog("TCPinitialConnection", "onPostExecute end");
 

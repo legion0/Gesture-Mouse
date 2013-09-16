@@ -71,6 +71,10 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	private Map<Integer, Integer> classifierIdMap;
 
+	private TcpInitConnection tcpConnection;
+
+	private boolean wasStartedOnce = false;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		Logger.printLog("onCreate", "the app is created !");
@@ -94,8 +98,8 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		runningApp = new ApplicationDAL(null, null, "unknown");
 		initGestureMode();
 
-		TcpInitConnection tcpConnection = new TcpInitConnection(remoteDeviceInfo, this);
-		tcpConnection.execute();
+		tcpConnection = new TcpInitConnection(remoteDeviceInfo, this);
+		tcpConnection.execute(false);
 		classifierIdMap = new LinkedHashMap<Integer, Integer>();
 	}
 
@@ -202,11 +206,16 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	@Override
 	protected void onStart() {
+
 		applications = ApplicationDAL.loadWithGestures(getApplicationContext());
 		Logger.printLog("onStart", "the app is start !");
 		super.onStart();
 
 		if (!isRunning) {
+			tcpConnection = new TcpInitConnection(remoteDeviceInfo, this);
+			tcpConnection.execute(true);
+			tcpConnection = new TcpInitConnection(remoteDeviceInfo, this);
+			tcpConnection.execute(false);
 			this.onConnectionToRemoteDevice();
 		}
 		isRunning = true;
@@ -280,20 +289,23 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	public void onConnectionToRemoteDevice() {
 		Logger.printLog("onConnectionToRemoteDevice", "");
 
-		// start threads:
-		backgroundWorkManager = new BackgroundWorkManager(remoteDeviceInfo);
-		backgroundWorkManager.start();
-		applicationListenerThread = new ApplicationListenerThread(remoteDeviceInfo, this);
-		applicationListenerThread.execute();
+		if(! wasStartedOnce ){
+			wasStartedOnce = true;
+			// start threads:
+			backgroundWorkManager = new BackgroundWorkManager(remoteDeviceInfo);
+			backgroundWorkManager.start();
+			applicationListenerThread = new ApplicationListenerThread(remoteDeviceInfo, this);
+			applicationListenerThread.execute();
 
-		// start sensors:
-		List<Sensor> sensorList = sensorManager.getSensorList(Sensor.TYPE_GYROSCOPE);
-		// TODO: Error checks
-		sensorManager.registerListener(this, sensorList.get(0), SensorManager.SENSOR_DELAY_GAME);
+			// start sensors:
+			List<Sensor> sensorList = sensorManager.getSensorList(Sensor.TYPE_GYROSCOPE);
+			// TODO: Error checks
+			sensorManager.registerListener(this, sensorList.get(0), SensorManager.SENSOR_DELAY_GAME);
 
-		sensorList = sensorManager.getSensorList(Sensor.TYPE_ROTATION_VECTOR);
-		// TODO: Error checks
-		sensorManager.registerListener(this, sensorList.get(0), SensorManager.SENSOR_DELAY_GAME);
+			sensorList = sensorManager.getSensorList(Sensor.TYPE_ROTATION_VECTOR);
+			// TODO: Error checks
+			sensorManager.registerListener(this, sensorList.get(0), SensorManager.SENSOR_DELAY_GAME);
+		}
 	}
 
 	// TODO: remember to check the state of the device, it's possible we dont
@@ -402,7 +414,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	private void toMouseMode() {
 		gestureBtn.setClickable(false);
 		goToMouseBtn.setClickable(false);
-//		learnGestureBtn.setClickable(false);
+		//		learnGestureBtn.setClickable(false);
 		String displayText = runningApp.getWindowTitle();
 		displayText = displayText.substring(0, Math.min(displayText.length(), 20));
 		appConnectedName.setText(displayText);
@@ -412,7 +424,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			}
 			gestureBtn.setVisibility(View.INVISIBLE);
 			goToMouseBtn.setVisibility(View.INVISIBLE);
-//			learnGestureBtn.setVisibility(View.INVISIBLE);
+			//			learnGestureBtn.setVisibility(View.INVISIBLE);
 			state = State.MOUSE;
 			andgee.getDevice().setAccelerationEnabled(false);
 		} catch (IOException e) {
@@ -424,14 +436,14 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	private void toGestureMode() {
 		gestureBtn.setClickable(true);
 		goToMouseBtn.setClickable(true);
-//		learnGestureBtn.setClickable(true);
+		//		learnGestureBtn.setClickable(true);
 		String displayText = runningApp.getName();
 		appConnectedName.setText(displayText);
 		try {
 			state = State.GESTURE;
 			gestureBtn.setVisibility(View.VISIBLE);
 			goToMouseBtn.setVisibility(View.VISIBLE);
-//			learnGestureBtn.setVisibility(View.VISIBLE);
+			//			learnGestureBtn.setVisibility(View.VISIBLE);
 			if (backgroundWorkManager != null) {
 				backgroundWorkManager.suspendFastSampleSenderThread();
 			}
@@ -443,7 +455,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		}
 		classifierIdMap.clear();
 		andgee.getDevice().getProcessingUnit().getClassifier().clear();
-		
+
 		for (GestureDAL gesture : runningApp.getGestures()) {
 			int classifierId = andgee.getDevice().getProcessingUnit().getClassifier().addGestureModel(gesture.getModel());
 			classifierIdMap.put(classifierId, gesture.getId());

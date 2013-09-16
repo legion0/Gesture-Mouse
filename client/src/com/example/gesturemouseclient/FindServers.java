@@ -21,10 +21,11 @@ import com.example.gesturemouseclient.infra.ResponseReader;
 
 public class FindServers extends AsyncTask<Void, Void, List<RemoteDeviceInfo>> {
 
-	private FindServersActivity mainActivity;
+	private FindServersActivity findServerActivity;
 
-	public FindServers(FindServersActivity mainActivity) {
-		this.mainActivity = mainActivity;
+	public FindServers(FindServersActivity findServerActivity) {
+		this.findServerActivity = findServerActivity;
+
 	}
 
 	@Override
@@ -36,6 +37,7 @@ public class FindServers extends AsyncTask<Void, Void, List<RemoteDeviceInfo>> {
 	protected List<RemoteDeviceInfo> doInBackground(Void... params) {
 		Logger.printLog("initialPcConnection", "doInBackground");
 		List<RemoteDeviceInfo> deviceList = new LinkedList<RemoteDeviceInfo>();
+
 		MyResponseReader response = new MyResponseReader();
 		Client client = new Client();
 		client.setTimeout(5);
@@ -67,10 +69,10 @@ public class FindServers extends AsyncTask<Void, Void, List<RemoteDeviceInfo>> {
 	protected void onPostExecute(List<RemoteDeviceInfo> result) {
 		Logger.printLog("initialPcConnection", "onPostExecute");
 		for (RemoteDeviceInfo deviceItem : result) {
-			mainActivity.addDevice(deviceItem);
+			findServerActivity.addDevice(deviceItem);
 		}
 
-		mainActivity.stopProgressBar();
+		findServerActivity.stopProgressBar();
 	}
 
 }

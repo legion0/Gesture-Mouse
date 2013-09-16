@@ -43,6 +43,7 @@ public class TcpClient {
 	private static final RawValue key_gestures = ValueFactory.createRawValue("gestures".getBytes());
 	private static final RawValue key_udp = ValueFactory.createRawValue("udp".getBytes());
 	private static final RawValue key_session_id = ValueFactory.createRawValue("session_id".getBytes());
+	private static final RawValue key_close = ValueFactory.createRawValue("close".getBytes());
 	private Context applicationContext;
 
 	private RemoteDeviceInfo remoteDevice;
@@ -104,6 +105,8 @@ public class TcpClient {
 		return msgpack.write(msg);
 	}
 
+
+
 	public void initControllSession(final int tcpPort, String[] features, RemoteDeviceInfo device) throws IOException {
 		byte[] msgBuffer = createMsg();
 
@@ -151,5 +154,31 @@ public class TcpClient {
 			socket.close();
 		}
 
+	}
+
+	public void closeSession(int tcpInGoingPort, Object object, RemoteDeviceInfo remoteDevice2) throws IOException {
+		Map<Object, Object> msg = new LinkedHashMap<Object, Object>();
+
+		msg.put(key_close, "temporary close"); 
+		MessagePack msgpack = new MessagePack();
+		byte[] msgBuffer = msgpack.write(msg);
+
+		Logger.printLog("TCP Client", "C: Connecting...");
+
+		// create a socket to make the connection with the server
+		Socket socket = new Socket(remoteDevice.getAddress(), remoteDevice.getControlPort());
+
+		try {
+
+			// send the message to the server
+			OutputStream outputStream = socket.getOutputStream();
+			outputStream.write(msgBuffer);
+			Logger.printLog("TCP Client", "C: close.");
+
+		} catch (Exception e) {
+			Logger.printLog("TCPClient", "S: Error, " + e.getMessage());
+		} finally {
+			socket.close();
+		}
 	}
 }
