@@ -14,5 +14,6 @@
     <string name="createGesture">Create New Gesture</string>
     <string name="title_activity_create_action">CreateActionActivity</string>
     <string name="title_activity_create_new_application">CreateNewApplicationActivity</string>
+    <string name="button_done">Done</string>
 
 </resources>
