@@ -4,24 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import Threads.FindServersTask;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.graphics.Typeface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import com.example.gesturemouseclient.R;
 import com.example.gesturemouseclient.infra.DeviceListDisplayAdapter;
@@ -29,18 +22,15 @@ import com.example.gesturemouseclient.infra.Logger;
 import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 import com.example.gesturemouseclient.infra.interfaces.Tools;
 
-@SuppressLint("NewApi")
 public class FindServersActivity extends Activity implements OnClickListener {
 
-	private ProgressBar progressBar;
 	private ArrayAdapter<RemoteDeviceInfo> adapter;
 	private String deviceName;
-	private TextView searchForDevice;
-//	private TextView headLine;
 
 	private Button retryBtn;
 	private FindServersTask findServer;
 	private List<RemoteDeviceInfo> deviceList;
+	private View progressBarContainer;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +56,7 @@ public class FindServersActivity extends Activity implements OnClickListener {
 		adapter = new DeviceListDisplayAdapter(this, deviceList, this);
 		deviceListView.setAdapter(adapter);
 
-		searchForDevice = (TextView) findViewById(R.id.searchingForDevicesText);
+		progressBarContainer = findViewById(R.id.progressBarContainer);
 		retryBtn = (Button) findViewById(R.id.findServersBtn);
 
 		retryBtn.setOnClickListener(new OnClickListener() {
@@ -77,7 +67,6 @@ public class FindServersActivity extends Activity implements OnClickListener {
 			}
 		});
 
-		progressBar = (ProgressBar) findViewById(R.id.progressBar);
 	}
 	
 	@Override
@@ -90,7 +79,6 @@ public class FindServersActivity extends Activity implements OnClickListener {
 		startProgressBar();
 		Logger.printLog("initialPcConnection", "start");
 		findServer = new FindServersTask(this);
-		searchForDevice.setText("Searching for devices...");
 		findServer.execute();
 	}
 
@@ -102,27 +90,24 @@ public class FindServersActivity extends Activity implements OnClickListener {
 	}
 
 	public void stopProgressBar() {
-		progressBar.setVisibility(View.INVISIBLE);
+		progressBarContainer.setVisibility(View.GONE);
 		if (adapter.getCount() == 0) {
-			searchForDevice.setText("Did not find any device...\nPlease verify your pc server is on.");
-		} else {
-			searchForDevice.setVisibility(View.INVISIBLE);
-			searchForDevice.setText("Searching for devices...");
+			Tools.showErrorModal(this, "Error", "Did not find any device...\nPlease verify your pc server is on");
 		}
 	}
 
 	public void startProgressBar() {
-		progressBar.setVisibility(View.VISIBLE);
+		progressBarContainer.setVisibility(View.VISIBLE);
 	}
 
 	public void addDevice(RemoteDeviceInfo device) {
 		boolean found = false;
-		for (RemoteDeviceInfo dev : deviceList) {
-			if (Tools.equals(dev.getName(), device.getName())) {
-				found = true;
-				break;
-			}
-		}
+//		for (RemoteDeviceInfo dev : deviceList) {
+//			if (Tools.equals(dev.getName(), device.getName())) {
+//				found = true;
+//				break;
+//			}
+//		}
 		if (!found) {
 			adapter.add(device);
 		}

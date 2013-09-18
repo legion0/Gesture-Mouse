@@ -38,22 +38,29 @@
 		android:layout_alignParentBottom="true"
 		android:orientation="vertical" >
 
-		<TextView
-			android:id="@+id/searchingForDevicesText"
-			android:layout_width="wrap_content"
+		<LinearLayout
+			android:id="@+id/progressBarContainer"
+			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:layout_gravity="center_horizontal"
-			android:text="@string/searching_for_devices_"
-			android:textAppearance="?android:attr/textAppearanceLarge"
-			android:textStyle="italic" />
+			android:orientation="vertical" >
 
-		<ProgressBar
-			android:id="@+id/progressBar"
-			style="?android:attr/progressBarStyleLarge"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_gravity="center_horizontal"
-			android:layout_marginBottom="20dp" />
+			<TextView
+				android:id="@+id/searchingForDevicesText"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center_horizontal"
+				android:text="@string/searching_for_devices_"
+				android:textAppearance="?android:attr/textAppearanceLarge"
+				android:textStyle="italic" />
+
+			<ProgressBar
+				android:id="@+id/progressBar"
+				style="?android:attr/progressBarStyleLarge"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center_horizontal"
+				android:layout_marginBottom="20dp" />
+		</LinearLayout>
 
 		<Button
 			android:id="@+id/findServersBtn"

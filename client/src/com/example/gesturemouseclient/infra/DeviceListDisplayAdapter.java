@@ -34,7 +34,7 @@ public class DeviceListDisplayAdapter extends ArrayAdapter<RemoteDeviceInfo> {
 		deviceName.setTag(item);
 		deviceName.setText(item.getName());
 		deviceName.setOnClickListener(listener);
-		ImageButton deleteBtn = (ImageButton)view.findViewById(R.id.deleteRemoteBtn);
+		ImageView deleteBtn = (ImageView)view.findViewById(R.id.deleteRemoteBtn);
 		deleteBtn.setTag(item);
 		deleteBtn.setOnClickListener(new OnClickListener() {
 			
