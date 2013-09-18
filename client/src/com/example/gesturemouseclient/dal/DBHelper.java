@@ -9,6 +9,8 @@ public class DBHelper extends SQLiteOpenHelper {
 	static final String DATABASE_NAME = "GesureMouseDB";
 	static final String GUSTERS_TABLE_NAME = "Gestures";
 	static final String GUSTERS_COLUMN_ID = "_id";
+	static final String SYSTEM_COLUMN_KEY = "key";
+	static final String SYSTEMS_COLUMN_VALUE = "value";
 	static final String GUSTERS_COLUMN_NAME = "name";
 	static final String GUSTERS_COLUMN_ACTION = "action";
 	static final String GUSTERS_COLUMN_MODEL = "model";
@@ -18,6 +20,8 @@ public class DBHelper extends SQLiteOpenHelper {
 	static final String APPLICATIONS_COLUMN_PROCESS_NAME = "process_name";
 	static final String APPLICATIONS_COLUMN_WINDOW_TITLE = "window_title";
 	static final String M2M_APPLICATION_GESTURE_TABLE_NAME = "mm_application_gesture";
+	static final String SYSTEM_VARIABLES_TABLE_NAME = "system_variables";
+	
 	static final String M2M_APPLICATION_GESTURE_COLUMN_APP_ID = "aid";
 	static final String M2M_APPLICATION_GESTURE_COLUMN_GESTURE_ID = "gid";
 	
@@ -48,6 +52,10 @@ public class DBHelper extends SQLiteOpenHelper {
 				")" +
 			")";
 		db.execSQL(m2mApplicationGestureTable);
+		
+		String systemsVariablesTable = "create table "+ SYSTEM_VARIABLES_TABLE_NAME +" (" + SYSTEM_COLUMN_KEY + " STRING PRIMARY KEY," +
+				" " + SYSTEMS_COLUMN_VALUE + " STRING)";
+		db.execSQL(systemsVariablesTable);
 	}
 
 	@Override

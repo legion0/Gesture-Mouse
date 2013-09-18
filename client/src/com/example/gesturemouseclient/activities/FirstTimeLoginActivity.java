@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
@@ -13,14 +14,19 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 
 import com.example.gesturemouseclient.R;
+import com.example.gesturemouseclient.dal.ApplicationDAL;
+import com.example.gesturemouseclient.dal.GestureDAL;
+import com.example.gesturemouseclient.dal.SystemVariablesDAL;
 
 public class FirstTimeLoginActivity extends Activity {
 
 	private Button nextBtn;
 	private boolean doneWithInstructions = false;
-	private boolean noInstructions = true;
+	private Boolean noInstructions = false;
 	private TextView instructionText;
 	private CheckBox removeInstructionCheckBox;
+	
+	private static final String INSTRUCTION_KEY = "instruction_off";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +41,12 @@ public class FirstTimeLoginActivity extends Activity {
 
 		instructionText = (TextView) findViewById(R.id.instrcutionText);
 		instructionText.setVisibility(View.INVISIBLE);
+		
+		
+		
+		 noInstructions = new Boolean(SystemVariablesDAL.get(getApplicationContext(), INSTRUCTION_KEY));
+		 
+		 Log.d("FirstTimeLoginActivity", "skip instructions: "+noInstructions);
 
 		if(noInstructions)
 		{
@@ -70,11 +82,11 @@ public class FirstTimeLoginActivity extends Activity {
 	 */
 	private void initInstructionCheckBox() {
 		removeInstructionCheckBox = (CheckBox) findViewById(R.id.removeInstructionCheckBox);
-		nextBtn.setOnClickListener(new OnClickListener() {
+		removeInstructionCheckBox.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				//TODO: write down state to date base...
+				SystemVariablesDAL.set(getApplicationContext(),INSTRUCTION_KEY,""+true);
 			}
 		});
 	}
