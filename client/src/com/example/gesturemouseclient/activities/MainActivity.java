@@ -274,8 +274,17 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 				backgroundWorkManager.sendKey(0);
 				return true;
 			}
+		} else if (keyCode == KeyEvent.KEYCODE_BACK) {
+			onBackPressed();
 		}
 		return false;
+	}
+	
+	@Override
+	public void onBackPressed() {
+		Log.d("MainActivity", "onBackPressed");
+		super.onBackPressed();
+		finish();
 	}
 
 	public boolean onKeyUp(int keyCode, KeyEvent event) {

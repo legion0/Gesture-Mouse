@@ -15,5 +15,8 @@
     <string name="title_activity_create_action">CreateActionActivity</string>
     <string name="title_activity_create_new_application">CreateNewApplicationActivity</string>
     <string name="button_done">Done</string>
+    <string name="searching_for_devices_">Searching for devices...</string>
+    <string name="scan_for_servers">Scan For Servers</string>
+    <string name="delete">Delete</string>
 
 </resources>

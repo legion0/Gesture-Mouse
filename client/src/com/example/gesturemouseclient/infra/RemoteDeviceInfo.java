@@ -122,7 +122,7 @@ public class RemoteDeviceInfo implements Parcelable {
 		this.activeApplication = activeApplication;
 	}
 
-	public Object getName() {
+	public String getName() {
 		return getMachineName();
 	}
 	

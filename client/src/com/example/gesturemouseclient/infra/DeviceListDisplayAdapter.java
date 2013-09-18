@@ -2,10 +2,15 @@ package com.example.gesturemouseclient.infra;
 
 import java.util.List;
 
+import android.app.Activity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.gesturemouseclient.R;
@@ -13,19 +18,31 @@ import com.example.gesturemouseclient.activities.FindServersActivity;
 
 public class DeviceListDisplayAdapter extends ArrayAdapter<RemoteDeviceInfo> {
 
-	public DeviceListDisplayAdapter(FindServersActivity activity, List<RemoteDeviceInfo> deviceList) {
+	private OnClickListener listener;
+
+	public <T extends OnClickListener> DeviceListDisplayAdapter(FindServersActivity activity, List<RemoteDeviceInfo> deviceList, T listener) {
 		super(activity, android.R.layout.activity_list_item, deviceList);
+		this.listener = listener;
 	}
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		RemoteDeviceInfo device = getItem(position);
+		RemoteDeviceInfo item = getItem(position);
 		LayoutInflater inflater = LayoutInflater.from(getContext());
-		View view = inflater.inflate(R.layout.row_name, null);
-
-		TextView deviceName = (TextView) view.findViewById(R.id.deviceName);
-		deviceName.setText(device.getMachineName());
-
+		View view = inflater.inflate(R.layout.find_servers_row, null);
+		TextView deviceName = (TextView)view.findViewById(R.id.deviceName);
+		deviceName.setTag(item);
+		deviceName.setText(item.getName());
+		deviceName.setOnClickListener(listener);
+		ImageButton deleteBtn = (ImageButton)view.findViewById(R.id.deleteRemoteBtn);
+		deleteBtn.setTag(item);
+		deleteBtn.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				remove((RemoteDeviceInfo)v.getTag());
+			}
+		});
 		return view;
 
 	}

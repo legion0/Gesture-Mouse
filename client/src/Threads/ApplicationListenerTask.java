@@ -99,10 +99,10 @@ public class ApplicationListenerTask extends AsyncTask<Void, ApplicationDAL, Voi
 				}
 				publishProgress(appData);
 				socket.close();
-			} catch (SocketException e) {
-				throw new RuntimeException(e);
-			} catch (IOException e) {
-				throw new RuntimeException(e);
+			} catch (SocketException ex) {
+				Log.e("ApplicationListenerTask", "doInBackground", ex);
+			} catch (IOException ex) {
+				Log.e("ApplicationListenerTask", "doInBackground", ex);
 			}
 		}
 		try {
@@ -110,7 +110,7 @@ public class ApplicationListenerTask extends AsyncTask<Void, ApplicationDAL, Voi
 			Log.d("Application Listener"," closed socket.");
 		} catch (IOException e) {
 		}
-		Log.d("Application Listener"," canceling");
+		Log.d("Application Listener"," closing");
 		return null;
 	}
 
