@@ -2,7 +2,6 @@ package com.example.gesturemouseclient.activities;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,7 +27,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.WindowManager;
-import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.gesturemouseclient.R;
@@ -37,6 +36,7 @@ import com.example.gesturemouseclient.dal.GestureDAL;
 import com.example.gesturemouseclient.infra.Logger;
 import com.example.gesturemouseclient.infra.Params;
 import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
+import com.example.gesturemouseclient.infra.Tools;
 import com.example.gesturemouseclient.infra.interfaces.ApplicationListener;
 
 public class MainActivity extends Activity implements SensorEventListener, ApplicationListener {
@@ -55,11 +55,11 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	private BackgroundWorkManager backgroundWorkManager;
 	private ApplicationListenerTask applicationListenerThread;
 
-	private Button gestureBtn;
+	private ImageView recognizeGestureBtn;
 
-	private Button goToMouseBtn;
+	private ImageView goToMouseBtn;
 
-	private Button learnGestureBtn;
+	private ImageView learnGestureBtn;
 
 	private AndroidWiigee andgee;
 
@@ -68,6 +68,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	private Map<Integer, Integer> classifierIdMap;
 
 	private TcpInitConnectionTask tcpConnection;
+	private ImageView goToGestureBtn;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -90,9 +91,85 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		pcConnectedName.setText(remoteDeviceInfo.getMachineName());
 
 		runningApp = new ApplicationDAL(null, null, "unknown");
-		initGestureMode();
 
 		classifierIdMap = new LinkedHashMap<Integer, Integer>();
+
+		final Activity this_ = this;
+
+		Logger.printLog("MainActivity", "initGestureMode");
+		recognizeGestureBtn = (ImageView) findViewById(R.id.gestureBtn);
+		goToMouseBtn = (ImageView) findViewById(R.id.goToMouseBtn);
+		goToGestureBtn = (ImageView) findViewById(R.id.goToGestureBtn);
+		learnGestureBtn = (ImageView) findViewById(R.id.learnGestureBtn);
+
+		andgee = new AndroidWiigee();
+
+		andgee.addGestureListener(new GestureListener() {
+			@Override
+			public void gestureReceived(GestureEvent event) {
+				if (event.isValid()) {
+					int gestureId = classifierIdMap.get(event.getId());
+					Log.d("Main activity", "Recognized gesture " + gestureId + " with probability " + event.getProbability());
+					Log.d("Main activity", "Sending Gesture id: " + gestureId);
+					backgroundWorkManager.sendGesture(gestureId);
+				} else {
+					// TODO: did not recognize any gesture
+				}
+			}
+		});
+
+		recognizeGestureBtn.setOnTouchListener(new OnTouchListener() {
+
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				if (event.getAction() == MotionEvent.ACTION_DOWN) {
+					andgee.getDevice().getProcessingUnit().startRecognizing();
+				} else if (event.getAction() == MotionEvent.ACTION_UP) {
+					andgee.getDevice().getProcessingUnit().endRecognizing();
+				}
+				return true;
+
+			}
+		});
+
+		goToMouseBtn.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				toMouseMode();
+			}
+		});
+		
+		goToGestureBtn.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				if (runningApp.getId() != null) {
+					toGestureMode();
+				} else {
+					Tools.showErrorModal(this_, "Error", "The current Application has no gestures.");
+				}
+			}
+		});
+
+		learnGestureBtn.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				if (runningApp.getId() != null) {
+					Intent intent = new Intent(this_, CreateGestureActivity.class);
+					intent.putExtra("app_id", runningApp.getId());
+					startActivity(intent);
+				} else {
+					Intent intent = new Intent(this_, CreateNewApplicationActivity.class);
+					intent.putExtra("window_title", runningApp.getWindowTitle());
+					intent.putExtra("process_name", runningApp.getProcessName());
+					startActivityForResult(intent, Params.PICK_APPLICATION_REQUEST);
+				}
+			}
+
+		});
+		toMouseMode();
 	}
 
 	@Override
@@ -152,81 +229,6 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		super.onDestroy();
 	}
 
-	private void initGestureMode() {
-
-		Logger.printLog("MainActivity", "initGestureMode");
-		gestureBtn = (Button) findViewById(R.id.gestureBtn);
-		goToMouseBtn = (Button) findViewById(R.id.goToMouseBtn);
-		learnGestureBtn = (Button) findViewById(R.id.learnGestureBtn);
-
-		initAndgee();
-
-		toMouseMode();
-
-		// gestureBtn.setOnTouchListener(new OnTouchListener() {
-		// @Override
-		// public boolean onTouch(View v, MotionEvent event) {
-		// if(event.getAction() == MotionEvent.ACTION_DOWN) {
-		// increaseSize();
-		// } else if (event.getAction() == MotionEvent.ACTION_UP) {
-		// resetSize();
-		// }
-		// }
-		// });
-
-		gestureBtn.setOnTouchListener(new OnTouchListener() {
-
-			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				if (event.getAction() == MotionEvent.ACTION_DOWN) {
-					andgee.getDevice().getProcessingUnit().startRecognizing();
-				} else if (event.getAction() == MotionEvent.ACTION_UP) {
-					andgee.getDevice().getProcessingUnit().endRecognizing();
-				}
-				return true;
-
-			}
-		});
-
-		// gestureBtn.setOnClickListener(new OnClickListener() {
-		//
-		// @Override
-		// public void onClick(View v) {
-		// Logger.printLog("Gesture onClick Listener", "");
-		// //TODO: Listen to gesture here.
-		// }
-		// });
-
-		goToMouseBtn.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				toMouseMode();
-				Logger.printLog("Main Activity", "Mouse button: " + goToMouseBtn.getText().toString());
-			}
-		});
-		final Activity this_ = this;
-
-		learnGestureBtn.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				if (runningApp.getId() != null) {
-					Intent intent = new Intent(this_, CreateGestureActivity.class);
-					intent.putExtra("app_id", runningApp.getId());
-					startActivity(intent);
-				} else {
-					Intent intent = new Intent(this_, CreateNewApplicationActivity.class);
-					intent.putExtra("window_title", runningApp.getWindowTitle());
-					intent.putExtra("process_name", runningApp.getProcessName());
-					startActivityForResult(intent, Params.PICK_APPLICATION_REQUEST);
-				}
-			}
-
-		});
-
-	}
-
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		Activity this_ = this;
 		if (requestCode == Params.PICK_APPLICATION_REQUEST) {
@@ -237,24 +239,6 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 				startActivity(intent);
 			}
 		}
-	}
-
-	private void initAndgee() {
-		andgee = new AndroidWiigee();
-
-		andgee.addGestureListener(new GestureListener() {
-			@Override
-			public void gestureReceived(GestureEvent event) {
-				if (event.isValid()) {
-					int gestureId = classifierIdMap.get(event.getId());
-					Log.d("Main activity", "Recognized gesture " + gestureId + " with probability " + event.getProbability());
-					Log.d("Main activity", "Sending Gesture id: " + gestureId);
-					backgroundWorkManager.sendGesture(gestureId);
-				} else {
-					// TODO: did not recognize any gesture
-				}
-			}
-		});
 	}
 
 	// TODO: remember to check the state of the device, it's possible we dont
@@ -279,7 +263,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		}
 		return false;
 	}
-	
+
 	@Override
 	public void onBackPressed() {
 		Log.d("MainActivity", "onBackPressed");
@@ -347,17 +331,6 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		}
 	}
 
-	private ApplicationDAL findApp(String applicationName) {
-		ApplicationDAL application = null;
-		for (ApplicationDAL app : applications) {
-			if (app.getName().equals(applicationName)) {
-				application = app;
-				break;
-			}
-		}
-		return application;
-	}
-
 	private ApplicationDAL findApp(int id) {
 		ApplicationDAL application = null;
 		for (ApplicationDAL app : applications) {
@@ -370,8 +343,9 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	}
 
 	private void toMouseMode() {
-		gestureBtn.setClickable(false);
-		goToMouseBtn.setClickable(false);
+		recognizeGestureBtn.setVisibility(View.GONE);
+		goToMouseBtn.setVisibility(View.GONE);
+		goToGestureBtn.setVisibility(View.VISIBLE);
 		// learnGestureBtn.setClickable(false);
 		String displayText = runningApp.getWindowTitle();
 		displayText = displayText.substring(0, Math.min(displayText.length(), 20));
@@ -380,9 +354,6 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			if (backgroundWorkManager != null) {
 				backgroundWorkManager.resumeFastSampleSenderThread();
 			}
-			gestureBtn.setVisibility(View.INVISIBLE);
-			goToMouseBtn.setVisibility(View.INVISIBLE);
-			// learnGestureBtn.setVisibility(View.INVISIBLE);
 			andgee.getDevice().setAccelerationEnabled(false);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -390,15 +361,12 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	}
 
 	private void toGestureMode() {
-		gestureBtn.setClickable(true);
-		goToMouseBtn.setClickable(true);
-		// learnGestureBtn.setClickable(true);
+		recognizeGestureBtn.setVisibility(View.VISIBLE);
+		goToMouseBtn.setVisibility(View.VISIBLE);
+		goToGestureBtn.setVisibility(View.GONE);
 		String displayText = runningApp.getName();
 		appConnectedName.setText(displayText);
 		try {
-			gestureBtn.setVisibility(View.VISIBLE);
-			goToMouseBtn.setVisibility(View.VISIBLE);
-			// learnGestureBtn.setVisibility(View.VISIBLE);
 			if (backgroundWorkManager != null) {
 				backgroundWorkManager.suspendFastSampleSenderThread();
 			}

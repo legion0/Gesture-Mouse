@@ -18,5 +18,13 @@
     <string name="searching_for_devices_">Searching for devices...</string>
     <string name="scan_for_servers">Scan For Servers</string>
     <string name="delete">Delete</string>
+    <string name="mouse">Mouse</string>
+    <string name="new_gesture">New Gesture</string>
+    <string name="gesture_mode">Gesture Mode</string>
+    <string name="mouse_mode">Mouse Mode</string>
+    <string name="recognize_gesture">Recognize Gesture</string>
+    <string name="next">Next</string>
+    <string name="do_not_show_this_again_">Don\'t show this again.</string>
+    <string name="gesture_mouse">Gesture Mouse</string>
 
 </resources>

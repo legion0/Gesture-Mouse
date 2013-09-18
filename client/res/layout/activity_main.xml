@@ -1,59 +1,86 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".MainActivity" >
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical"
+	android:paddingBottom="@dimen/activity_vertical_margin"
+	android:paddingLeft="@dimen/activity_horizontal_margin"
+	android:paddingRight="@dimen/activity_horizontal_margin"
+	android:paddingTop="@dimen/activity_vertical_margin"
+	tools:context=".MainActivity" >
 
-    <TextView
-        android:id="@+id/connectedPcName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="30dp"
-        android:text="Device Name"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+	<LinearLayout
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_above="@+id/mainActivBottomContainer"
+		android:layout_alignParentTop="true"
+		android:gravity="center_horizontal"
+		android:orientation="vertical" >
 
-    <TextView
-        android:id="@+id/connectedAppName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/pcConnectedName"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="18dp"
-        android:text="App Name"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+		<TextView
+			android:id="@+id/connectedPcName"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="Device Name"
+			android:textAppearance="?android:attr/textAppearanceMedium"
+			tools:ignore="SelectableText,HardcodedText" />
 
-    <Button
-        android:id="@+id/gestureBtn"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:background="@drawable/largebluebutton"
-        android:text="Gesture Activate" />
+		<ImageView
+			android:id="@+id/gestureBtn"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="20dp"
+			android:background="@drawable/av_play_over_video"
+			android:contentDescription="@string/recognize_gesture" />
+	</LinearLayout>
 
-    <Button
-        android:id="@+id/goToMouseBtn"
-        android:layout_width="70dp"
-        android:layout_height="70dp"
-        android:layout_alignBaseline="@+id/connectedAppName"
-        android:layout_alignBottom="@+id/connectedAppName"
-        android:layout_alignRight="@+id/connectedPcName"
-        android:background="@drawable/mouse"
-        android:text="" />
+	<LinearLayout
+		android:id="@+id/mainActivBottomContainer"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_alignParentBottom="true"
+		android:orientation="vertical" >
 
-    <Button
-        android:id="@+id/learnGestureBtn"
-        android:layout_width="53dp"
-        android:layout_height="53dp"
-        android:layout_alignBaseline="@+id/goToMouseBtn"
-        android:layout_alignBottom="@+id/goToMouseBtn"
-        android:layout_toRightOf="@+id/goToMouseBtn"
-        android:background="@drawable/gesture" />
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:orientation="horizontal"
+			tools:ignore="UselessParent" >
+
+			<TextView
+				android:id="@+id/connectedAppName"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center_vertical"
+				android:layout_weight="1"
+				android:text="Application Name"
+				android:textAppearance="?android:attr/textAppearanceMedium"
+				tools:ignore="SelectableText,HardcodedText" />
+
+			<ImageView
+				android:id="@+id/goToMouseBtn"
+				android:layout_width="48dp"
+				android:layout_height="48dp"
+				android:layout_gravity="center_vertical"
+				android:background="@drawable/mouse"
+				android:contentDescription="@string/mouse_mode" />
+
+			<ImageView
+				android:id="@+id/goToGestureBtn"
+				android:layout_width="48dp"
+				android:layout_height="48dp"
+				android:layout_gravity="center_vertical"
+				android:background="@drawable/shuffle"
+				android:contentDescription="@string/gesture_mode" />
+
+			<ImageView
+				android:id="@+id/learnGestureBtn"
+				android:layout_width="48dp"
+				android:layout_height="48dp"
+				android:layout_gravity="center_vertical"
+				android:background="@drawable/ic_menu_add"
+				android:contentDescription="@string/new_gesture" />
+		</LinearLayout>
+	</LinearLayout>
 
 </RelativeLayout>

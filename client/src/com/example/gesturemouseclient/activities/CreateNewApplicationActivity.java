@@ -6,6 +6,7 @@ import com.example.gesturemouseclient.R.menu;
 import com.example.gesturemouseclient.dal.ApplicationDAL;
 import com.example.gesturemouseclient.infra.Params;
 import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
+import com.example.gesturemouseclient.infra.Tools;
 
 import android.os.Bundle;
 import android.app.Activity;
@@ -54,37 +55,27 @@ public class CreateNewApplicationActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				String newApplicationName = applicationEditTxt.getText().toString();
-				
-				
-				
-				if (windowTitle.startsWith(newApplicationName) || windowTitle.endsWith(newApplicationName)) {
-					if(newApplicationName.length() < 20){
-						ApplicationDAL applicationDAL = new ApplicationDAL(newApplicationName, processName, newApplicationName);
-						applicationDAL.save(getApplicationContext());
-						goBackToMainActivity(applicationDAL.getId());
-						Log.v("Create New Application", "app name is legal");
-					}else{
-						openAlertDialog("choose a suffix or postfix from original app name which is smaller then 20 letters.");
-						Log.w("Create New Application", "app name is not legal");
-					}
-				}else{
+				if (!(windowTitle.startsWith(newApplicationName) || windowTitle.endsWith(newApplicationName))) {
+					openAlertDialog("Choose a suffix or postfix from original app name.");
 					Log.w("Create New Application", "app name is not legal");
+				} else if(newApplicationName.length() >= 20) {
+					openAlertDialog("App name should be shorter than 20 characters.");
+					Log.w("Create New Application", "app name is not legal");
+				} else {
+					ApplicationDAL applicationDAL = new ApplicationDAL(newApplicationName, processName, newApplicationName);
+					applicationDAL.save(getApplicationContext());
+					goBackToMainActivity(applicationDAL.getId());
+					Log.v("Create New Application", "app name is legal");
 				}
 				
 				
 			}
-
-			
+		
 		});
 	}
 	
 	private void openAlertDialog(String message) {
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setMessage(message);
-		builder.setTitle("App Name Warning");
-		AlertDialog dialog = builder.create();
-		dialog.show();
-		Log.w("Create New Application", " open alert should show");
+		Tools.showErrorModal(this, "App Name Warning", message);
 	}
 
 	protected void goBackToMainActivity(Integer applicationId) {

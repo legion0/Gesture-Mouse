@@ -1,7 +1,8 @@
-package com.example.gesturemouseclient.infra.interfaces;
+package com.example.gesturemouseclient.infra;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 
 public class Tools {
 	public static boolean equals(String a, String b) {
@@ -22,6 +23,11 @@ public class Tools {
 		if (message != null) {
 			builder.setMessage(message);
 		}
+		builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int id) {
+				dialog.cancel();
+			}
+		});
 		AlertDialog dialog = builder.create();
 		dialog.show();
 	}

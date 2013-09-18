@@ -20,7 +20,7 @@ import com.example.gesturemouseclient.R;
 import com.example.gesturemouseclient.infra.DeviceListDisplayAdapter;
 import com.example.gesturemouseclient.infra.Logger;
 import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
-import com.example.gesturemouseclient.infra.interfaces.Tools;
+import com.example.gesturemouseclient.infra.Tools;
 
 public class FindServersActivity extends Activity implements OnClickListener {
 
@@ -102,12 +102,12 @@ public class FindServersActivity extends Activity implements OnClickListener {
 
 	public void addDevice(RemoteDeviceInfo device) {
 		boolean found = false;
-//		for (RemoteDeviceInfo dev : deviceList) {
-//			if (Tools.equals(dev.getName(), device.getName())) {
-//				found = true;
-//				break;
-//			}
-//		}
+		for (RemoteDeviceInfo dev : deviceList) {
+			if (Tools.equals(dev.getName(), device.getName())) {
+				found = true;
+				break;
+			}
+		}
 		if (!found) {
 			adapter.add(device);
 		}

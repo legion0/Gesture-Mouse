@@ -25,6 +25,7 @@
         </activity>
         <activity
             android:name="com.example.gesturemouseclient.activities.FirstTimeLoginActivity"
+            android:noHistory="true"
             android:label="@string/title_activity_first_time_login" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
