@@ -8,29 +8,38 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".CreateNewApplicationActivity" >
 
-    
+    <Button
+        android:id="@+id/createNewApplicationBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:text="Done" />
+
+    <TextView
+        android:id="@+id/createApplicationHeadLine"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="33dp"
+        android:text="Application Name"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="#00ccff"
+        android:textSize="30dp" />
 
     <EditText
         android:id="@+id/createApplicationTxt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/textView1"
+        android:layout_below="@+id/createApplicationHeadLine"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="64dp"
-        android:inputType="text"
+        android:layout_marginTop="23dp"
+        android:ems="10"
         android:imeOptions="actionDone"
-        android:ems="10" >
+        android:inputType="text" >
 
         <requestFocus />
     </EditText>
-
-    <Button
-        android:id="@+id/createNewApplicationBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/createApplicationTxt"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="42dp"
-        android:text="Done" />
 
 </RelativeLayout>

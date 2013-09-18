@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.DatagramPacket;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -21,6 +23,7 @@ import org.msgpack.type.ValueFactory;
 import org.msgpack.unpacker.Unpacker;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.example.gesturemouseclient.dal.ApplicationDAL;
 import com.example.gesturemouseclient.dal.GestureDAL;
@@ -66,11 +69,11 @@ public class TcpClient {
 		timeout = seconds * 1000000000l;
 	}
 
-	private byte[] createMsg() throws IOException {
+	private byte[] createMsg(int localControlPort) throws IOException {
 		Map<Object, Object> msg = new LinkedHashMap<Object, Object>();
 		String localHostname = java.net.InetAddress.getLocalHost().getHostName();
 		msg.put(key_name, localHostname); // TODO: self name not remote name
-		msg.put(key_port, Params.TCP_IN_GOING_PORT);
+		msg.put(key_port, localControlPort);
 		List<Object> appsMsg = new ArrayList<Object>();
 		Set<ApplicationDAL> applications = ApplicationDAL.loadWithGestures(applicationContext);
 		Iterator<ApplicationDAL> appIter = applications.iterator();
@@ -105,10 +108,32 @@ public class TcpClient {
 		return msgpack.write(msg);
 	}
 
+	private int findNewLocalControlPort()
+	{
+		int port = -1;
+		try {
+			ServerSocket tcpServer = new ServerSocket();
+			tcpServer.setReuseAddress(true);
+			tcpServer.bind(null);
+			
+			port = tcpServer.getLocalPort();
+			tcpServer.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Log.d("TcpClient","tcp port found: "+port);
+		return port;
+	}
 
-
-	public void initControllSession(final int tcpPort, String[] features, RemoteDeviceInfo device) throws IOException {
-		byte[] msgBuffer = createMsg();
+	public void initControllSession(String[] features, RemoteDeviceInfo device) throws IOException {	
+		
+		int localControlPort = findNewLocalControlPort();
+		device.setLocalControlPort(localControlPort);
+		
+		byte[] msgBuffer = createMsg(localControlPort);
+		
+		
 
 		Logger.printLog("TCP Client", "C: Connecting...");
 
@@ -156,7 +181,9 @@ public class TcpClient {
 
 	}
 
-	public void closeSession(int tcpInGoingPort, Object object, RemoteDeviceInfo remoteDevice2) throws IOException {
+	
+
+	public void closeSession(Object object, RemoteDeviceInfo remoteDevice2) throws IOException {
 		Map<Object, Object> msg = new LinkedHashMap<Object, Object>();
 
 		msg.put(key_close, "temporary close"); 

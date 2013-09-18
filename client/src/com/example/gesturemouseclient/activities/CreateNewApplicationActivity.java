@@ -9,13 +9,16 @@ import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 
 import android.os.Bundle;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 public class CreateNewApplicationActivity extends Activity {
 
@@ -23,11 +26,16 @@ public class CreateNewApplicationActivity extends Activity {
 	private EditText applicationEditTxt;
 	private String processName;
 	private String windowTitle;
-
+//	private TextView headLine;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_create_new_application);
+		
+//		Typeface tf = Typeface.createFromAsset(getAssets(), "fonts/BigAppleNF.ttf");
+//		headLine = (TextView) findViewById(R.id.createApplicationHeadLine);
+//		headLine.setTypeface(tf);
 		
 		createApplicationBtn = (Button) findViewById(R.id.createNewApplicationBtn);
 		applicationEditTxt = (EditText) findViewById(R.id.createApplicationTxt);
@@ -37,6 +45,8 @@ public class CreateNewApplicationActivity extends Activity {
 		windowTitle = ((String) intent.getExtras().get("window_title"));
 		
 		applicationEditTxt.setText(windowTitle);
+		
+		
 		
 		createApplicationBtn.setOnClickListener(new OnClickListener() {
 		
@@ -48,12 +58,13 @@ public class CreateNewApplicationActivity extends Activity {
 				
 				
 				if (windowTitle.startsWith(newApplicationName) || windowTitle.endsWith(newApplicationName)) {
-					if(newApplicationName.length() < 15){
+					if(newApplicationName.length() < 20){
 						ApplicationDAL applicationDAL = new ApplicationDAL(newApplicationName, processName, newApplicationName);
 						applicationDAL.save(getApplicationContext());
 						goBackToMainActivity(applicationDAL.getId());
 						Log.v("Create New Application", "app name is legal");
 					}else{
+						openAlertDialog("choose a suffix or postfix from original app name which is smaller then 20 letters.");
 						Log.w("Create New Application", "app name is not legal");
 					}
 				}else{
@@ -62,7 +73,18 @@ public class CreateNewApplicationActivity extends Activity {
 				
 				
 			}
+
+			
 		});
+	}
+	
+	private void openAlertDialog(String message) {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setMessage(message);
+		builder.setTitle("App Name Warning");
+		AlertDialog dialog = builder.create();
+		dialog.show();
+		Log.w("Create New Application", " open alert should show");
 	}
 
 	protected void goBackToMainActivity(Integer applicationId) {

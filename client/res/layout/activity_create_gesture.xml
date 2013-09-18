@@ -10,90 +10,96 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".CreateGestureActivity" >
 
-    <TextView
+    
+
+	<LinearLayout
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_above="@+id/linearLayout1"
+		android:layout_alignParentTop="true"
+		android:orientation="vertical" >
+		
+	    <TextView
         android:id="@+id/headLineCreateGesture"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
         android:text="@string/createGesture"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="#00ccff"
         android:textSize="30dp" />
 
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text=""
-        android:textAppearance="?android:attr/textAppearanceSmall" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text=""
-        android:textAppearance="?android:attr/textAppearanceSmall" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-    </LinearLayout>
-
-    <EditText
-        android:id="@+id/gestureName"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/textView1"
-        android:layout_below="@+id/textView1"
-        android:layout_marginTop="17dp"
-        android:ems="10"
-        android:hint="Gesture Name"
-        android:imeOptions="actionDone"
-        android:inputType="text" />
-
-    <TextView
-        android:id="@+id/recognizeGestureTxt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/gestureName"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="19dp"
-        android:text="Gesture id: 0 with probablity: 0.0"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    <Button
-        android:id="@+id/saveGestureBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="15dp"
-        android:text="Save" />
-
-    <Button
+				
+		<Button
         android:id="@+id/setActionBtn"
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/saveGestureBtn"
-        android:layout_centerHorizontal="true"
         android:text="Set Action" />
 
-    <Button
-        android:id="@+id/recordGestureBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/setActionBtn"
-        android:layout_centerHorizontal="true"
-        android:text="Record" />
+	    <TextView
+	        android:id="@+id/recognizeGestureTxt"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:layout_below="@+id/gestureName"
+	        android:layout_centerHorizontal="true"
+	        android:text="session 0/10"
+	        android:gravity="center"
+	        android:textAppearance="?android:attr/textAppearanceMedium" />
+    
+	    <Button
+	        android:id="@+id/recordGestureBtn"
+	        android:layout_width="fill_parent"
+	        android:layout_height="fill_parent"
+	        android:text="Record" />
+	    
 
-    <ProgressBar
+    
+
+		
+	</LinearLayout>
+	
+	<LinearLayout
+		android:id="@+id/linearLayout1"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_above="@+id/linearLayout2"
+		android:orientation="vertical"
+		android:gravity="center" >
+    
+	    <ProgressBar
         android:id="@+id/saveProgressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/saveGestureBtn"
+        android:gravity="center"
         android:layout_centerVertical="true" />
+		
+	</LinearLayout>
+	
+	<LinearLayout
+		android:id="@+id/linearLayout2"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_alignParentBottom="true"
+		android:orientation="vertical" >
+    
+	    
+        
+     
+     <Button
+        android:id="@+id/saveGestureBtn"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Save" />
+
+		
+	</LinearLayout>
+
+    
+
+    
+
+    
+
+    
 
 </RelativeLayout>

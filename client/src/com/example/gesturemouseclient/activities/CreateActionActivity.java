@@ -12,13 +12,10 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Spinner;
-import android.widget.TextView;
 
 import com.example.gesturemouseclient.R;
 import com.example.gesturemouseclient.infra.KeyMap;
@@ -29,6 +26,7 @@ public class CreateActionActivity extends Activity {
 	private Button createActionBtn;
 	private EditText actionEditTxt;
 	private ListView keySpinner;
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

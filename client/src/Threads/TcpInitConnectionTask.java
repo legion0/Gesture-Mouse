@@ -41,11 +41,11 @@ public class TcpInitConnectionTask extends AsyncTask<Boolean, Void, Void> {
 		try {
 			if(openNewTcpConnection)
 			{
-				client.initControllSession(Params.TCP_IN_GOING_PORT, null,remoteDevice);
+				client.initControllSession(null,remoteDevice);
 				Logger.printLog("TcpInitialConnection", remoteDevice.getUDPPort() + "");
 				isClose = false;
 			}else{
-				client.closeSession(Params.TCP_IN_GOING_PORT, null,remoteDevice);
+				client.closeSession(null,remoteDevice);
 				Logger.printLog("TcpInitialConnection", "close connection with "+remoteDevice.getUDPPort());
 				isClose = true;
 			}

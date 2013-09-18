@@ -17,6 +17,7 @@ public class RemoteDeviceInfo implements Parcelable {
 	private String sessionId;
 	private InetAddress address;
 	private int controlPort;
+	private int localControlPort;
 	private int UDPPort;
 	private final String machineName;
 	private boolean connected;
@@ -44,6 +45,7 @@ public class RemoteDeviceInfo implements Parcelable {
 			throw new RuntimeException(e);
 		}
 		controlPort = in.readInt();
+		localControlPort = in.readInt();
 		UDPPort = in.readInt();
 		machineName = in.readString();
 		activeApplication = in.readString();
@@ -87,6 +89,7 @@ public class RemoteDeviceInfo implements Parcelable {
 		out.writeString(sessionId);
 		out.writeString(address.getHostAddress());
 		out.writeInt(controlPort);
+		out.writeInt(localControlPort);
 		out.writeInt(UDPPort);
 		out.writeString(machineName);
 		out.writeString(activeApplication);
@@ -121,5 +124,13 @@ public class RemoteDeviceInfo implements Parcelable {
 
 	public Object getName() {
 		return getMachineName();
+	}
+	
+	public int getLocalControlPort() {
+		return localControlPort;
+	}
+
+	public void setLocalControlPort(int localControlPort) {
+		this.localControlPort = localControlPort;
 	}
 }

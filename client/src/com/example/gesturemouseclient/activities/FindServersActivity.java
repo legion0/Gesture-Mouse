@@ -36,7 +36,7 @@ public class FindServersActivity extends Activity {
 	private ArrayAdapter<RemoteDeviceInfo> adapterDelete;
 	private String deviceName;
 	private TextView searchForDevice;
-	private TextView headLine;
+//	private TextView headLine;
 
 	private RemoteDeviceInfo device;
 	private Button retryBtn;
@@ -51,9 +51,9 @@ public class FindServersActivity extends Activity {
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
 
-		Typeface tf = Typeface.createFromAsset(getAssets(), "fonts/BigAppleNF.ttf");
-		headLine = (TextView) findViewById(R.id.headLine);
-		headLine.setTypeface(tf);
+//		Typeface tf = Typeface.createFromAsset(getAssets(), "fonts/BigAppleNF.ttf");
+//		headLine = (TextView) findViewById(R.id.headLine);
+//		headLine.setTypeface(tf);
 
 		// TODO: check the true device name:
 		deviceName = android.os.Build.MODEL;

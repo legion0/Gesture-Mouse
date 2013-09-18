@@ -49,7 +49,7 @@ public class ApplicationListenerTask extends AsyncTask<Void, ApplicationDAL, Voi
 			Log.d("Application Listener","binding socket");
 			tcpServer = new ServerSocket();
 			tcpServer.setReuseAddress(true);
-			tcpServer.bind(new InetSocketAddress(Params.TCP_IN_GOING_PORT));
+			tcpServer.bind(new InetSocketAddress(remoteDeviceInfo.getLocalControlPort()));
 			
 		} catch (NumberFormatException e) {
 			throw new RuntimeException(e);

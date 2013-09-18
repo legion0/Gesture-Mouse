@@ -8,6 +8,7 @@ import org.wiigee.control.AndroidWiigee;
 import org.wiigee.logic.GestureModel;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -17,6 +18,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -43,7 +45,8 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 	private int learnSessions = 0;
 	private ProgressBar saveProgressBar;
 	private int appId;
-	private EditText gestureNameEditText;
+	private boolean hasAction = false;
+	private boolean hasGesture = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -64,13 +67,12 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 		initAndgee();
 		initLearnGesture();
 
-		gestureNameEditText = (EditText) findViewById(R.id.gestureName);
-
 		Button setActionBtn = (Button) findViewById(R.id.setActionBtn);
 		final Intent setActionIntent = new Intent(this, CreateActionActivity.class);
 		setActionBtn.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				hasAction = true;
 				startActivityForResult(setActionIntent, Params.PICK_ACTION_REQUEST);
 			}
 		});
@@ -117,47 +119,68 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 	protected void onDestroy() {
 		super.onDestroy();
 	}
-	
+
 	void setSessionCount(int newCount) {
 		learnSessions = newCount;
 		lblStatus.setText(String.format("session %s/10", learnSessions));
 	}
+
 	void increaseSessionCount() {
 		learnSessions++;
 		setSessionCount(learnSessions);
 	}
-	
 
 	class SaveAsyncTask extends AsyncTask<Void, Void, Void> {
 
 		@Override
 		protected void onPreExecute() {
 			saveProgressBar.setVisibility(View.VISIBLE);
-			gesture.setName(gestureNameEditText.getText().toString());
+			gesture.setName("");
 			super.onPreExecute();
 		}
 
 		@Override
 		protected Void doInBackground(Void... params) {
-			Context context = getApplicationContext();
-			Logger.printLog("Create Gesture", "save gesture.");
-			int classifierGestureId = andgee.getDevice().getProcessingUnit().saveLearningAsGesture();
-			GestureModel gestureModel = andgee.getDevice().getProcessingUnit().getClassifier().getGestureModel(classifierGestureId);
-			gesture.setModel(gestureModel);
-			gesture.save(context);
-			gesture.addToApplication(context, appId);
-			andgee.getDevice().getProcessingUnit().getClassifier().clear();
-			gesture = new GestureDAL(null, null, null);
+			if (hasGesture && hasAction) {
+				Context context = getApplicationContext();
+				Logger.printLog("Create Gesture", "save gesture.");
+				int classifierGestureId = andgee.getDevice().getProcessingUnit().saveLearningAsGesture();
+				GestureModel gestureModel = andgee.getDevice().getProcessingUnit().getClassifier().getGestureModel(classifierGestureId);
+				gesture.setModel(gestureModel);
+				gesture.save(context);
+				gesture.addToApplication(context, appId);
+				andgee.getDevice().getProcessingUnit().getClassifier().clear();
+				gesture = new GestureDAL(null, null, null);
+			}
 			return null;
 		}
 
 		@Override
 		protected void onPostExecute(Void v) {
+			if (!hasGesture) {
+				openAlertDialog("Record a new gesture, recording 10 times will result with better identification.");
+			} else if (!hasAction) {
+				openAlertDialog("Select an action for your gesture.");
+			} else{
+				
+			}
 			saveProgressBar.setVisibility(View.INVISIBLE);
-			gestureNameEditText.getText().clear();
 			saveGestureBtn.setClickable(true);
-			setSessionCount(0);
+			if (hasAction && hasGesture) {
+				setSessionCount(0);
+				hasAction = false;
+				hasGesture = false;
+			}
 		}
+	}
+
+	private void openAlertDialog(String message) {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setMessage(message);
+		builder.setTitle("Gesture Data Missing");
+		AlertDialog dialog = builder.create();
+		dialog.show();
+		Log.w("CreateGestureActivity", " open alert should show");
 	}
 
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -182,6 +205,7 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
 				if (event.getAction() == MotionEvent.ACTION_DOWN) {
+					hasGesture = true;
 					Logger.printLog("Create Gesture Activity", "start learning");
 					andgee.getDevice().getProcessingUnit().startLearning();
 				} else if (event.getAction() == MotionEvent.ACTION_UP) {

@@ -1,8 +1,6 @@
 package Threads;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -11,7 +9,6 @@ import org.msgpack.type.Value;
 import org.msgpack.type.ValueFactory;
 
 import android.os.AsyncTask;
-import android.os.SystemClock;
 
 import com.example.gesturemouseclient.Client;
 import com.example.gesturemouseclient.Client.Result;
