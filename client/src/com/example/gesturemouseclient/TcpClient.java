@@ -113,7 +113,6 @@ public class TcpClient {
 		int port = -1;
 		try {
 			ServerSocket tcpServer = new ServerSocket();
-			tcpServer.setReuseAddress(true);
 			tcpServer.bind(null);
 			
 			port = tcpServer.getLocalPort();

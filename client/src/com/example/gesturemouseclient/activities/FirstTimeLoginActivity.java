@@ -1,6 +1,5 @@
 package com.example.gesturemouseclient.activities;
 
-
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -9,23 +8,21 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.gesturemouseclient.R;
-import com.example.gesturemouseclient.dal.ApplicationDAL;
-import com.example.gesturemouseclient.dal.GestureDAL;
 import com.example.gesturemouseclient.dal.SystemVariablesDAL;
 
 public class FirstTimeLoginActivity extends Activity {
 
-	private Button nextBtn;
+	private ImageView nextBtn;
 	private boolean doneWithInstructions = false;
 	private Boolean noInstructions = false;
 	private TextView instructionText;
 	private CheckBox removeInstructionCheckBox;
-	
+
 	private static final String INSTRUCTION_KEY = "instruction_off";
 
 	@Override
@@ -36,41 +33,38 @@ public class FirstTimeLoginActivity extends Activity {
 		// disable rotation and keep screen on.
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
-		
-		//TODO: initialize noInstruction boolean from data base.
+
+		// TODO: initialize noInstruction boolean from data base.
 
 		instructionText = (TextView) findViewById(R.id.instrcutionText);
 		instructionText.setVisibility(View.INVISIBLE);
-		
-		
-		
-		 noInstructions = new Boolean(SystemVariablesDAL.get(getApplicationContext(), INSTRUCTION_KEY));
-		 
-		 Log.d("FirstTimeLoginActivity", "skip instructions: "+noInstructions);
 
-		if(noInstructions)
-		{
+		noInstructions = Boolean.valueOf(SystemVariablesDAL.get(getApplicationContext(), INSTRUCTION_KEY));
+
+		Log.d("FirstTimeLoginActivity", "skip instructions: " + noInstructions);
+
+		if (noInstructions) {
 			goToStartAppPage();
-		}else{
+		} else {
 			initNextButton();
 			showFirstInstruction();
 			initInstructionCheckBox();
-			
+
 		}
 	}
 
 	/**
-	 * initialize the next button. 
+	 * initialize the next button.
 	 */
 	private void initNextButton() {
-		nextBtn = (Button) findViewById(R.id.nextBtn);
+		nextBtn = (ImageView) findViewById(R.id.nextBtn);
 		nextBtn.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				if(doneWithInstructions){
-					goToStartAppPage();						
-				}else{
+				if (doneWithInstructions) {
+					goToStartAppPage();
+				} else {
 					showSecondInstruction();
 				}
 			}
@@ -78,7 +72,7 @@ public class FirstTimeLoginActivity extends Activity {
 	}
 
 	/**
-	 * initialize the check box for removing the instruction made for first time users. 
+	 * initialize the check box for removing the instruction made for first time users.
 	 */
 	private void initInstructionCheckBox() {
 		removeInstructionCheckBox = (CheckBox) findViewById(R.id.removeInstructionCheckBox);
@@ -86,7 +80,7 @@ public class FirstTimeLoginActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				SystemVariablesDAL.set(getApplicationContext(),INSTRUCTION_KEY,""+true);
+				SystemVariablesDAL.set(getApplicationContext(), INSTRUCTION_KEY, "" + true);
 			}
 		});
 	}
@@ -96,25 +90,19 @@ public class FirstTimeLoginActivity extends Activity {
 	 */
 	private void goToStartAppPage() {
 		Intent intent = new Intent(this, FindServersActivity.class);
-		startActivity(intent);		
+		startActivity(intent);
 	}
 
 	/**
-	 * show the first instruction. 
+	 * show the first instruction.
 	 */
-	private void showFirstInstruction()
-	{
+	private void showFirstInstruction() {
 		instructionText.setVisibility(View.VISIBLE);
 	}
 
-	private void showSecondInstruction()
-	{
+	private void showSecondInstruction() {
 		instructionText.setText(R.string.instructionTwo);
 		doneWithInstructions = true;
 	}
-
-
-
-
 
 }

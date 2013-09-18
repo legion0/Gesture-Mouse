@@ -33,6 +33,7 @@ import com.example.gesturemouseclient.R;
 import com.example.gesturemouseclient.dal.GestureDAL;
 import com.example.gesturemouseclient.infra.Logger;
 import com.example.gesturemouseclient.infra.Params;
+import com.example.gesturemouseclient.infra.Tools;
 
 public class CreateGestureActivity extends Activity implements SensorEventListener {
 
@@ -175,11 +176,7 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 	}
 
 	private void openAlertDialog(String message) {
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setMessage(message);
-		builder.setTitle("Gesture Data Missing");
-		AlertDialog dialog = builder.create();
-		dialog.show();
+		Tools.showErrorModal(this, "Gesture Data Missing", message);
 		Log.w("CreateGestureActivity", " open alert should show");
 	}
 
