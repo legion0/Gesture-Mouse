@@ -16,7 +16,7 @@
 		android:layout_centerHorizontal="true"
 		android:layout_marginTop="23dp"
 		android:fontFamily="/fonts/airmole.ttf"
-		android:text="@string/agesture_mouse"
+		android:text="@string/gesture_mouse"
 		android:textAppearance="?android:attr/textAppearanceLarge" />
 
 	<TextView
