@@ -18,10 +18,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.example.gesturemouseclient.R;
 import com.example.gesturemouseclient.infra.KeyMap;
-import com.example.gesturemouseclient.infra.Params;
 import com.example.gesturemouseclient.infra.TextItemPair;
 
 public class CreateActionActivity extends Activity {
@@ -76,5 +76,4 @@ public class CreateActionActivity extends Activity {
 		setResult(RESULT_OK, intent);
 		finish();
 	}
-
 }

@@ -34,12 +34,12 @@ public class TcpInitConnectionTask extends AsyncTask<Boolean, Void, Void> {
 
 	@Override
 	protected Void doInBackground(Boolean... params) {
-		boolean close = params[0];
+		boolean openNewTcpConnection = params[0];
 
 		TcpClient client = new TcpClient(remoteDevice, activity.getApplicationContext());
 		client.setTimeout(5);
 		try {
-			if(!close)
+			if(openNewTcpConnection)
 			{
 				client.initControllSession(Params.TCP_IN_GOING_PORT, null,remoteDevice);
 				Logger.printLog("TcpInitialConnection", remoteDevice.getUDPPort() + "");

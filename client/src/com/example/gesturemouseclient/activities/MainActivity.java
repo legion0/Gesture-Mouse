@@ -100,7 +100,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		applications = ApplicationDAL.loadWithGestures(getApplicationContext());
 		super.onStart();
 		tcpConnection = new TcpInitConnectionTask(remoteDeviceInfo, this);
-		tcpConnection.execute(false);
+		tcpConnection.execute(true);
 	}
 
 	@Override
@@ -139,7 +139,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			sensorManager.unregisterListener(this);
 			backgroundWorkManager.suspend();
 			tcpConnection = new TcpInitConnectionTask(remoteDeviceInfo, this);
-			tcpConnection.execute(true);
+			tcpConnection.execute(false);
 			applicationListenerThread.cancel(true);
 			applicationListenerThread = null;
 		}

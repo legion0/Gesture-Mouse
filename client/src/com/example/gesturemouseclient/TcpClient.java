@@ -160,6 +160,7 @@ public class TcpClient {
 		Map<Object, Object> msg = new LinkedHashMap<Object, Object>();
 
 		msg.put(key_close, "temporary close"); 
+		msg.put(key_session_id, remoteDevice.getSessionId());
 		MessagePack msgpack = new MessagePack();
 		byte[] msgBuffer = msgpack.write(msg);
 
