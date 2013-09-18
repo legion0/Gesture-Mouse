@@ -38,7 +38,8 @@
         </activity>
         <activity
             android:name="com.example.gesturemouseclient.activities.CreateActionActivity"
-            android:label="@string/title_activity_create_action" >
+            android:label="@string/title_activity_create_action"
+            android:windowSoftInputMode="stateHidden" >
         </activity>
         <activity
             android:name="com.example.gesturemouseclient.activities.CreateNewApplicationActivity"

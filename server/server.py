@@ -23,6 +23,8 @@ from win32api import GetSystemMetrics
 import keyboard
 import json
 
+from kjlib.debugtools import dumps
+
 SCRIPT_DIR = os.path.dirname(__file__)
 SCRIPT_NAME = os.path.basename(__file__)
 SETTINGS_DIR = SCRIPT_DIR
@@ -144,7 +146,7 @@ def gen_session_id():
 gen_session_id.cid = -1
 gen_session_id.lock = threading.Lock()
 
-def new_session():
+def new_session(msg, addr):
 	global SESSIONS
 	client_disconnect_event = threading.Event()
 	udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -153,6 +155,12 @@ def new_session():
 	udp_port = udp_sock.getsockname()[1]
 	session_id = gen_session_id()
 	session = {"id": session_id, "udp_sock": udp_sock, "udp_port": udp_port, "disconnected": client_disconnect_event, "lock": threading.Lock()}
+	session["name"] = msg["name"]
+	session["control_port"] = msg["port"]
+	session["apps"] = msg["apps"]
+	session["ip"] = addr[0]
+	mouse_listener_thread = threading.Thread(target=mouse_listener, args=(session,))
+	session["mouse_listener_thread"] = mouse_listener_thread
 	session["settings"] = {
 		"mouse": {
 			"delay_drag": True
@@ -168,19 +176,13 @@ def request_handler(sock, addr):
 	print "request_handler", "msg:", repr(msg)
 	if msg is None:
 		return
-
 	if "name" in msg:
-		print json.dumps(msg["apps"], sort_keys=True, indent=4, separators=(',', ': ')) # XXX
-		session = new_session()
-		mouse_listener_thread = threading.Thread(target=mouse_listener, args=(session,))
+		print dumps(msg["apps"]) # XXX
+		session = new_session(msg, addr)
 		with session["lock"]:
-			session["name"] = msg["name"]
-			session["control_port"] = msg["port"]
-			session["apps"] = msg["apps"]
-			session["ip"] = addr[0]
-			session["mouse_listener_thread"] = mouse_listener_thread
-			session_id = session["id"]
 			udp_port = session["udp_port"]
+			session_id = session["id"]
+			mouse_listener_thread = session["mouse_listener_thread"]
 		response = {"session_id": session_id, "udp": udp_port}
 		print "request_handler", "response:", repr(response)
 		sock.sendall(msgpack.packb(response))
@@ -212,17 +214,27 @@ def handle_key_event(session, msg):
 				now = get_timestamp()
 				session["mouse_filter_low_end"] = now + 500 # delay mouse input for 100 miliseconds
 
+def find_session(session_id):
+	with SESSIONS_LOCK:
+		return SESSIONS.get(session_id, None)
+
+def delete_session(session_id):
+	with SESSIONS_LOCK:
+		session = SESSIONS.pop(session_id, None)
+	if session is None:
+		return
+	with session["lock"]:
+		session["disconnected"].set()
+		mouse_listener_thread = session["mouse_listener_thread"]
+	mouse_listener_thread.join()
+	print "bye, bye", session_id
+
 def client_msg_handler(session, msg):
 	if "key_event" in msg:
 		handle_key_event(session, msg)
 	elif "close" in msg:
-		session_id = session["id"]
-		with session["lock"]:
-			session["disconnected"].set()
-			session["mouse_listener_thread"].join()
-		with SESSIONS_LOCK:
-			del SESSIONS[session_id]
-		print "bye, bye", session_id
+		session_id = msg["session_id"]
+		delete_session(session_id)
 	elif "gesture" in msg:
 		action = None
 		gesture_id = msg["gesture"]
@@ -280,6 +292,13 @@ def application_finder(window_title, process_name):
 		return window_title.startswith(item["window_title"]) or window_title.endswith(item["window_title"])
 	return the_finder
 
+def delete_stail_sessions():
+	global SESSIONS, SESSIONS_LOCK
+	with SESSIONS_LOCK:
+		for session_id in SESSIONS.keys():
+			if SESSIONS[session_id].get("control_port_fails", 0) > 2:
+				del SESSIONS[session_id]
+
 def window_monitor():
 	old_window_title = None
 	old_process_name = None
@@ -290,9 +309,11 @@ def window_monitor():
 			old_process_name = process_name
 			print "Switched to: %s (%s)." % (window_title, process_name)
 
+		delete_stail_sessions()
 		with SESSIONS_LOCK:
 			for session in SESSIONS.viewvalues():
 				with session["lock"]:
+					session_id = session["id"]
 					app = find_in_list(session["apps"], application_finder(window_title, process_name))
 					msg = None
 					if app is not None and app != session.get("active_app"):
@@ -310,9 +331,12 @@ def window_monitor():
 							sock.connect(addr)
 							sock.sendall(msgpack.packb(msg))
 							sock.close()
+							session["control_port_fails"] = 0
 						#except socket.error as ex:
 						except Exception as ex:
 							if type(ex) == socket.error:
+								session["control_port_fails"] = session.get("control_port_fails", 0) + 1
+								print "session %s is not responding on address %s for the %s time." % (session_id, addr, session["control_port_fails"])
 								continue
 							raise ex
 		time.sleep(settings[SETTINGS.WINDOW_DETECTION_DELAY])
@@ -323,20 +347,20 @@ def find_in_list(l, selector):
 			return item
 	return None
 
-def extract_application(window_title, file_name, apps):
-	if window_title == "" and file_name == "explorer.exe": # Desktop
-		return None
-	selected_app = None
-	for app in apps: # First try by title
-		if window_title.endswith(app["name"].lower()):
-			selected_app = app
-			break
-	if selected_app is None: # Cannot find by title
-		for app in apps: # First try by title
-			if file_name == app["name"].lower():
-				selected_app = app
-				break
-	return selected_app
+#def extract_application(window_title, file_name, apps):
+#	if window_title == "" and file_name == "explorer.exe": # Desktop
+#		return None
+#	selected_app = None
+#	for app in apps: # First try by title
+#		if window_title.endswith(app["name"].lower()):
+#			selected_app = app
+#			break
+#	if selected_app is None: # Cannot find by title
+#		for app in apps: # First try by title
+#			if file_name == app["name"].lower():
+#				selected_app = app
+#				break
+#	return selected_app
 
 def get_timestamp():
 	return int(time.time() * 1000)
