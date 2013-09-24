@@ -1,44 +1,31 @@
 package com.example.gesturemouseclient.activities;
 
-import com.example.gesturemouseclient.R;
-import com.example.gesturemouseclient.R.layout;
-import com.example.gesturemouseclient.R.menu;
-import com.example.gesturemouseclient.dal.ApplicationDAL;
-import com.example.gesturemouseclient.infra.Params;
-import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
-import com.example.gesturemouseclient.infra.Tools;
-
-import android.os.Bundle;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Intent;
-import android.graphics.Typeface;
+import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
+import android.widget.ImageView;
+
+import com.example.gesturemouseclient.R;
+import com.example.gesturemouseclient.dal.ApplicationDAL;
+import com.example.gesturemouseclient.infra.Tools;
 
 public class CreateNewApplicationActivity extends Activity {
 
-	private Button createApplicationBtn;
+	private ImageView createApplicationBtn;
 	private EditText applicationEditTxt;
 	private String processName;
 	private String windowTitle;
-//	private TextView headLine;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_create_new_application);
-		
-//		Typeface tf = Typeface.createFromAsset(getAssets(), "fonts/BigAppleNF.ttf");
-//		headLine = (TextView) findViewById(R.id.createApplicationHeadLine);
-//		headLine.setTypeface(tf);
-		
-		createApplicationBtn = (Button) findViewById(R.id.createNewApplicationBtn);
+				
+		createApplicationBtn = (ImageView) findViewById(R.id.createNewApplicationBtn);
 		applicationEditTxt = (EditText) findViewById(R.id.createApplicationTxt);
 		
 		Intent intent = getIntent();
@@ -47,10 +34,7 @@ public class CreateNewApplicationActivity extends Activity {
 		
 		applicationEditTxt.setText(windowTitle);
 		
-		
-		
 		createApplicationBtn.setOnClickListener(new OnClickListener() {
-		
 			
 			@Override
 			public void onClick(View v) {
@@ -66,9 +50,7 @@ public class CreateNewApplicationActivity extends Activity {
 					applicationDAL.save(getApplicationContext());
 					goBackToMainActivity(applicationDAL.getId());
 					Log.v("Create New Application", "app name is legal");
-				}
-				
-				
+				}		
 			}
 		
 		});

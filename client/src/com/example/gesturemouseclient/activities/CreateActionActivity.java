@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -20,6 +21,7 @@ import android.widget.ListView;
 import com.example.gesturemouseclient.R;
 import com.example.gesturemouseclient.infra.KeyMap;
 import com.example.gesturemouseclient.infra.TextItemPair;
+import com.example.gesturemouseclient.infra.Tools;
 
 public class CreateActionActivity extends Activity {
 
@@ -32,11 +34,11 @@ public class CreateActionActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_create_action);
-		
+
 		createActionBtn = (Button) findViewById(R.id.createActionDoneBtn);
 		actionEditTxt = (EditText) findViewById(R.id.actionText);
 		keySpinner = (ListView) findViewById(R.id.createActionKeyListView);
-		
+
 		List<TextItemPair<Integer>> keyList = new ArrayList<TextItemPair<Integer>>(KeyMap.KEY_MAP.size());
 		for (Entry<String, Integer> entry : KeyMap.KEY_MAP.entrySet()) {
 			keyList.add(new TextItemPair<Integer>(entry.getKey(), entry.getValue()));
@@ -49,7 +51,14 @@ public class CreateActionActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				String action = actionEditTxt.getText().toString();
-				returnAction(action);
+				if(checkActionValidity(action))
+				{
+					returnAction(action);
+				}else{
+					openAlertDialog("The action you entered is not valid, you have to choose actions in the following format:\n" +
+							"comma separate numbers. the number should be in the range of the actions in the list." );
+				}
+				
 			}
 		});
 		keySpinner.setOnItemClickListener(new OnItemClickListener() {
@@ -66,6 +75,27 @@ public class CreateActionActivity extends Activity {
 				}
 			}
 		});
+	}
+
+	private boolean checkActionValidity(String action){
+		String actionStr = action.replace(" ", "");
+		String[] actionSplited = actionStr.split(",");
+		try{
+			for (int i = 0; i < actionSplited.length; i++) {
+				Integer.parseInt(actionSplited[i]);
+			}
+		}catch (NumberFormatException e) {
+			return false;
+		}
+
+		return true;
+	}
+
+
+
+	private void openAlertDialog(String message) {
+		Tools.showErrorModal(this, "Action Data Invalid", message);
+		Log.w("CreateGestureActivity", " open alert should show");
 	}
 
 	protected void returnAction(String action) {

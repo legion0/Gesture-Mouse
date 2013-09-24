@@ -73,7 +73,6 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 		setActionBtn.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				hasAction = true;
 				startActivityForResult(setActionIntent, Params.PICK_ACTION_REQUEST);
 			}
 		});
@@ -186,10 +185,16 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 				String actionStr = data.getStringExtra("action").replace(" ", "");
 				List<Integer> action = new ArrayList<Integer>();
 				String[] actionSplited = actionStr.split(",");
-				for (int i = 0; i < actionSplited.length; i++) {
-					action.add(Integer.parseInt(actionSplited[i]));
+				if(actionSplited.length != 0 && !actionSplited[0].equals("")){
+					for (int i = 0; i < actionSplited.length; i++) {
+						action.add(Integer.parseInt(actionSplited[i]));
+					}
+					this.hasAction = true;
+					gesture.setAction(action);
+				}else{
+					this.hasAction = false;
 				}
-				gesture.setAction(action);
+				
 			}
 		}
 	}

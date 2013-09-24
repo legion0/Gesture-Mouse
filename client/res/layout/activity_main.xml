@@ -29,7 +29,7 @@
 			android:id="@+id/gestureBtn"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:layout_marginTop="20dp"
+			android:layout_marginTop="30dp"
 			android:background="@drawable/av_play_over_video"
 			android:contentDescription="@string/recognize_gesture" />
 	</LinearLayout>
