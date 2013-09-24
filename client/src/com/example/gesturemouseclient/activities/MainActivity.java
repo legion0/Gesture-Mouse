@@ -164,7 +164,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 					Intent intent = new Intent(this_, CreateNewApplicationActivity.class);
 					intent.putExtra("window_title", runningApp.getWindowTitle());
 					intent.putExtra("process_name", runningApp.getProcessName());
-					startActivityForResult(intent, Params.PICK_APPLICATION_REQUEST);
+					startActivity(intent);
 				}
 			}
 

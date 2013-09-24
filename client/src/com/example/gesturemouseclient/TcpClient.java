@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.DatagramPacket;
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -28,13 +27,12 @@ import android.util.Log;
 import com.example.gesturemouseclient.dal.ApplicationDAL;
 import com.example.gesturemouseclient.dal.GestureDAL;
 import com.example.gesturemouseclient.infra.Logger;
-import com.example.gesturemouseclient.infra.Params;
 import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 
 public class TcpClient {
 
 	// private ResponseReader responseReader = null;
-	private long timeout = -1;
+	private int timeout = 3;
 
 	private static final RawValue key_port = ValueFactory.createRawValue("port".getBytes());
 	private static final RawValue key_name = ValueFactory.createRawValue("name".getBytes());
@@ -66,7 +64,7 @@ public class TcpClient {
 	}
 
 	public void setTimeout(int seconds) {
-		timeout = seconds * 1000000000l;
+		timeout = seconds * 1000;
 	}
 
 	private byte[] createMsg(int localControlPort) throws IOException {
@@ -93,8 +91,8 @@ public class TcpClient {
 				gestureMsg.put(key_id, gesture.getId());
 				gestureMsg.put(key_name, gesture.getName());
 				List<Object> actionMsg = new ArrayList<Object>();
-				List<Integer> action = gesture.getAction();
-				for (Integer keyCode : action) {
+				int[] action = gesture.getAction();
+				for (int keyCode : action) {
 					actionMsg.add(keyCode);
 				}
 				gestureMsg.put(key_action, actionMsg);
@@ -149,7 +147,7 @@ public class TcpClient {
 			// receive the message which the server sends back
 			byte[] bufInput = new byte[4096];
 			DatagramPacket incomingPacket = new DatagramPacket(bufInput, bufInput.length);
-			socket.setSoTimeout(3000);
+			socket.setSoTimeout(timeout);
 			InputStream inputStream = socket.getInputStream();
 			inputStream.read(bufInput);
 

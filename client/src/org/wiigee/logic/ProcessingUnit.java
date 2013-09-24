@@ -87,4 +87,6 @@ public abstract class ProcessingUnit implements AccelerationListener, ButtonList
 	public abstract boolean isRecognizing();
 
 	public abstract boolean endRecognizing();
+
+	public abstract int trainingSequenceSize();
 }

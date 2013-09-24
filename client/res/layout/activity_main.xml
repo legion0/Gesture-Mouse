@@ -10,23 +10,25 @@
 	tools:context=".MainActivity" >
 
 	<LinearLayout
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:layout_above="@+id/mainActivBottomContainer"
-		android:layout_alignParentTop="true"
-		android:gravity="center_horizontal"
-		android:orientation="vertical" >
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_above="@+id/mainActivBottomContainer"
+	    android:layout_alignParentTop="true"
+	    android:orientation="vertical"
+	    tools:ignore="UseCompoundDrawables" >
 
 		<TextView
 			android:id="@+id/connectedPcName"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:text="Device Name"
+			android:layout_gravity="center_horizontal"
 			android:textAppearance="?android:attr/textAppearanceMedium"
 			tools:ignore="SelectableText,HardcodedText" />
 
 		<ImageView
 			android:id="@+id/gestureBtn"
+			android:layout_gravity="center_horizontal"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_marginTop="30dp"

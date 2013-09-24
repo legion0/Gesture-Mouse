@@ -4,10 +4,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.wiigee.logic.GestureModel;
@@ -27,11 +25,10 @@ public class GestureDAL {
 
 	private Integer id;
 	private String name;
-	private List<Integer> action;
+	private int[] action;
 	private GestureModel model;
 
-	public GestureDAL(String name, List<Integer> action,
-			GestureModel model) {
+	public GestureDAL(String name, int[] action, GestureModel model) {
 		super();
 		this.name = name;
 		this.action = action;
@@ -42,25 +39,22 @@ public class GestureDAL {
 		DBHelper helper = new DBHelper(context);
 		SQLiteDatabase db = helper.getWritableDatabase();
 
-		//DBHelper.GUSTERS_TABLE_NAME, new String[] {"id","name","action","model"},null,null);
+		// DBHelper.GUSTERS_TABLE_NAME, new String[]
+		// {"id","name","action","model"},null,null);
 
-
-
-		int[] gestureIdArr = getGestureIds(context,appId);
+		int[] gestureIdArr = getGestureIds(context, appId);
 		String gestureIdStringArr = Arrays.toString(gestureIdArr);
-		gestureIdStringArr = "("+gestureIdStringArr.substring(1,gestureIdStringArr.length()-1)+")";
+		gestureIdStringArr = "(" + gestureIdStringArr.substring(1, gestureIdStringArr.length() - 1) + ")";
 
 		String table = DBHelper.GUSTERS_TABLE_NAME;
-		String[] columns = {DBHelper.GUSTERS_COLUMN_ID,DBHelper.GUSTERS_COLUMN_NAME,DBHelper.GUSTERS_COLUMN_ACTION,DBHelper.GUSTERS_COLUMN_MODEL}; 
-		String selection = DBHelper.GUSTERS_COLUMN_ID+ " IN "+gestureIdStringArr;
-		String[] selectionArgs = null; 
+		String[] columns = { DBHelper.GUSTERS_COLUMN_ID, DBHelper.GUSTERS_COLUMN_NAME, DBHelper.GUSTERS_COLUMN_ACTION, DBHelper.GUSTERS_COLUMN_MODEL };
+		String selection = DBHelper.GUSTERS_COLUMN_ID + " IN " + gestureIdStringArr;
+		String[] selectionArgs = null;
 		String groupBy = null;
 		String having = null;
 		String orderBy = null;
 
-
-
-		Cursor cursor = db.query(table, columns, selection, selectionArgs, groupBy, having,	orderBy);
+		Cursor cursor = db.query(table, columns, selection, selectionArgs, groupBy, having, orderBy);
 
 		Set<GestureDAL> gestureSet = new HashSet<GestureDAL>();
 
@@ -68,20 +62,20 @@ public class GestureDAL {
 			do {
 				int id = cursor.getInt(0);
 				String name = cursor.getString(1);
-				List<Integer> action = StringToIntegerList(cursor.getString(2));
+				int[] action = StringToIntArray(cursor.getString(2));
 				byte[] buffer = cursor.getBlob(3);
 				InputStream stream = new ByteArrayInputStream(buffer);
 				GestureModel model = null;
 				try {
-					model = Serializer.read(stream );
+					model = Serializer.read(stream);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
-//					throw new RuntimeException(e);
-					//e.printStackTrace();
-				} 
-				
-				Log.d("GestureDal","model: "+model);
-				
+					// throw new RuntimeException(e);
+					// e.printStackTrace();
+				}
+
+				Log.d("GestureDal", "model: " + model);
+
 				GestureDAL g = new GestureDAL(name, action, model);
 				g.id = id;
 				gestureSet.add(g);
@@ -92,16 +86,16 @@ public class GestureDAL {
 		return gestureSet;
 	}
 
-	private static List<Integer> StringToIntegerList(String str) {
-		str = str.substring(1,str.length()-1);
+	private static int[] StringToIntArray(String str) {
+		str = str.substring(1, str.length() - 1);
 
 		String[] strArr = str.split(", ");
-		List<Integer> output = new ArrayList<Integer>();
+		int[] intArr = new int[strArr.length];
 
 		for (int i = 0; i < strArr.length; i++) {
-			output.add(Integer.parseInt(strArr[i]));
+			intArr[i] = Integer.parseInt(strArr[i]);
 		}
-		return output;
+		return intArr;
 	}
 
 	public void save(Context context) {
@@ -122,11 +116,9 @@ public class GestureDAL {
 			gestureValues.put(DBHelper.GUSTERS_COLUMN_NAME, name);
 			gestureValues.put(DBHelper.GUSTERS_COLUMN_ACTION, action.toString());
 			gestureValues.put(DBHelper.GUSTERS_COLUMN_MODEL, buffer);
-			long newId = db.insertWithOnConflict(DBHelper.GUSTERS_TABLE_NAME, null, gestureValues,
-					SQLiteDatabase.CONFLICT_REPLACE);
-			if(newId == -1)
-			{
-				//TODO: handle error
+			long newId = db.insertWithOnConflict(DBHelper.GUSTERS_TABLE_NAME, null, gestureValues, SQLiteDatabase.CONFLICT_REPLACE);
+			if (newId == -1) {
+				// TODO: handle error
 				db.close();
 				return;
 			}
@@ -150,11 +142,11 @@ public class GestureDAL {
 		this.name = name;
 	}
 
-	public List<Integer> getAction() {
+	public int[] getAction() {
 		return action;
 	}
 
-	public void setAction(List<Integer> action) {
+	public void setAction(int[] action) {
 		this.action = action;
 	}
 
@@ -169,12 +161,8 @@ public class GestureDAL {
 	static int[] getGestureIds(Context context, int appId) {
 		DBHelper helper = new DBHelper(context);
 		SQLiteDatabase db = helper.getWritableDatabase();
-		Cursor cursor = db.query(
-				DBHelper.M2M_APPLICATION_GESTURE_TABLE_NAME,
-				new String[] {DBHelper.M2M_APPLICATION_GESTURE_COLUMN_GESTURE_ID},
-				String.format("%s = ?", DBHelper.M2M_APPLICATION_GESTURE_COLUMN_APP_ID),
-				new String[] {Integer.toString(appId)},
-				null, null, null);
+		Cursor cursor = db.query(DBHelper.M2M_APPLICATION_GESTURE_TABLE_NAME, new String[] { DBHelper.M2M_APPLICATION_GESTURE_COLUMN_GESTURE_ID },
+				String.format("%s = ?", DBHelper.M2M_APPLICATION_GESTURE_COLUMN_APP_ID), new String[] { Integer.toString(appId) }, null, null, null);
 		if (!cursor.moveToFirst()) {
 			cursor.close();
 			db.close();

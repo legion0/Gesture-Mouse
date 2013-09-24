@@ -56,7 +56,7 @@ public class FindServersActivity extends Activity implements OnClickListener {
 		adapter = new DeviceListDisplayAdapter(this, deviceList, this);
 		deviceListView.setAdapter(adapter);
 
-		progressBarContainer = findViewById(R.id.progressBarContainer);
+		progressBarContainer = findViewById(R.id.findServersProgressBar);
 		retryBtn = (Button) findViewById(R.id.findServersBtn);
 
 		retryBtn.setOnClickListener(new OnClickListener() {

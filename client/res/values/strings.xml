@@ -28,5 +28,9 @@
 	<string name="gesture_mouse">Gesture Mouse</string>
 	<string name="application_name">Application Name</string>
 	<string name="application_name_short_tutorial">* The application name should be the prefix or suffix of the window title written above.\\nFor example when presented with \'New Tab - Google Chrome\' you should leave only the application specific part of \'Google Chrome\'.</string>
+	<string name="select_action">Select Action</string>
+	<string name="record_gesture">Record Gesture</string>
+	<item name="trainingSequenceSizeMin" type="integer">3</item>
+	<string name="refresh">Refresh</string>
 
 </resources>

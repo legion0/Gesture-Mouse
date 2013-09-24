@@ -222,5 +222,9 @@ public class TriggeredProcessingUnit extends ProcessingUnit {
 	public void saveGesture(int id, String filename) {
 		org.wiigee.util.FileIO.writeToFile(this.classifier.getGestureModel(id), filename);
 	}
+	
+	public int trainingSequenceSize() {
+		return trainingSequence.size();
+	}
 
 }
