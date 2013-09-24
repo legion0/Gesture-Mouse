@@ -1,0 +1,1 @@
+#define MyAppSrcDir "C:\postpc_workspace\Gesture-Mouse\server\installation"

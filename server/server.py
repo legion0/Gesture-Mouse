@@ -1,32 +1,37 @@
-import sys, os
-import threading
-import socket
-import random
-import ctypes, math
-from ctypes import wintypes
-from copy import deepcopy
-
-import msgpack
-import win32gui, win32process, win32api, win32con
-
+__APP_NAME__ = "gesture_mouse_server"
+__VERSION__ = "1.0.0"
 from SysTrayIcon import SysTrayIcon
-
-import settings as SETTINGS
-import protocol
-
-#temps
-import time
+# from copy import deepcopy
+# from ctypes import wintypes
+# from math import sqrt
 from msgpacknsd import NSDServer
-from math import sqrt
-
 from win32api import GetSystemMetrics
+# import ctypes
+import math
+# import json
 import keyboard
-import json
-
+import msgpack
+# import protocol
+# import random
+import settings as SETTINGS
+import socket
+import sys
+import os
+import threading
+import time
+import win32gui
+import win32process
+import win32api
+import win32con
 
 SCRIPT_DIR = os.path.dirname(__file__)
 SCRIPT_NAME = os.path.basename(__file__)
-SETTINGS_DIR = SCRIPT_DIR
+HOME_DIR = os.getenv('USERPROFILE') or os.path.expanduser("~")  # prefer windows USERPROFILE for windows/cygwin mixes
+LOG_DIR = os.path.join(HOME_DIR, ".logs", __APP_NAME__)
+CACHE_DIR = os.path.join(HOME_DIR, ".cache", __APP_NAME__)
+DATA_DIR = os.path.join(HOME_DIR, ".data", __APP_NAME__)
+CONFIG_DIR = os.path.join(HOME_DIR, ".config", __APP_NAME__)
+SETTINGS_DIR = CONFIG_DIR
 
 MOUSE_LISTENER_BUFFER_SIZE = 1024
 BROADCAST_LISTENER_BUFFER_SIZE = 1024
@@ -49,8 +54,7 @@ def main(args):
 # 	keyboard.execute_sequence(seq)
 # 	exit(0)
 	# Load Settings
-	settings_file_path = os.path.join(SETTINGS_DIR, "settings.yml")
-	settings = SETTINGS.load_settings(settings_file_path)
+	settings = SETTINGS.load_settings()
 
 	# Start threads
 	bl_args = (
@@ -79,6 +83,7 @@ def main(args):
 	window_monitor_thread.join()
 
 def tray_handler():
+	global TRAY_HNWD
 	hover_text = "Gesture Mouse Server"
 	menu_options = (
 #		('Say Hello', None, kill_server),
@@ -88,8 +93,9 @@ def tray_handler():
 #			('Switch Icon', None, kill_server),
 #		))
 	)
-
-	SysTrayIcon("icon.ico", hover_text, menu_options, on_quit=kill_server, default_menu_index=1)
+	TRAY_HNWD = SysTrayIcon("icon.ico", hover_text, menu_options, on_quit=kill_server, default_menu_index=1)
+	TRAY_HNWD.show_balloon_tip("Startup", "Gesture mouse is running.")
+	TRAY_HNWD.start()
 
 def kill_server(_):
 	event_shutdown.set()
@@ -226,6 +232,10 @@ def delete_session(session_id):
 		mouse_listener_thread = session["mouse_listener_thread"]
 	mouse_listener_thread.join()
 	print "bye, bye", session_id
+	with SESSIONS_LOCK:
+		if len(SESSIONS) > 0:
+			still_alive_ids = [session["id"] for session in SESSIONS.viewvalues()]
+			print "Still alive: %r." % still_alive_ids
 
 def client_msg_handler(session, msg):
 	if "key_event" in msg:
@@ -296,6 +306,7 @@ def delete_stail_sessions():
 		for session_id in SESSIONS.keys():
 			if SESSIONS[session_id].get("control_port_fails", 0) > 2:
 				del SESSIONS[session_id]
+				print "Deleted session %r" % session_id
 
 def window_monitor():
 	old_window_title = None
@@ -316,8 +327,11 @@ def window_monitor():
 					msg = None
 					if app is not None and app != session.get("active_app"):
 						session["active_app"] = app
+						session["current_window_title"] = None
+						session["current_process_name"] = None
 						msg = {"app_id": app["id"]}
 					elif app is None and (window_title != session.get("current_window_title") or process_name != session.get("current_process_name")):
+						session["active_app"] = None
 						session["current_window_title"] = window_title
 						session["current_process_name"] = process_name
 						msg = {"window_title": window_title, "process_name": process_name}
@@ -377,7 +391,8 @@ def mouse_listener(session):
 		if client_disconnect_event.is_set():
 			break
 		try:
-			data, addr = sock.recvfrom(MOUSE_LISTENER_BUFFER_SIZE)
+			data, _ = sock.recvfrom(MOUSE_LISTENER_BUFFER_SIZE)
+# 			data, addr = sock.recvfrom(MOUSE_LISTENER_BUFFER_SIZE)
 		except socket.timeout:
 			continue
 		#print "mouse_listener", "got msg from:", addr
@@ -388,7 +403,7 @@ def mouse_listener(session):
 			continue
 		#filter_low_end = session.get("mouse_filter_low_end", now)
 
-		current_x, current_y = win32api.GetCursorPos()
+# 		current_x, current_y = win32api.GetCursorPos()
 
 		#Calc New y:
 		pitch = math.degrees(msg[2])
@@ -439,9 +454,7 @@ def mouse_listener(session):
 		if print_round == 0:
 			print "x: ", x, ", y: ", y
 # 			print (pitch, roll), x, math.fabs(speed[0]), y, math.fabs(speed[1]), avg
-
 		try:
-			
 			win32api.SetCursorPos((x,y))
 		except win32api.error:
 			pass

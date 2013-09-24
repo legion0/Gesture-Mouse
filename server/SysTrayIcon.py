@@ -5,6 +5,8 @@
 # Date       : 11 April 2005
 # Notes      : Based on (i.e. ripped off from) Mark Hammond's
 #              win32gui_taskbar.py and win32gui_menu.py demos from PyWin32
+import struct
+import ctypes
 '''TODO
 
 For now, the demo at the bottom shows how to use it...'''
@@ -79,6 +81,7 @@ class SysTrayIcon(object):
         self.notify_id = None
         self.refresh_icon()
 
+    def start(self):
         win32gui.PumpMessages()
 
     def _add_ids_to_menu_options(self, menu_options):
@@ -97,22 +100,27 @@ class SysTrayIcon(object):
                 print 'Unknown item', option_text, option_icon, option_action
             self._next_action_id += 1
         return result
-
-    def refresh_icon(self):
+    
+    def _get_icon(self):
         # Try and find a custom icon
         hinst = win32gui.GetModuleHandle(None)
         if os.path.isfile(self.icon):
             icon_flags = win32con.LR_LOADFROMFILE | win32con.LR_DEFAULTSIZE
-            hicon = win32gui.LoadImage(hinst,
-                                       self.icon,
-                                       win32con.IMAGE_ICON,
-                                       0,
-                                       0,
-                                       icon_flags)
+            hicon = win32gui.LoadImage(
+                hinst,
+               self.icon,
+               win32con.IMAGE_ICON,
+               0,
+               0,
+               icon_flags
+            )
         else:
             print "Can't find icon file - using default."
             hicon = win32gui.LoadIcon(0, win32con.IDI_APPLICATION)
+        return hicon
 
+    def refresh_icon(self):
+        hicon = self._get_icon()
         if self.notify_id: message = win32gui.NIM_MODIFY
         else: message = win32gui.NIM_ADD
         self.notify_id = (self.hwnd,
@@ -122,6 +130,21 @@ class SysTrayIcon(object):
                           hicon,
                           self.hover_text)
         win32gui.Shell_NotifyIcon(message, self.notify_id)
+    
+    def show_balloon_tip(self, title, message):
+        _NOTIFYICONDATA = (
+            self.hwnd, # hWnd
+            0, # ID
+            win32gui.NIF_INFO, # Flags
+            0, # CallbackMessage
+            0, # hIcon
+            "", # Tip
+            message, # Info
+            10000, # Timeout
+            title, # InfoTitle
+            0, # InfoFlags
+        )
+        win32gui.Shell_NotifyIcon(win32gui.NIM_MODIFY, _NOTIFYICONDATA)
 
     def restart(self, hwnd, msg, wparam, lparam):
         self.refresh_icon()
@@ -239,3 +262,61 @@ if __name__ == '__main__':
     def bye(sysTrayIcon): print 'Bye, then.'
 
     SysTrayIcon(icons.next(), hover_text, menu_options, on_quit=bye, default_menu_index=1)
+
+class PyNOTIFYICONDATA:
+    _struct_format = (
+        "I"  # DWORD cbSize;
+        "I"  # HWND hWnd;
+        "I"  # UINT uID;
+        "I"  # UINT uFlags;
+        "I"  # UINT uCallbackMessage;
+        "I"  # HICON hIcon;
+        "128s"  # TCHAR szTip[128];
+        "I"  # DWORD dwState;
+        "I"  # DWORD dwStateMask;
+        "256s"  # TCHAR szInfo[256];
+        "I"  # union {
+        # UINT uTimeout;
+        # UINT uVersion;
+        # } DUMMYUNIONNAME;
+        "64s"  # TCHAR szInfoTitle[64];
+        "I"  # DWORD dwInfoFlags;
+        # GUID guidItem;
+    )
+    _struct = struct.Struct(_struct_format)
+
+    hWnd = 0
+    uID = 0
+    uFlags = 0
+    uCallbackMessage = 0
+    hIcon = 0
+    szTip = ''
+    dwState = 0
+    dwStateMask = 0
+    szInfo = ''
+    uTimeoutOrVersion = 0
+    szInfoTitle = ''
+    dwInfoFlags = 0
+
+    def pack(self):
+        return self._struct.pack(
+            self._struct.size,
+            self.hWnd,
+            self.uID,
+            self.uFlags,
+            self.uCallbackMessage,
+            self.hIcon,
+            self.szTip,
+            self.dwState,
+            self.dwStateMask,
+            self.szInfo,
+            self.uTimeoutOrVersion,
+            self.szInfoTitle,
+            self.dwInfoFlags
+        )
+
+    def __setattr__(self, name, value):
+        # avoid wrong field names
+        if not hasattr(self, name):
+            raise NameError, name
+        self.__dict__[name] = value

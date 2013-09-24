@@ -1,7 +1,22 @@
+import __main__
+import os
+import shutil
 import yaml
 
-def load_settings(file_path):
-	with open(file_path) as f:
+
+SCRIPT_DIR = os.path.dirname(__main__.__file__)
+SETTINGS_SAMPLE_FILE = os.path.join(SCRIPT_DIR, "settings-sample.yml")
+HOME_DIR = os.getenv('USERPROFILE') or os.path.expanduser("~")  # prefer windows USERPROFILE for windows/cygwin mixes
+CONFIG_DIR = os.path.join(HOME_DIR, ".config", __main__.__APP_NAME__)
+SETTINGS_FILE = os.path.join(CONFIG_DIR, "settings.yml")
+
+
+def load_settings():
+	if not os.path.exists(SETTINGS_FILE):
+		if not os.path.exists(os.path.dirname(SETTINGS_FILE)):
+			os.makedirs(os.path.dirname(SETTINGS_FILE))
+		shutil.copy(SETTINGS_SAMPLE_FILE, SETTINGS_FILE)
+	with open(SETTINGS_FILE) as f:
 		return yaml.load(f)
 
 TCP_PORT = "tcp_port"

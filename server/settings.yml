@@ -1,3 +1,0 @@
-broadcast_port: 35200
-tcp_port: 35201
-window_detection_delay: 0.5

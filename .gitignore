@@ -1,13 +1,17 @@
 #eclipse
 .project
+.metadata
 
 #Python
 .pydevproject
 *.pyc
+
+/server/installation/
+/server/Output/
+/server/local_settings.iss
 
 # Java
 .classpath
 *.class
 /client/bin/
 /client/gen/
-
