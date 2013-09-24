@@ -91,6 +91,7 @@ public class FindServersActivity extends Activity implements OnClickListener {
 
 	public void stopProgressBar() {
 		progressBarContainer.setVisibility(View.GONE);
+		retryBtn.setVisibility(View.VISIBLE);
 		if (adapter.getCount() == 0) {
 			Tools.showErrorModal(this, "Error", "Did not find any device...\nPlease verify your pc server is on");
 		}
@@ -98,6 +99,7 @@ public class FindServersActivity extends Activity implements OnClickListener {
 
 	public void startProgressBar() {
 		progressBarContainer.setVisibility(View.VISIBLE);
+		retryBtn.setVisibility(View.GONE);
 	}
 
 	public void addDevice(RemoteDeviceInfo device) {

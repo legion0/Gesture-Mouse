@@ -22,7 +22,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -54,6 +53,11 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_create_gesture);
+
+		// disable rotation and keep screen on.
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+
 		Intent intent = getIntent();
 		appId = intent.getIntExtra("app_id", -1);
 		applicationName = intent.getStringExtra("app_name");
@@ -110,11 +114,11 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 		andgee.getDevice().getProcessingUnit().getClassifier().clear();
 		gesture = new GestureDAL(null, action, null);
 		updateSessionCountLabel();
-		
+
 		Resources res = getResources();
 		traningSequenceSizeMin = res.getInteger(R.integer.trainingSequenceSizeMin);
 	}
-	
+
 	private int trainingSequenceSize() {
 		return andgee.getDevice().getProcessingUnit().trainingSequenceSize();
 	}
@@ -161,7 +165,7 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 	protected void onDestroy() {
 		super.onDestroy();
 	}
-	
+
 	private void updateSessionCountLabel() {
 		lblStatus.setText(String.format("recorded %s session out of the recommended 10.", trainingSequenceSize()));
 	}
@@ -171,6 +175,7 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 		@Override
 		protected void onPreExecute() {
 			saveProgressBar.setVisibility(View.VISIBLE);
+			saveGestureBtn.setVisibility(View.GONE);
 			super.onPreExecute();
 		}
 
@@ -182,13 +187,13 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 			GestureModel gestureModel = andgee.getDevice().getProcessingUnit().getClassifier().getGestureModel(classifierGestureId);
 			gesture.setModel(gestureModel);
 			gesture.save(context);
-			
+
 			if (appId == -1) {
 				ApplicationDAL applicationDAL = new ApplicationDAL(applicationName, processName, windowTitle);
 				applicationDAL.save(getApplicationContext());
 				appId = applicationDAL.getId();
 			}
-			
+
 			gesture.addToApplication(context, appId);
 			return null;
 		}

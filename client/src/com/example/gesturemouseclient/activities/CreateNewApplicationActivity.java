@@ -2,9 +2,11 @@ package com.example.gesturemouseclient.activities;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -25,6 +27,11 @@ public class CreateNewApplicationActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_create_new_application);
+
+		// disable rotation and keep screen on.
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+
 		createApplicationBtn = (ImageView) findViewById(R.id.createNewApplicationBtn);
 		applicationEditTxt = (EditText) findViewById(R.id.createApplicationTxt);
 

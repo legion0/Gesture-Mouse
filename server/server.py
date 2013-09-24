@@ -379,8 +379,8 @@ def get_timestamp():
 SCREEN_WIDTH = GetSystemMetrics(0)
 SCREEN_HEIGHT = GetSystemMetrics(1)
 print_round = 0
-Y_AXIS_STRECH = 120
-X_AXIS_STRECH = 120
+Y_AXIS_STRECH = 90
+X_AXIS_STRECH = 90
 HISTORY_SIZE = 25
 SPEED_SENSITIVITY = 3
 def mouse_listener(session):

@@ -6,10 +6,12 @@ import java.util.Map.Entry;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.text.Editable;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -38,6 +40,11 @@ public class CreateActionActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_create_action);
+
+		// disable rotation and keep screen on.
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+
 		Intent intent = getIntent();
 		appId = intent.getIntExtra("app_id", -1);
 		applicationName = intent.getStringExtra("app_name");
@@ -59,10 +66,14 @@ public class CreateActionActivity extends Activity {
 		createActionBtn.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				Log.d("CreateActionActivity","on click to create action");
 				int[] action = parseActionString(actionEditTxt.getText().toString());
-				if (action.length > 0) {
+				if (action.length > 0 ) {
+					Log.d("CreateActionActivity","length: "+action.length);
+					Log.d("CreateActionActivity","action[0]: "+action[0]);
 					gotoRecordGesture(action);
 				} else {
+					Log.d("CreateActionActivity"," should error");
 					openAlertDialog("The action you entered is not valid, you have to choose actions in the following format:\n"
 							+ "comma separate numbers. the number should be in the range of the actions in the list.");
 				}
@@ -86,6 +97,9 @@ public class CreateActionActivity extends Activity {
 
 	private int[] parseActionString(String actionString) {
 		actionString = actionString.replace(" ", "");
+		//		if ("".equals(actionString)) {
+		//			return new int[0];
+		//		}
 		String[] actionSplited = actionString.split(",");
 		int[] action = new int[actionSplited.length];
 		try {
@@ -93,6 +107,7 @@ public class CreateActionActivity extends Activity {
 				action[i] = Integer.parseInt(actionSplited[i]);
 			}
 		} catch (NumberFormatException e) {
+			return new int[0];
 		}
 		return action;
 	}
