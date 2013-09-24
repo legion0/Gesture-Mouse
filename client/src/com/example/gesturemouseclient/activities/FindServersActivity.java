@@ -13,7 +13,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.example.gesturemouseclient.R;
@@ -27,7 +27,7 @@ public class FindServersActivity extends Activity implements OnClickListener {
 	private ArrayAdapter<RemoteDeviceInfo> adapter;
 	private String deviceName;
 
-	private Button retryBtn;
+	private ImageView retryBtn;
 	private FindServersTask findServer;
 	private List<RemoteDeviceInfo> deviceList;
 	private View progressBarContainer;
@@ -57,7 +57,7 @@ public class FindServersActivity extends Activity implements OnClickListener {
 		deviceListView.setAdapter(adapter);
 
 		progressBarContainer = findViewById(R.id.findServersProgressBar);
-		retryBtn = (Button) findViewById(R.id.findServersBtn);
+		retryBtn = (ImageView) findViewById(R.id.findServersBtn);
 
 		retryBtn.setOnClickListener(new OnClickListener() {
 

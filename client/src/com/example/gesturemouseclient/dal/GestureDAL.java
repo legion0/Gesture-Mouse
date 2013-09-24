@@ -114,7 +114,7 @@ public class GestureDAL {
 				gestureValues.put(DBHelper.APPLICATIONS_COLUMN_ID, id);
 			}
 			gestureValues.put(DBHelper.GUSTERS_COLUMN_NAME, name);
-			gestureValues.put(DBHelper.GUSTERS_COLUMN_ACTION, action.toString());
+			gestureValues.put(DBHelper.GUSTERS_COLUMN_ACTION, Arrays.toString(action));
 			gestureValues.put(DBHelper.GUSTERS_COLUMN_MODEL, buffer);
 			long newId = db.insertWithOnConflict(DBHelper.GUSTERS_TABLE_NAME, null, gestureValues, SQLiteDatabase.CONFLICT_REPLACE);
 			if (newId == -1) {

@@ -23,7 +23,6 @@ from win32api import GetSystemMetrics
 import keyboard
 import json
 
-from kjlib.debugtools import dumps
 
 SCRIPT_DIR = os.path.dirname(__file__)
 SCRIPT_NAME = os.path.basename(__file__)
@@ -177,7 +176,6 @@ def request_handler(sock, addr):
 	if msg is None:
 		return
 	if "name" in msg:
-		print dumps(msg["apps"]) # XXX
 		session = new_session(msg, addr)
 		with session["lock"]:
 			udp_port = session["udp_port"]
@@ -367,8 +365,8 @@ def get_timestamp():
 SCREEN_WIDTH = GetSystemMetrics(0)
 SCREEN_HEIGHT = GetSystemMetrics(1)
 print_round = 0
-Y_AXIS_STRECH = 90
-X_AXIS_STRECH = 60
+Y_AXIS_STRECH = 120
+X_AXIS_STRECH = 120
 HISTORY_SIZE = 25
 SPEED_SENSITIVITY = 3
 def mouse_listener(session):
@@ -401,7 +399,7 @@ def mouse_listener(session):
 
 		#Calc new x
 		roll = math.degrees(msg[1])
-		x = int( (-roll/X_AXIS_STRECH + 0.5) * SCREEN_WIDTH)
+		x = int( (-roll/X_AXIS_STRECH + 0.5) * SCREEN_WIDTH)*(1 + (abs(y-390)/SCREEN_HEIGHT));
 
 
 
@@ -437,12 +435,14 @@ def mouse_listener(session):
 #		if math.fabs(speed[1]) < SPEED_SENSITIVITY:
 #			y = int(avg[1])
 
-#		print_round = (print_round + 1) % 10
-#		if print_round == 0:
-#			print (pitch, roll), x, math.fabs(speed[0]), y, math.fabs(speed[1]), avg
+		print_round = (print_round + 1) % 10
+		if print_round == 0:
+			print "x: ", x, ", y: ", y
+# 			print (pitch, roll), x, math.fabs(speed[0]), y, math.fabs(speed[1]), avg
 
 		try:
-			pass#win32api.SetCursorPos((x,y))
+			
+			win32api.SetCursorPos((x,y))
 		except win32api.error:
 			pass
 #		time.sleep(0.1)

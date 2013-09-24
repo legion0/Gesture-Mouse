@@ -157,7 +157,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			@Override
 			public void onClick(View v) {
 				if (runningApp.getId() != null) {
-					Intent intent = new Intent(this_, CreateGestureActivity.class);
+					Intent intent = new Intent(this_, CreateActionActivity.class);
 					intent.putExtra("app_id", runningApp.getId());
 					startActivity(intent);
 				} else {

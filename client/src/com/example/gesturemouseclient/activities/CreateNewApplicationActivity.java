@@ -46,10 +46,8 @@ public class CreateNewApplicationActivity extends Activity {
 					openAlertDialog("App name should be shorter than 20 characters.");
 					Log.w("Create New Application", "app name is not legal");
 				} else {
-					ApplicationDAL applicationDAL = new ApplicationDAL(newApplicationName, processName, newApplicationName);
-					applicationDAL.save(getApplicationContext());
 					Log.v("Create New Application", "app name is legal");
-					gotoActionActiv(applicationDAL.getId());
+					gotoActionActiv(newApplicationName);
 				}
 			}
 
@@ -60,9 +58,11 @@ public class CreateNewApplicationActivity extends Activity {
 		Tools.showErrorModal(this, "App Name Warning", message);
 	}
 
-	protected void gotoActionActiv(Integer applicationId) {
+	protected void gotoActionActiv(String appName) {
 		Intent intent = new Intent(this, CreateActionActivity.class);
-		intent.putExtra("app_id", applicationId);
+		intent.putExtra("app_name", appName);
+		intent.putExtra("window_title", appName);
+		intent.putExtra("process_name", processName);
 		startActivityForResult(intent, REQUEST_NEW_ACTION);
 	}
 

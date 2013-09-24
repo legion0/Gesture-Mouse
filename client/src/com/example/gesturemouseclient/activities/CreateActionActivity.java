@@ -14,8 +14,8 @@ import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.example.gesturemouseclient.R;
@@ -26,10 +26,13 @@ import com.example.gesturemouseclient.infra.Tools;
 public class CreateActionActivity extends Activity {
 
 	private static final int REQUEST_RECORD_GESTURE = 0;
-	private Button createActionBtn;
+	private ImageView createActionBtn;
 	private EditText actionEditTxt;
 	private ListView keySpinner;
 	private int appId;
+	private String processName;
+	private String windowTitle;
+	private String applicationName;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +40,10 @@ public class CreateActionActivity extends Activity {
 		setContentView(R.layout.activity_create_action);
 		Intent intent = getIntent();
 		appId = intent.getIntExtra("app_id", -1);
-		createActionBtn = (Button) findViewById(R.id.createActionDoneBtn);
+		applicationName = intent.getStringExtra("app_name");
+		windowTitle = intent.getStringExtra("window_title");
+		processName = intent.getStringExtra("process_name");
+		createActionBtn = (ImageView) findViewById(R.id.createActionDoneBtn);
 		actionEditTxt = (EditText) findViewById(R.id.actionText);
 		keySpinner = (ListView) findViewById(R.id.createActionKeyListView);
 
@@ -53,8 +59,8 @@ public class CreateActionActivity extends Activity {
 		createActionBtn.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				String action = actionEditTxt.getText().toString();
-				if (checkActionValidity(action)) {
+				int[] action = parseActionString(actionEditTxt.getText().toString());
+				if (action.length > 0) {
 					gotoRecordGesture(action);
 				} else {
 					openAlertDialog("The action you entered is not valid, you have to choose actions in the following format:\n"
@@ -78,18 +84,17 @@ public class CreateActionActivity extends Activity {
 		});
 	}
 
-	private boolean checkActionValidity(String action) {
-		String actionStr = action.replace(" ", "");
-		String[] actionSplited = actionStr.split(",");
+	private int[] parseActionString(String actionString) {
+		actionString = actionString.replace(" ", "");
+		String[] actionSplited = actionString.split(",");
+		int[] action = new int[actionSplited.length];
 		try {
 			for (int i = 0; i < actionSplited.length; i++) {
-				Integer.parseInt(actionSplited[i]);
+				action[i] = Integer.parseInt(actionSplited[i]);
 			}
 		} catch (NumberFormatException e) {
-			return false;
 		}
-
-		return true;
+		return action;
 	}
 
 	private void openAlertDialog(String message) {
@@ -97,12 +102,14 @@ public class CreateActionActivity extends Activity {
 		Log.w("CreateGestureActivity", " open alert should show");
 	}
 
-	protected void gotoRecordGesture(String action) {
+	protected void gotoRecordGesture(int[] action) {
 		Intent intent = new Intent(this, CreateGestureActivity.class);
 		intent.putExtra("action", action);
 		intent.putExtra("app_id", appId);
-		setResult(RESULT_OK, intent);
-		finish();
+		intent.putExtra("app_name", applicationName);
+		intent.putExtra("window_title", windowTitle);
+		intent.putExtra("process_name", processName);
+		startActivityForResult(intent, REQUEST_RECORD_GESTURE);
 	}
 
 	@Override

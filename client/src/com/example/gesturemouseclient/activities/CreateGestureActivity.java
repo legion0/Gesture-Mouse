@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.res.Resources;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -22,10 +23,12 @@ import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.gesturemouseclient.R;
+import com.example.gesturemouseclient.dal.ApplicationDAL;
 import com.example.gesturemouseclient.dal.GestureDAL;
 import com.example.gesturemouseclient.infra.Logger;
 import com.example.gesturemouseclient.infra.Tools;
@@ -33,16 +36,19 @@ import com.example.gesturemouseclient.infra.Tools;
 public class CreateGestureActivity extends Activity implements SensorEventListener {
 
 	private AndroidWiigee andgee;
-	private Button learnGestureBtn;
+	private ImageView learnGestureBtn;
 	private SensorManager sensorManager;
 	protected TextView lblStatus;
-	private Button saveGestureBtn;
+	private ImageView saveGestureBtn;
 	private GestureDAL gesture;
-	private int learnSessions = 0;
 	private ProgressBar saveProgressBar;
 	private int appId;
 	private int[] action;
 	private TextView createGestureTitle;
+	private int traningSequenceSizeMin;
+	private String applicationName;
+	private String processName;
+	private String windowTitle;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +56,9 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 		setContentView(R.layout.activity_create_gesture);
 		Intent intent = getIntent();
 		appId = intent.getIntExtra("app_id", -1);
+		applicationName = intent.getStringExtra("app_name");
+		windowTitle = intent.getStringExtra("window_title");
+		processName = intent.getStringExtra("process_name");
 		action = intent.getIntArrayExtra("action");
 
 		// disable rotation and keep screen on.
@@ -67,7 +76,7 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 			// TODO Auto-generated catch block
 			throw new RuntimeException(e);
 		}
-		learnGestureBtn = (Button) findViewById(R.id.recordGestureBtn);
+		learnGestureBtn = (ImageView) findViewById(R.id.recordGestureBtn);
 
 		learnGestureBtn.setOnTouchListener(new OnTouchListener() {
 
@@ -79,7 +88,7 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 				} else if (event.getAction() == MotionEvent.ACTION_UP) {
 					Logger.printLog("Create Gesture Activity", "stop learning");
 					andgee.getDevice().getProcessingUnit().endLearning();
-					increaseSessionCount();
+					updateSessionCountLabel();
 				}
 				return true;
 			}
@@ -88,7 +97,7 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 		saveProgressBar = (ProgressBar) findViewById(R.id.saveProgressBar);
 		saveProgressBar.setVisibility(View.GONE);
 
-		saveGestureBtn = (Button) findViewById(R.id.saveGestureBtn);
+		saveGestureBtn = (ImageView) findViewById(R.id.saveGestureBtn);
 		saveGestureBtn.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -100,11 +109,18 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 
 		andgee.getDevice().getProcessingUnit().getClassifier().clear();
 		gesture = new GestureDAL(null, action, null);
-		setSessionCount(0);
+		updateSessionCountLabel();
+		
+		Resources res = getResources();
+		traningSequenceSizeMin = res.getInteger(R.integer.trainingSequenceSizeMin);
+	}
+	
+	private int trainingSequenceSize() {
+		return andgee.getDevice().getProcessingUnit().trainingSequenceSize();
 	}
 
 	private void startSaveGesture() {
-		if (andgee.getDevice().getProcessingUnit().trainingSequenceSize() < R.integer.trainingSequenceSizeMin) {
+		if (trainingSequenceSize() < traningSequenceSizeMin) {
 			openAlertDialog("Record a new gesture, at least 3 sessions are required but recording 10 times will result with better identification.");
 			return;
 		}
@@ -145,15 +161,9 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 	protected void onDestroy() {
 		super.onDestroy();
 	}
-
-	void setSessionCount(int newCount) {
-		learnSessions = newCount;
-		lblStatus.setText(String.format("recorded %s session out of the recommended 10.", learnSessions));
-	}
-
-	void increaseSessionCount() {
-		learnSessions++;
-		setSessionCount(learnSessions);
+	
+	private void updateSessionCountLabel() {
+		lblStatus.setText(String.format("recorded %s session out of the recommended 10.", trainingSequenceSize()));
 	}
 
 	class SaveAsyncTask extends AsyncTask<Void, Void, Void> {
@@ -172,6 +182,13 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 			GestureModel gestureModel = andgee.getDevice().getProcessingUnit().getClassifier().getGestureModel(classifierGestureId);
 			gesture.setModel(gestureModel);
 			gesture.save(context);
+			
+			if (appId == -1) {
+				ApplicationDAL applicationDAL = new ApplicationDAL(applicationName, processName, windowTitle);
+				applicationDAL.save(getApplicationContext());
+				appId = applicationDAL.getId();
+			}
+			
 			gesture.addToApplication(context, appId);
 			return null;
 		}

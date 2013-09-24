@@ -46,11 +46,11 @@ public class ApplicationListenerTask extends AsyncTask<Void, ApplicationDAL, Voi
 		super();
 		this.applicationListener = applicationListener;
 		try {
-			Log.d("Application Listener","binding socket");
+			Log.d("Application Listener", "binding socket");
 			tcpServer = new ServerSocket();
 			tcpServer.setReuseAddress(true);
 			tcpServer.bind(new InetSocketAddress(remoteDeviceInfo.getLocalControlPort()));
-			
+
 		} catch (NumberFormatException e) {
 			throw new RuntimeException(e);
 		} catch (IOException e) {
@@ -60,14 +60,14 @@ public class ApplicationListenerTask extends AsyncTask<Void, ApplicationDAL, Voi
 
 	@Override
 	protected Void doInBackground(Void... params) {
-		Logger.printLog("Application Listener", ""+isCancelled());
+		Logger.printLog("Application Listener", "" + isCancelled());
 		while (!isCancelled()) {
+			Socket socket = null;
 			try {
 				tcpServer.setSoTimeout(1000);
-				Socket socket;
-				try{
-				 socket = tcpServer.accept();
-				}catch (SocketTimeoutException e) {
+				try {
+					socket = tcpServer.accept();
+				} catch (SocketTimeoutException e) {
 					continue;
 				}
 				byte[] bufInput = new byte[4096];
@@ -83,34 +83,36 @@ public class ApplicationListenerTask extends AsyncTask<Void, ApplicationDAL, Voi
 				MessagePack msgpack = new MessagePack();
 				Unpacker unpacker = msgpack.createUnpacker(in);
 				MapValue returnMsg = unpacker.readValue().asMapValue();
-				
-				Log.d("Application Listener","return msg: "+returnMsg.toString());
-				
+
+				Log.d("Application Listener", "return msg: " + returnMsg.toString());
+
 				ApplicationDAL appData = new ApplicationDAL(null, null, null);
-				
-				
-				
-				if(returnMsg.containsKey(key_app_id))
-				{
+
+				if (returnMsg.containsKey(key_app_id)) {
 					appData.setId(returnMsg.get(key_app_id).asIntegerValue().getInt());
-				}else{
+				} else {
 					appData.setProcessName(returnMsg.get(key_process_name).asRawValue().getString());
 					appData.setWindowTitle(returnMsg.get(key_window_title).asRawValue().getString());
 				}
 				publishProgress(appData);
-				socket.close();
 			} catch (SocketException ex) {
 				Log.e("ApplicationListenerTask", "doInBackground", ex);
 			} catch (IOException ex) {
 				Log.e("ApplicationListenerTask", "doInBackground", ex);
+			} finally {
+				if (socket != null)
+				try {
+					socket.close();
+				} catch (IOException e) {
+				}
 			}
 		}
 		try {
 			tcpServer.close();
-			Log.d("Application Listener"," closed socket.");
+			Log.d("Application Listener", " closed socket.");
 		} catch (IOException e) {
 		}
-		Log.d("Application Listener"," closing");
+		Log.d("Application Listener", " closing");
 		return null;
 	}
 
