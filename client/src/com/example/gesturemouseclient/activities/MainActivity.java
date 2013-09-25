@@ -12,7 +12,6 @@ import org.wiigee.event.GestureListener;
 import Threads.ApplicationListenerTask;
 import Threads.BackgroundWorkManager;
 import Threads.TcpInitConnectionTask;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -42,8 +41,10 @@ import com.example.gesturemouseclient.infra.Params;
 import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 import com.example.gesturemouseclient.infra.Tools;
 import com.example.gesturemouseclient.infra.interfaces.ApplicationListener;
+import com.example.gesturemouseclient.layouts.KeyboardDetectorRelativeLayout;
+import com.example.gesturemouseclient.layouts.KeyboardDetectorRelativeLayout.IKeyboardChanged;
 
-public class MainActivity extends Activity implements SensorEventListener, ApplicationListener {
+public class MainActivity extends Activity implements SensorEventListener, ApplicationListener, IKeyboardChanged {
 
 	enum State {
 		MOUSE, GESTURE
@@ -75,19 +76,25 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	private ImageView goToGestureBtn;
 	private ImageView openKeyboardBtn;
 	private InputMethodManager inputMethodManager;
+	protected boolean isKeyboardOpen;
+	private boolean mouseSuspended;
+	private Sensor rotationalVectorSensor;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		Logger.printLog("onCreate", "the app is created !");
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		KeyboardDetectorRelativeLayout layout = new KeyboardDetectorRelativeLayout(getApplicationContext(), R.layout.activity_main);
+		layout.addKeyboardStateChangedListener(this);
+		setContentView(layout);
 
 		// disable rotation and keep screen on.
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
 
 		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-		inputMethodManager = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+		inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
 		Intent intent = getIntent();
 		remoteDeviceInfo = ((RemoteDeviceInfo) intent.getExtras().get("device"));
@@ -147,7 +154,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 				toMouseMode();
 			}
 		});
-		
+
 		goToGestureBtn.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -177,16 +184,16 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			}
 
 		});
-		
+
 		openKeyboardBtn.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-			    inputMethodManager.toggleSoftInputFromWindow(openKeyboardBtn.getApplicationWindowToken(), InputMethodManager.SHOW_FORCED, 0);
+				inputMethodManager.toggleSoftInputFromWindow(openKeyboardBtn.getApplicationWindowToken(), InputMethodManager.SHOW_IMPLICIT, 0);
 			}
 
 		});
-		
+
 		toMouseMode();
 	}
 
@@ -217,9 +224,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		// TODO: Error checks
 		sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_GAME);
 
-		sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
-		// TODO: Error checks
-		sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_GAME);
+		registerRotationalVector();
 	}
 
 	@Override
@@ -262,6 +267,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	// TODO: remember to check the state of the device, it's possible we dont
 	// want to update since we're in anotre state.
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		Log.d("keyCode", "" + keyCode);
 		super.onKeyDown(keyCode, event);
 
 		if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
@@ -282,16 +288,66 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		return false;
 	}
 
+	// @Override
+	// public void onBackPressed() {
+	// super.onBackPressed();
+	// // finish();
+	// }
+
+	// @Override
+	// public void onConfigurationChanged(Configuration newConfig) {
+	// super.onConfigurationChanged(newConfig);
+	// // Checks whether a hardware keyboard is hidden
+	// if (isKeyboardOpen && newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES) {
+	// isKeyboardOpen = false;
+	// resumeMouse();
+	// }
+	// }
+
 	@Override
-	public void onBackPressed() {
-		Log.d("MainActivity", "onBackPressed");
-		super.onBackPressed();
-		finish();
+	public void onKeyboardShown() {
+		if (!isKeyboardOpen) {
+			isKeyboardOpen = true;
+			suspendMouse();
+		}
+	}
+
+	@Override
+	public void onKeyboardHidden() {
+		if (isKeyboardOpen) {
+			isKeyboardOpen = false;
+			resumeMouse();
+		}
+	}
+
+	private void suspendMouse() {
+		mouseSuspended = true;
+		backgroundWorkManager.suspendFastSampleSenderThread();
+		unregisterRotationalVector();
+	}
+
+	private void resumeMouse() {
+		mouseSuspended = false;
+		backgroundWorkManager.resumeFastSampleSenderThread();
+		registerRotationalVector();
+	}
+
+	private boolean registerRotationalVector() {
+		rotationalVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+		return sensorManager.registerListener(this, rotationalVectorSensor, SensorManager.SENSOR_DELAY_GAME);
+	}
+
+	private void unregisterRotationalVector() {
+		sensorManager.unregisterListener(this, rotationalVectorSensor);
+	}
+
+	private boolean isMouseSuspended() {
+		return mouseSuspended;
 	}
 
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		super.onKeyUp(keyCode, event);
-//		Log.d("keyCode", KeyEvent.keyCodeToString(keyCode));
+		// Log.d("keyCode", KeyEvent.keyCodeToString(keyCode));
 		Integer winKeyCode = null;
 		if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
 			if (volumeDownIsPressed) {
@@ -307,14 +363,14 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			}
 		} else if ((winKeyCode = KeyMap.ANDROID_TO_WINDOWS_KEY_MAP.get(keyCode)) != null) { // try to map to windows key codes
 			if (event.isShiftPressed()) {
-				int[] keys = new int[] {KeyMap.holdKey(KeyMap.VK_SHIFT), winKeyCode, KeyMap.releaseKey(KeyMap.VK_SHIFT)};
+				int[] keys = new int[] { KeyMap.holdKey(KeyMap.VK_SHIFT), winKeyCode, KeyMap.releaseKey(KeyMap.VK_SHIFT) };
 				backgroundWorkManager.sendKeys(keys);
 			} else if (event.isAltPressed()) {
-				int[] keys = new int[] {KeyMap.holdKey(KeyMap.VK_MENU), winKeyCode, KeyMap.releaseKey(KeyMap.VK_MENU)};
+				int[] keys = new int[] { KeyMap.holdKey(KeyMap.VK_MENU), winKeyCode, KeyMap.releaseKey(KeyMap.VK_MENU) };
 				backgroundWorkManager.sendKeys(keys);
-//			} else if (event.isCtrlPressed()) {
-//				int[] keys = new int[] {KeyMap.holdKey(KeyMap.VK_CONTROL), winKeyCode, KeyMap.releaseKey(KeyMap.VK_CONTROL)};
-//				backgroundWorkManager.sendKeys(keys);
+				// } else if (event.isCtrlPressed()) {
+				// int[] keys = new int[] {KeyMap.holdKey(KeyMap.VK_CONTROL), winKeyCode, KeyMap.releaseKey(KeyMap.VK_CONTROL)};
+				// backgroundWorkManager.sendKeys(keys);
 			} else {
 				backgroundWorkManager.sendKey(winKeyCode);
 			}
@@ -332,7 +388,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 		// Logger.printLog("onSensorChanged",
 		// Integer.toString(event.sensor.getType()));
-		if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
+		if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR && !isMouseSuspended()) {
 
 			float[] rotationMatrix = new float[9];
 			SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);

@@ -69,8 +69,7 @@ public class FindServersTask extends AsyncTask<Void, Void, List<RemoteDeviceInfo
 		for (RemoteDeviceInfo deviceItem : result) {
 			findServerActivity.addDevice(deviceItem);
 		}
-
-		findServerActivity.stopProgressBar();
+		findServerActivity.finshedServerSearch();
 	}
 
 }

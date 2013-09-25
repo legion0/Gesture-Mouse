@@ -3,7 +3,10 @@ package com.example.gesturemouseclient.activities;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -14,6 +17,7 @@ import android.widget.TextView;
 
 import com.example.gesturemouseclient.R;
 import com.example.gesturemouseclient.dal.SystemVariablesDAL;
+import com.example.gesturemouseclient.infra.Tools;
 
 public class FirstTimeLoginActivity extends Activity {
 
@@ -28,6 +32,7 @@ public class FirstTimeLoginActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		final Activity this_ = this;
 		setContentView(R.layout.activity_first_time_login);
 
 		// disable rotation and keep screen on.
@@ -50,6 +55,23 @@ public class FirstTimeLoginActivity extends Activity {
 			showFirstInstruction();
 			initInstructionCheckBox();
 
+		}
+
+		SensorManager sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+		Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+		final Runnable finish = new Runnable() {
+
+			@Override
+			public void run() {
+				this_.finish();
+			}
+		};
+		if (sensor == null) {
+			Tools.showErrorModal(this, "Error", "Your device does not have the GYROSCOPE sensor and cannot run this application.", "OK", finish);
+		}
+		sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+		if (sensor == null) {
+			Tools.showErrorModal(this, "Error", "Your device does not have the ROTATION_VECTOR virtual sensor and cannot run this application.", "OK", finish);
 		}
 	}
 
@@ -98,6 +120,7 @@ public class FirstTimeLoginActivity extends Activity {
 	 */
 	private void showFirstInstruction() {
 		instructionText.setVisibility(View.VISIBLE);
+		instructionText.setMovementMethod(LinkMovementMethod.getInstance());
 	}
 
 	private void showSecondInstruction() {

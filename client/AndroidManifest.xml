@@ -1,51 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.gesturemouseclient"
-    android:versionCode="1"
-    android:versionName="1.0" >
+	package="com.example.gesturemouseclient"
+	android:versionCode="1"
+	android:versionName="1.0" >
 
-    <uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-    <uses-sdk
-        android:minSdkVersion="9"
-        android:targetSdkVersion="17" />
+	<uses-sdk
+		android:minSdkVersion="9"
+		android:targetSdkVersion="17" />
 
-    <application
-        android:allowBackup="true"
-        android:icon="@drawable/app_icon"
-        android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
-        <activity
-            android:name="com.example.gesturemouseclient.activities.FindServersActivity"
-            android:label="@string/app_name" >
-        </activity>
-        <activity
-            android:name="com.example.gesturemouseclient.activities.MainActivity"
-            android:label="@string/title_activity_main" >
-        </activity>
-        <activity
-            android:name="com.example.gesturemouseclient.activities.FirstTimeLoginActivity"
-            android:noHistory="true"
-            android:label="@string/app_name" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+	<uses-feature android:name="android.hardware.sensor.gyroscope" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name="com.example.gesturemouseclient.activities.CreateGestureActivity"
-            android:label="@string/title_activity_create_gesture" >
-        </activity>
-        <activity
-            android:name="com.example.gesturemouseclient.activities.CreateActionActivity"
-            android:label="@string/title_activity_create_action"
-            android:windowSoftInputMode="stateHidden" >
-        </activity>
-        <activity
-            android:name="com.example.gesturemouseclient.activities.CreateNewApplicationActivity"
-            android:label="@string/title_activity_create_new_application" >
-        </activity>
-    </application>
+	<application
+		android:allowBackup="true"
+		android:icon="@drawable/app_icon"
+		android:label="@string/app_name"
+		android:theme="@style/AppTheme" >
+		<activity
+			android:name="com.example.gesturemouseclient.activities.FindServersActivity"
+			android:label="@string/app_name" >
+		</activity>
+		<activity
+			android:name="com.example.gesturemouseclient.activities.MainActivity"
+			android:label="@string/title_activity_main"
+			android:windowSoftInputMode="adjustResize" >
+		</activity>
+		<activity
+			android:name="com.example.gesturemouseclient.activities.FirstTimeLoginActivity"
+			android:label="@string/app_name"
+			android:noHistory="true" >
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+
+				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+		</activity>
+		<activity
+			android:name="com.example.gesturemouseclient.activities.CreateGestureActivity"
+			android:label="@string/title_activity_create_gesture" >
+		</activity>
+		<activity
+			android:name="com.example.gesturemouseclient.activities.CreateActionActivity"
+			android:label="@string/title_activity_create_action"
+			android:windowSoftInputMode="stateHidden" >
+		</activity>
+		<activity
+			android:name="com.example.gesturemouseclient.activities.CreateNewApplicationActivity"
+			android:label="@string/title_activity_create_new_application" >
+		</activity>
+	</application>
 
 </manifest>

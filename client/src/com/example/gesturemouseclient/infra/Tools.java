@@ -16,6 +16,10 @@ public class Tools {
 	}
 
 	public static void showErrorModal(Activity activity, String title, String message) {
+		showErrorModal(activity, title, message, "OK", null);
+	}
+
+	public static void showErrorModal(final Activity activity, String title, String message, String positiveButton, final Runnable runnable) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 		if (title != null) {
 			builder.setTitle(title);
@@ -23,9 +27,12 @@ public class Tools {
 		if (message != null) {
 			builder.setMessage(message);
 		}
-		builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+		builder.setPositiveButton(positiveButton, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int id) {
 				dialog.cancel();
+				if (runnable != null) {
+					runnable.run();
+				}
 			}
 		});
 		AlertDialog dialog = builder.create();

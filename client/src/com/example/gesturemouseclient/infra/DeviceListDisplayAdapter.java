@@ -20,7 +20,7 @@ public class DeviceListDisplayAdapter extends ArrayAdapter<RemoteDeviceInfo> {
 
 	private OnClickListener listener;
 
-	public <T extends OnClickListener> DeviceListDisplayAdapter(FindServersActivity activity, List<RemoteDeviceInfo> deviceList, T listener) {
+	public DeviceListDisplayAdapter(FindServersActivity activity, List<RemoteDeviceInfo> deviceList, OnClickListener listener) {
 		super(activity, android.R.layout.activity_list_item, deviceList);
 		this.listener = listener;
 	}
