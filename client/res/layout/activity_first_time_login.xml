@@ -17,6 +17,7 @@
 		android:layout_marginTop="23dp"
 		android:fontFamily="/fonts/airmole.ttf"
 		android:text="@string/gesture_mouse"
+		android:textColor="#00ccff"
 		android:textAppearance="?android:attr/textAppearanceLarge" />
 
 	<TextView

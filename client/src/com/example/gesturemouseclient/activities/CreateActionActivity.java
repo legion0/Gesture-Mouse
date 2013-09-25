@@ -56,7 +56,9 @@ public class CreateActionActivity extends Activity {
 
 		List<TextItemPair<Integer>> keyList = new ArrayList<TextItemPair<Integer>>(KeyMap.KEY_MAP.size());
 		for (Entry<String, Integer> entry : KeyMap.KEY_MAP.entrySet()) {
-			keyList.add(new TextItemPair<Integer>(entry.getKey(), entry.getValue()));
+			keyList.add(new TextItemPair<Integer>(entry.getKey().replace("VK_", "")+" Press", entry.getValue()));
+			keyList.add(new TextItemPair<Integer>(entry.getKey().replace("VK_", "")+" Hold", KeyMap.holdKey(entry.getValue())));
+			keyList.add(new TextItemPair<Integer>(entry.getKey().replace("VK_", "")+" Release", KeyMap.releaseKey(entry.getValue())));
 		}
 
 		ArrayAdapter<TextItemPair<Integer>> adapter = new ArrayAdapter<TextItemPair<Integer>>(getApplicationContext(), R.layout.spinner_view_key,
