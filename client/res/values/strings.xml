@@ -32,5 +32,6 @@
 	<string name="record_gesture">Record Gesture</string>
 	<item name="trainingSequenceSizeMin" type="integer">3</item>
 	<string name="refresh">Refresh</string>
+	<string name="open_soft_keyboard">Open Soft Keyboard</string>
 
 </resources>

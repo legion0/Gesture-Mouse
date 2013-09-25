@@ -60,6 +60,14 @@
 				tools:ignore="SelectableText,HardcodedText" />
 
 			<ImageView
+				android:id="@+id/openKeyboardBtn"
+				android:layout_width="48dp"
+				android:layout_height="48dp"
+				android:layout_gravity="center_vertical"
+				android:background="@drawable/hardware_keyboard"
+				android:contentDescription="@string/open_soft_keyboard" />
+			
+			<ImageView
 				android:id="@+id/goToMouseBtn"
 				android:layout_width="48dp"
 				android:layout_height="48dp"

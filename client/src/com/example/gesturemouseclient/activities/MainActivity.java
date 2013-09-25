@@ -12,7 +12,9 @@ import org.wiigee.event.GestureListener;
 import Threads.ApplicationListenerTask;
 import Threads.BackgroundWorkManager;
 import Threads.TcpInitConnectionTask;
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.hardware.Sensor;
@@ -27,12 +29,14 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.gesturemouseclient.R;
 import com.example.gesturemouseclient.dal.ApplicationDAL;
 import com.example.gesturemouseclient.dal.GestureDAL;
+import com.example.gesturemouseclient.infra.KeyMap;
 import com.example.gesturemouseclient.infra.Logger;
 import com.example.gesturemouseclient.infra.Params;
 import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
@@ -69,6 +73,8 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	private TcpInitConnectionTask tcpConnection;
 	private ImageView goToGestureBtn;
+	private ImageView openKeyboardBtn;
+	private InputMethodManager inputMethodManager;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +87,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
 
 		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+		inputMethodManager = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
 
 		Intent intent = getIntent();
 		remoteDeviceInfo = ((RemoteDeviceInfo) intent.getExtras().get("device"));
@@ -101,6 +108,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		goToMouseBtn = (ImageView) findViewById(R.id.goToMouseBtn);
 		goToGestureBtn = (ImageView) findViewById(R.id.goToGestureBtn);
 		learnGestureBtn = (ImageView) findViewById(R.id.learnGestureBtn);
+		openKeyboardBtn = (ImageView) findViewById(R.id.openKeyboardBtn);
 
 		andgee = new AndroidWiigee();
 
@@ -169,6 +177,16 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			}
 
 		});
+		
+		openKeyboardBtn.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+			    inputMethodManager.toggleSoftInputFromWindow(openKeyboardBtn.getApplicationWindowToken(), InputMethodManager.SHOW_FORCED, 0);
+			}
+
+		});
+		
 		toMouseMode();
 	}
 
@@ -249,13 +267,13 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
 			if (!volumeDownIsPressed) {
 				volumeDownIsPressed = true;
-				backgroundWorkManager.sendKey(2);
+				backgroundWorkManager.sendKey(KeyMap.holdKey(KeyMap.VK_RBUTTON));
 				return true;
 			}
 		} else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
 			if (!volumeUpIsPressed) {
 				volumeUpIsPressed = true;
-				backgroundWorkManager.sendKey(0);
+				backgroundWorkManager.sendKey(KeyMap.holdKey(KeyMap.VK_LBUTTON));
 				return true;
 			}
 		} else if (keyCode == KeyEvent.KEYCODE_BACK) {
@@ -273,18 +291,21 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		super.onKeyUp(keyCode, event);
+		Integer winKeyCode = null;
 		if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
 			if (volumeDownIsPressed) {
 				volumeDownIsPressed = false;
-				backgroundWorkManager.sendKey(3);
+				backgroundWorkManager.sendKey(KeyMap.releaseKey(KeyMap.VK_RBUTTON));
 				return true;
 			}
 		} else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
 			if (volumeUpIsPressed) {
 				volumeUpIsPressed = false;
-				backgroundWorkManager.sendKey(1);
+				backgroundWorkManager.sendKey(KeyMap.releaseKey(KeyMap.VK_LBUTTON));
 				return true;
 			}
+		} else if ((winKeyCode = KeyMap.ANDROID_TO_WINDOWS_KEY_MAP.get(keyCode)) != null) { // try to map to windows key codes
+			backgroundWorkManager.sendKey(winKeyCode);
 		}
 		return false;
 	}

@@ -23,7 +23,7 @@ AllowNoIcons=yes
 OutputBaseFilename=setup
 Compression=lzma
 SolidCompression=yes
-SetupIconFile=C:\postpc_workspace\Gesture-Mouse\server\icon.ico
+SetupIconFile={#MyAppSrcDir}\icon.ico
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -37,6 +37,7 @@ Source: "{#MyAppSrcDir}\python\*"; DestDir: "{app}\python"; Flags: ignoreversion
 Source: "{#MyAppSrcDir}\*.py"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#MyAppSrcDir}\*.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#MyAppSrcDir}\*.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#MyAppSrcDir}\*.yml"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#MyAppSrcDir}\keyboard\*"; DestDir: "{app}\keyboard"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#MyAppSrcDir}\protocol\*"; DestDir: "{app}\protocol"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#MyAppSrcDir}\settings\*"; DestDir: "{app}\settings"; Flags: ignoreversion recursesubdirs createallsubdirs

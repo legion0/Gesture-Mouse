@@ -200,18 +200,21 @@ def request_handler(sock, addr):
 
 def handle_key_event(session, msg):
 	key_event = msg["key_event"]
-	key_down = False
-	if key_event == 0: # Volume Up pressed
-		win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0,0,0)
-		key_down = True
-	elif key_event == 1: # Volume UP released
-		win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0,0,0)
-	elif key_event == 2: # Volume Down pressed
-		win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN,0,0,0,0)
-		key_down = True
-	elif key_event == 3: # Volume Down released
-		win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP,0,0,0,0)
-	if key_down:
+	pure_key = keyboard.get_pure_key(key_event)
+	if pure_key in keyboard.MOUSE_KEYS:
+		handle_mouse_key(session, key_event)
+	else:
+		handle_keyboard_key(session, key_event)
+
+def handle_keyboard_key(session, key_event):
+	keyboard.execute_sequence([key_event])
+
+def handle_mouse_key(session, key_event):
+	mouse_key = keyboard.KEYBOARD_MOUSE_MAP.get(key_event)
+	if mouse_key is None:
+		return
+	win32api.mouse_event(mouse_key,0,0,0,0)
+	if keyboard.is_key_hold(key_event):
 		with session["lock"]:
 			delay_drag = session.get("settings", {}).get("mouse", {}).get("delay_drag", False)
 			if delay_drag:
