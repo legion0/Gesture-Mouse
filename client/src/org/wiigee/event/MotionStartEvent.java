@@ -33,6 +33,11 @@ import org.wiigee.device.Device;
  */
 public class MotionStartEvent extends ActionStartEvent {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public MotionStartEvent(Device source) {
 		super(source);
 		

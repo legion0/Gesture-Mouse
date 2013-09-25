@@ -7,7 +7,6 @@ import android.os.AsyncTask;
 import com.example.gesturemouseclient.TcpClient;
 import com.example.gesturemouseclient.activities.MainActivity;
 import com.example.gesturemouseclient.infra.Logger;
-import com.example.gesturemouseclient.infra.Params;
 import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 
 public class TcpInitConnectionTask extends AsyncTask<Boolean, Void, Void> {

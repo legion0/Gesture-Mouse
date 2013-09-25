@@ -39,6 +39,10 @@ import org.wiigee.device.Device;
  */
 public class AccelerationEvent extends EventObject {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	double X, Y, Z;
 	double absvalue;
 	

@@ -38,6 +38,10 @@ import org.wiigee.device.Device;
  */
 public class ButtonPressedEvent extends ActionStartEvent {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	// Fixed number values.
 	public static final int BUTTON_2 = 1;
 	public static final int BUTTON_1 = 2;

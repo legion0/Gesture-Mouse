@@ -37,6 +37,10 @@ import org.wiigee.device.Device;
  */
 public class ActionStartEvent extends EventObject {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	protected boolean trainbutton;
 	protected boolean recognitionbutton;
 	protected boolean closegesturebutton;

@@ -362,7 +362,6 @@ public class KeyMap {
 		tempMap2.put(KeyEvent.KEYCODE_SOFT_LEFT, VK_LEFT);
 		tempMap2.put(KeyEvent.KEYCODE_SOFT_RIGHT, VK_RIGHT);
 		tempMap2.put(KeyEvent.KEYCODE_HOME, VK_HOME);
-		tempMap2.put(KeyEvent.KEYCODE_BACK, VK_BACK);
 		tempMap2.put(KeyEvent.KEYCODE_0, VK_0);
 		tempMap2.put(KeyEvent.KEYCODE_1, VK_1);
 		tempMap2.put(KeyEvent.KEYCODE_2, VK_2);
@@ -414,25 +413,11 @@ public class KeyMap {
 		tempMap2.put(KeyEvent.KEYCODE_PLUS, VK_OEM_PLUS);
 		tempMap2.put(KeyEvent.KEYCODE_MENU, VK_MENU);
 		tempMap2.put(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, VK_MEDIA_PLAY_PAUSE);
-		tempMap2.put(KeyEvent.KEYCODE_ESCAPE, VK_ESCAPE);
-		tempMap2.put(KeyEvent.KEYCODE_INSERT, VK_INSERT);
-		tempMap2.put(KeyEvent.KEYCODE_F1, VK_F1);
-		tempMap2.put(KeyEvent.KEYCODE_F2, VK_F2);
-		tempMap2.put(KeyEvent.KEYCODE_F3, VK_F3);
-		tempMap2.put(KeyEvent.KEYCODE_F4, VK_F4);
-		tempMap2.put(KeyEvent.KEYCODE_F5, VK_F5);
-		tempMap2.put(KeyEvent.KEYCODE_F6, VK_F6);
-		tempMap2.put(KeyEvent.KEYCODE_F7, VK_F7);
-		tempMap2.put(KeyEvent.KEYCODE_F8, VK_F8);
-		tempMap2.put(KeyEvent.KEYCODE_F9, VK_F9);
-		tempMap2.put(KeyEvent.KEYCODE_F10, VK_F10);
-		tempMap2.put(KeyEvent.KEYCODE_F11, VK_F11);
-		tempMap2.put(KeyEvent.KEYCODE_F12, VK_F12);
-		tempMap2.put(KeyEvent.KEYCODE_VOLUME_MUTE, VK_VOLUME_MUTE);
 
 		// manuall
 		tempMap2.put(KeyEvent.KEYCODE_ENTER, VK_RETURN);
 		tempMap2.put(KeyEvent.KEYCODE_DEL, VK_BACK);
+		tempMap2.remove(KeyEvent.KEYCODE_BACK);
 
 		ANDROID_TO_WINDOWS_KEY_MAP = Collections.unmodifiableMap(tempMap2);
 	}

@@ -1,18 +1,5 @@
 package com.example.gesturemouseclient.dal;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.wiigee.logic.GestureModel;
-import org.wiigee.util.Serializer;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;

@@ -85,7 +85,8 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		Logger.printLog("onCreate", "the app is created !");
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		KeyboardDetectorRelativeLayout layout = new KeyboardDetectorRelativeLayout(getApplicationContext(), R.layout.activity_main);
+		KeyboardDetectorRelativeLayout layout = new KeyboardDetectorRelativeLayout(getApplicationContext());
+		layout.inflate(R.layout.activity_main);
 		layout.addKeyboardStateChangedListener(this);
 		setContentView(layout);
 
@@ -284,6 +285,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			}
 		} else if (keyCode == KeyEvent.KEYCODE_BACK) {
 			onBackPressed();
+			return true;
 		}
 		return false;
 	}

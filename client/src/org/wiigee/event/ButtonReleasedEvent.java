@@ -35,7 +35,11 @@ import org.wiigee.device.Device;
  */
 public class ButtonReleasedEvent extends ActionStopEvent {
 
-        int button;
+        /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+		int button;
 
 	public ButtonReleasedEvent(Device source, int button) {
 		super(source);

@@ -35,6 +35,11 @@ import org.wiigee.device.Device;
 */
 public class MotionStopEvent extends ActionStopEvent {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public MotionStopEvent(Device source) {
 		super(source);
 	}

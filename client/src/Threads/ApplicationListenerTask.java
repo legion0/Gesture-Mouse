@@ -20,7 +20,6 @@ import android.util.Log;
 
 import com.example.gesturemouseclient.dal.ApplicationDAL;
 import com.example.gesturemouseclient.infra.Logger;
-import com.example.gesturemouseclient.infra.Params;
 import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 import com.example.gesturemouseclient.infra.interfaces.ApplicationListener;
 
