@@ -278,11 +278,13 @@ ERROR_ACCESS_DENIED = 5
 
 def get_active_window_data():
 	handle = win32gui.GetForegroundWindow()
+	if handle == 0:
+		return "",""
 	window_title = win32gui.GetWindowText(handle).lower()
-
 	process_name = ""
 	_, process_id = win32process.GetWindowThreadProcessId(handle)
-	if process_id > 0:
+	errorCode = win32api.GetLastError()
+	if process_id > 0 and errorCode == 0:
 		try:
 			process_handle = win32api.OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, False, process_id)
 			file_path = win32process.GetModuleFileNameEx(process_handle, None)
@@ -392,73 +394,49 @@ def mouse_listener(session):
 			break
 		try:
 			data, _ = sock.recvfrom(MOUSE_LISTENER_BUFFER_SIZE)
-# 			data, addr = sock.recvfrom(MOUSE_LISTENER_BUFFER_SIZE)
 		except socket.timeout:
 			continue
-		#print "mouse_listener", "got msg from:", addr
+
 		try:
 			msg = msgpack.unpackb(data)
 		except ValueError:
 			print >> sys.stderr, "mouse_listener", "cannot unpack:", repr(data)
 			continue
-		#filter_low_end = session.get("mouse_filter_low_end", now)
 
-# 		current_x, current_y = win32api.GetCursorPos()
+		current_x, current_y = win32api.GetCursorPos()
 
-		#Calc New y:
 		pitch = math.degrees(msg[2])
 		pitch = 180-pitch
 		if pitch > 180:
 			pitch -= 360
-		y = int( (-pitch/Y_AXIS_STRECH + 0.5) * SCREEN_HEIGHT)
 
-		#Calc new x
 		roll = math.degrees(msg[1])
-		x = int( (-roll/X_AXIS_STRECH + 0.5) * SCREEN_WIDTH)*(1 + (abs(y-390)/SCREEN_HEIGHT));
+		
+		#Calc new x,y:
+		shift_threshold = 1.5
+		smooth_factor = 5.0
+		power_factor = 1.8
+		if abs(roll) > shift_threshold:
+			sign = -roll/abs(roll)
+			factor = (-roll - (shift_threshold*sign))/smooth_factor
+			factor_sign = factor/abs(factor)
+			factor = (abs(factor)**power_factor)*factor_sign
+			x = current_x + factor
+		else: 
+			x = current_x
+		if abs(pitch) > shift_threshold:
+			sign = -pitch/abs(pitch)
+			factor = (-pitch - (shift_threshold*sign))/smooth_factor
+			factor_sign = factor/abs(factor)
+			factor = (abs(factor)**power_factor)*factor_sign
+			y = current_y + factor
+		else: 
+			y = current_y 		
 
-
-
-		#Add to history
-		history = session.get("sample_history", [])
-		history.append((float(x),float(y)))
-		if len(history) > HISTORY_SIZE:
-			history = history[-HISTORY_SIZE:]
-		session["sample_history"] = history
-
-#		#Calc avarage
-#		def factor(i):
-#			return 1
-		avg = [0,0]
-#		for i in xrange(len(history)):
-#			avg[0] += factor(i) * history[i][0]
-#			avg[1] += factor(i) * history[i][1]
-#		avg = (avg[0]/len(history), avg[1]/len(history))
-##		avg = (speed[0]/len(diffs), speed[1]/len(diffs))
-#
-#		#Calc speed
-		speed = (0,0)
-#		if len(history) > HISTORY_SIZE/2:
-#			diffs = [0] * (len(history)-1)
-#			for i in xrange(len(diffs)):
-#				diffs[i] = (history[i+1][0] - history[i][0], history[i+1][1] - history[i][1])
-#			speed = reduce(lambda x, y: (x[0]+y[0], x[1]+y[1]), diffs)
-#			speed = (speed[0]/len(diffs), speed[1]/len(diffs))
-#
-#		#Check cursor speed:
-#		if math.fabs(speed[0]) < SPEED_SENSITIVITY:
-#			x = int(avg[0])
-#		if math.fabs(speed[1]) < SPEED_SENSITIVITY:
-#			y = int(avg[1])
-
-		print_round = (print_round + 1) % 10
-		if print_round == 0:
-			print "x: ", x, ", y: ", y
-# 			print (pitch, roll), x, math.fabs(speed[0]), y, math.fabs(speed[1]), avg
 		try:
-			win32api.SetCursorPos((x,y))
+			win32api.SetCursorPos((int(x),int(y)))
 		except win32api.error:
 			pass
-#		time.sleep(0.1)
 	sock.close()
 
 def broadcast_listener(broadcast_port, tcp_port):

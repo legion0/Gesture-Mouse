@@ -93,7 +93,8 @@ public class FindServersActivity extends Activity implements OnClickListener {
 		progressBarContainer.setVisibility(View.GONE);
 		retryBtn.setVisibility(View.VISIBLE);
 		if (adapter.getCount() == 0) {
-			Tools.showErrorModal(this, "Error", "Did not find any device...\nPlease verify your pc server is on");
+			Tools.showErrorModal(this, "Error", "Did not find any device...\nPlease verify your pc server is on " +
+					"and also verify you are connected to the same wifi as your pc.");
 		}
 	}
 
