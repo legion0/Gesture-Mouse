@@ -25,6 +25,10 @@ public class BackgroundWorkManager {
 		this.controlSession.sendKey(keyId);
 	}
 
+	public void sendKeys(int[] keyIds) {
+		this.controlSession.sendKeys(keyIds);
+	}
+
 	public void sendSample(float[] sample) {
 		this.fastSampleSender.sendSample(sample);
 	}

@@ -175,6 +175,19 @@ class KEYS:
 	VK_BROWSER_BACK = 0xA6
 	VK_BROWSER_FORWARD = 0xA7
 
+	VK_OEM_1 = 0xBA
+	VK_OEM_PLUS = 0xBB
+	VK_OEM_COMMA = 0xBC
+	VK_OEM_MINUS = 0xBD
+	VK_OEM_PERIOD = 0xBE
+	VK_OEM_2 = 0xBF
+	VK_OEM_3 = 0xC0
+	VK_OEM_4 = 0xDB
+	VK_OEM_5 = 0xDC
+	VK_OEM_6 = 0xDD
+	VK_OEM_7 = 0xDE
+	VK_OEM_8 = 0xDF
+
 MOUSE_KEYS = (KEYS.VK_LBUTTON, KEYS.VK_RBUTTON, KEYS.VK_XBUTTON1, KEYS.VK_XBUTTON2)
 
 class MODEFIERS:
@@ -182,7 +195,10 @@ class MODEFIERS:
 	RELEASE = 2 << 16
 
 def get_pure_key(key_event):
-	return key_event & (not MODEFIERS.RELEASE) & (not MODEFIERS.HOLD)
+	if key_event & MODEFIERS.RELEASE:
+		return key_event - MODEFIERS.RELEASE
+	if key_event & MODEFIERS.HOLD:
+		return key_event - MODEFIERS.HOLD
 
 def is_key_hold(key_event):
 	return key_event & MODEFIERS.HOLD

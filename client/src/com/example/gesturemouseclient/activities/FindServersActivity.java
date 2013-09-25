@@ -69,6 +69,31 @@ public class FindServersActivity extends Activity implements OnClickListener {
 				startFindServers();
 			}
 		});
+		
+		boolean printKeyMap = true;
+		if (printKeyMap) {
+			for (int key_code=0; key_code < KeyEvent.getMaxKeyCode(); key_code++) {
+				String androidName = KeyEvent.keyCodeToString(key_code);
+				String pureName, winName;
+				Integer winKeyCode;
+				if (androidName != null && androidName.startsWith("KEYCODE_")) {
+					pureName = androidName.replace("KEYCODE_SOFT_", "");
+					pureName = pureName.replace("KEYCODE_DPAD_", "");
+					pureName = pureName.replace("KEYCODE_", "");
+					winName = "VK_OEM_" + pureName;
+					winKeyCode = KeyMap.KEY_MAP.get(winName);
+					if (winKeyCode != null) {
+						Log.w("", androidName+" : "+winName);
+					} else {
+						winName = "VK_" + pureName;
+						winKeyCode = KeyMap.KEY_MAP.get(winName);
+						if (winKeyCode != null) {
+							Log.w("", androidName+" : "+winName);
+						}
+					}
+				}
+			}
+		}
 
 	}
 	
@@ -96,8 +121,7 @@ public class FindServersActivity extends Activity implements OnClickListener {
 		progressBarContainer.setVisibility(View.GONE);
 		retryBtn.setVisibility(View.VISIBLE);
 		if (adapter.getCount() == 0) {
-			Tools.showErrorModal(this, "Error", "Did not find any device...\nPlease verify your pc server is on " +
-					"and also verify you are connected to the same wifi as your pc.");
+			Tools.showErrorModal(this, "Error", "Did not find any device...\nPlease verify your pc server is on");
 		}
 	}
 

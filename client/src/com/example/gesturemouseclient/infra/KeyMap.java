@@ -172,6 +172,20 @@ public class KeyMap {
 	public static final int VK_8 = 56;
 	public static final int VK_9 = 57;
 
+	public static final int VK_OEM_1 = 0xBA;
+	public static final int VK_OEM_PLUS = 0xBB;
+	public static final int VK_OEM_COMMA = 0xBC;
+	public static final int VK_OEM_MINUS = 0xBD;
+	public static final int VK_OEM_PERIOD = 0xBE;
+	public static final int VK_OEM_2 = 0xBF;
+	public static final int VK_OEM_3 = 0xC0;
+	public static final int VK_OEM_4 = 0xDB;
+	public static final int VK_OEM_5 = 0xDC;
+	public static final int VK_OEM_6 = 0xDD;
+	public static final int VK_OEM_7 = 0xDE;
+	public static final int VK_OEM_8 = 0xDF;
+
+
 	public static final Map<String, Integer> KEY_MAP;
 	public static final Map<Integer, Integer> ANDROID_TO_WINDOWS_KEY_MAP;
 	static {
@@ -329,6 +343,19 @@ public class KeyMap {
 		tempMap.put("VK_8", 56);
 		tempMap.put("VK_9", 57);
 
+		tempMap.put("VK_OEM_1",0xBA);
+		tempMap.put("VK_OEM_PLUS",0xBB);
+		tempMap.put("VK_OEM_COMMA",0xBC);
+		tempMap.put("VK_OEM_MINUS",0xBD);
+		tempMap.put("VK_OEM_PERIOD",0xBE);
+		tempMap.put("VK_OEM_2",0xBF);
+		tempMap.put("VK_OEM_3",0xC0);
+		tempMap.put("VK_OEM_4",0xDB);
+		tempMap.put("VK_OEM_5",0xDC);
+		tempMap.put("VK_OEM_6",0xDD);
+		tempMap.put("VK_OEM_7",0xDE);
+		tempMap.put("VK_OEM_8",0xDF);
+
 		KEY_MAP = Collections.unmodifiableMap(tempMap);
 		
 		LinkedHashMap<Integer, Integer> tempMap2 = new LinkedHashMap<Integer, Integer>();
@@ -352,7 +379,7 @@ public class KeyMap {
 		tempMap2.put(KeyEvent.KEYCODE_DPAD_RIGHT, VK_RIGHT);
 		tempMap2.put(KeyEvent.KEYCODE_VOLUME_UP, VK_VOLUME_UP);
 		tempMap2.put(KeyEvent.KEYCODE_VOLUME_DOWN, VK_VOLUME_DOWN);
-		tempMap2.put(KeyEvent.KEYCODE_CLEAR, VK_CLEAR);
+		tempMap2.put(KeyEvent.KEYCODE_CLEAR, VK_OEM_CLEAR);
 		tempMap2.put(KeyEvent.KEYCODE_A, VK_A);
 		tempMap2.put(KeyEvent.KEYCODE_B, VK_B);
 		tempMap2.put(KeyEvent.KEYCODE_C, VK_C);
@@ -379,8 +406,12 @@ public class KeyMap {
 		tempMap2.put(KeyEvent.KEYCODE_X, VK_X);
 		tempMap2.put(KeyEvent.KEYCODE_Y, VK_Y);
 		tempMap2.put(KeyEvent.KEYCODE_Z, VK_Z);
+		tempMap2.put(KeyEvent.KEYCODE_COMMA, VK_OEM_COMMA);
+		tempMap2.put(KeyEvent.KEYCODE_PERIOD, VK_OEM_PERIOD);
 		tempMap2.put(KeyEvent.KEYCODE_TAB, VK_TAB);
 		tempMap2.put(KeyEvent.KEYCODE_SPACE, VK_SPACE);
+		tempMap2.put(KeyEvent.KEYCODE_MINUS, VK_OEM_MINUS);
+		tempMap2.put(KeyEvent.KEYCODE_PLUS, VK_OEM_PLUS);
 		tempMap2.put(KeyEvent.KEYCODE_MENU, VK_MENU);
 		tempMap2.put(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, VK_MEDIA_PLAY_PAUSE);
 		tempMap2.put(KeyEvent.KEYCODE_ESCAPE, VK_ESCAPE);
@@ -398,6 +429,10 @@ public class KeyMap {
 		tempMap2.put(KeyEvent.KEYCODE_F11, VK_F11);
 		tempMap2.put(KeyEvent.KEYCODE_F12, VK_F12);
 		tempMap2.put(KeyEvent.KEYCODE_VOLUME_MUTE, VK_VOLUME_MUTE);
+
+		// manuall
+		tempMap2.put(KeyEvent.KEYCODE_ENTER, VK_RETURN);
+		tempMap2.put(KeyEvent.KEYCODE_DEL, VK_BACK);
 
 		ANDROID_TO_WINDOWS_KEY_MAP = Collections.unmodifiableMap(tempMap2);
 	}

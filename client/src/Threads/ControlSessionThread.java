@@ -56,6 +56,20 @@ public class ControlSessionThread extends PausableThread {
 		}
 	}
 
+	public void sendKeys(int[] keyIds) {
+		msg.put("key_event", keyIds);
+		byte[] buffer = null;
+		try {
+			buffer = msgpack.write(msg);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		msg.remove("key_event");
+		if (buffer != null) {
+			outgoingControlMessages.offerLast(buffer);
+		}
+	}
+
 	@Override
 	protected void innerAction() {
 		byte[] buffer = outgoingControlMessages.pollFirst();

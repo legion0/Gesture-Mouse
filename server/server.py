@@ -200,11 +200,14 @@ def request_handler(sock, addr):
 
 def handle_key_event(session, msg):
 	key_event = msg["key_event"]
-	pure_key = keyboard.get_pure_key(key_event)
-	if pure_key in keyboard.MOUSE_KEYS:
-		handle_mouse_key(session, key_event)
+	if type(key_event) is list:
+		keyboard.execute_sequence(key_event)
 	else:
-		handle_keyboard_key(session, key_event)
+		pure_key = keyboard.get_pure_key(key_event)
+		if pure_key in keyboard.MOUSE_KEYS:
+			handle_mouse_key(session, key_event)
+		else:
+			handle_keyboard_key(session, key_event)
 
 def handle_keyboard_key(session, key_event):
 	keyboard.execute_sequence([key_event])
@@ -414,7 +417,7 @@ def mouse_listener(session):
 			pitch -= 360
 
 		roll = math.degrees(msg[1])
-		
+
 		#Calc new x,y:
 		shift_threshold = 1.5
 		smooth_factor = 5.0
@@ -425,7 +428,7 @@ def mouse_listener(session):
 			factor_sign = factor/abs(factor)
 			factor = (abs(factor)**power_factor)*factor_sign
 			x = current_x + factor
-		else: 
+		else:
 			x = current_x
 		if abs(pitch) > shift_threshold:
 			sign = -pitch/abs(pitch)
@@ -433,8 +436,8 @@ def mouse_listener(session):
 			factor_sign = factor/abs(factor)
 			factor = (abs(factor)**power_factor)*factor_sign
 			y = current_y + factor
-		else: 
-			y = current_y 		
+		else:
+			y = current_y
 
 		try:
 			win32api.SetCursorPos((int(x),int(y)))

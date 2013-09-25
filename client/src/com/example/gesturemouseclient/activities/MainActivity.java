@@ -291,6 +291,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		super.onKeyUp(keyCode, event);
+		Log.d("keyCode", KeyEvent.keyCodeToString(keyCode));
 		Integer winKeyCode = null;
 		if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
 			if (volumeDownIsPressed) {
@@ -305,7 +306,18 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 				return true;
 			}
 		} else if ((winKeyCode = KeyMap.ANDROID_TO_WINDOWS_KEY_MAP.get(keyCode)) != null) { // try to map to windows key codes
-			backgroundWorkManager.sendKey(winKeyCode);
+			if (event.isShiftPressed()) {
+				int[] keys = new int[] {KeyMap.holdKey(KeyMap.VK_SHIFT), winKeyCode, KeyMap.releaseKey(KeyMap.VK_SHIFT)};
+				backgroundWorkManager.sendKeys(keys);
+			} else if (event.isAltPressed()) {
+				int[] keys = new int[] {KeyMap.holdKey(KeyMap.VK_MENU), winKeyCode, KeyMap.releaseKey(KeyMap.VK_MENU)};
+				backgroundWorkManager.sendKeys(keys);
+			} else if (event.isCtrlPressed()) {
+				int[] keys = new int[] {KeyMap.holdKey(KeyMap.VK_CONTROL), winKeyCode, KeyMap.releaseKey(KeyMap.VK_CONTROL)};
+				backgroundWorkManager.sendKeys(keys);
+			} else {
+				backgroundWorkManager.sendKey(winKeyCode);
+			}
 		}
 		return false;
 	}
