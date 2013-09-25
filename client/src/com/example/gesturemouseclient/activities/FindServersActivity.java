@@ -70,30 +70,30 @@ public class FindServersActivity extends Activity implements OnClickListener {
 			}
 		});
 		
-		boolean printKeyMap = true;
-		if (printKeyMap) {
-			for (int key_code=0; key_code < KeyEvent.getMaxKeyCode(); key_code++) {
-				String androidName = KeyEvent.keyCodeToString(key_code);
-				String pureName, winName;
-				Integer winKeyCode;
-				if (androidName != null && androidName.startsWith("KEYCODE_")) {
-					pureName = androidName.replace("KEYCODE_SOFT_", "");
-					pureName = pureName.replace("KEYCODE_DPAD_", "");
-					pureName = pureName.replace("KEYCODE_", "");
-					winName = "VK_OEM_" + pureName;
-					winKeyCode = KeyMap.KEY_MAP.get(winName);
-					if (winKeyCode != null) {
-						Log.w("", androidName+" : "+winName);
-					} else {
-						winName = "VK_" + pureName;
-						winKeyCode = KeyMap.KEY_MAP.get(winName);
-						if (winKeyCode != null) {
-							Log.w("", androidName+" : "+winName);
-						}
-					}
-				}
-			}
-		}
+//		boolean printKeyMap = true;
+//		if (printKeyMap) {
+//			for (int key_code=0; key_code < KeyEvent.getMaxKeyCode(); key_code++) {
+//				String androidName = KeyEvent.keyCodeToString(key_code);
+//				String pureName, winName;
+//				Integer winKeyCode;
+//				if (androidName != null && androidName.startsWith("KEYCODE_")) {
+//					pureName = androidName.replace("KEYCODE_SOFT_", "");
+//					pureName = pureName.replace("KEYCODE_DPAD_", "");
+//					pureName = pureName.replace("KEYCODE_", "");
+//					winName = "VK_OEM_" + pureName;
+//					winKeyCode = KeyMap.KEY_MAP.get(winName);
+//					if (winKeyCode != null) {
+//						Log.w("", androidName+" : "+winName);
+//					} else {
+//						winName = "VK_" + pureName;
+//						winKeyCode = KeyMap.KEY_MAP.get(winName);
+//						if (winKeyCode != null) {
+//							Log.w("", androidName+" : "+winName);
+//						}
+//					}
+//				}
+//			}
+//		}
 
 	}
 	
