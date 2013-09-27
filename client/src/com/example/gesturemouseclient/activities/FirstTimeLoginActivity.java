@@ -44,7 +44,7 @@ public class FirstTimeLoginActivity extends Activity {
 		instructionText = (TextView) findViewById(R.id.instrcutionText);
 		instructionText.setVisibility(View.INVISIBLE);
 
-		noInstructions = Boolean.valueOf(SystemVariablesDAL.get(getApplicationContext(), INSTRUCTION_KEY));
+		noInstructions = Boolean.valueOf(SystemVariablesDAL.get(this, INSTRUCTION_KEY));
 
 		Log.d("FirstTimeLoginActivity", "skip instructions: " + noInstructions);
 
@@ -102,7 +102,7 @@ public class FirstTimeLoginActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				SystemVariablesDAL.set(getApplicationContext(), INSTRUCTION_KEY, "" + true);
+				SystemVariablesDAL.set(FirstTimeLoginActivity.this, INSTRUCTION_KEY, "" + true);
 			}
 		});
 	}

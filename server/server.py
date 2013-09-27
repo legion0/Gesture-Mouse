@@ -23,6 +23,8 @@ import win32gui
 import win32process
 import win32api
 import win32con
+import ctypes
+import wintypes
 
 SCRIPT_DIR = os.path.dirname(__file__)
 SCRIPT_NAME = os.path.basename(__file__)
@@ -45,6 +47,8 @@ event_shutdown = threading.Event()
 
 settings = None
 broadcast_listener_thread = None
+
+import windows
 
 def main(args):
 	global settings
@@ -281,27 +285,10 @@ PROCESS_VM_READ = 0x0010
 #PROCESS_ALL_ACCESS = PROCESS_CREATE_PROCESS | PROCESS_CREATE_THREAD | PROCESS_DUP_HANDLE | PROCESS_QUERY_INFORMATION | PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_INFORMATION | PROCESS_SET_QUOTA | PROCESS_SUSPEND_RESUME | PROCESS_TERMINATE | PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE | SYNCHRONIZE
 
 ERROR_ACCESS_DENIED = 5
+ERROR_PARTIAL_COPY = 299
 
 def get_active_window_data():
-	handle = win32gui.GetForegroundWindow()
-	if handle == 0:
-		return "",""
-	window_title = win32gui.GetWindowText(handle).lower()
-	process_name = ""
-	_, process_id = win32process.GetWindowThreadProcessId(handle)
-	errorCode = win32api.GetLastError()
-	if process_id > 0 and errorCode == 0:
-		try:
-			process_handle = win32api.OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, False, process_id)
-			file_path = win32process.GetModuleFileNameEx(process_handle, None)
-			process_name = os.path.basename(file_path).lower()
-			process_handle.Close()
-		except win32api.error as ex:
-			if ex.winerror == ERROR_ACCESS_DENIED:
-				pass
-			else:
-				raise ex
-	return window_title, process_name
+	return (windows.get_foreground_title() or "").lower(), (windows.get_foreground_process_name() or "").lower()
 
 def application_finder(window_title, process_name):
 	def the_finder(item):
@@ -324,7 +311,7 @@ def window_monitor():
 		if window_title != old_window_title or process_name != old_process_name:
 			old_window_title = window_title
 			old_process_name = process_name
-			print "Switched to: %s (%s)." % (window_title, process_name)
+			print "Switched to: %r (%r)." % (window_title, process_name)
 
 		delete_stail_sessions()
 		with SESSIONS_LOCK:
@@ -345,7 +332,7 @@ def window_monitor():
 						msg = {"window_title": window_title, "process_name": process_name}
 					if msg is not None:
 						addr = (session["ip"], session["control_port"])
-						print "Sending", msg, "to", addr
+						print "Sending", repr(msg), "to", addr
 						try:
 							sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 							sock.connect(addr)
@@ -427,20 +414,32 @@ def mouse_listener(session):
 			factor = (-roll - (shift_threshold*sign))/smooth_factor
 			factor_sign = factor/abs(factor)
 			factor = (abs(factor)**power_factor)*factor_sign
+			factor = max(min(factor,40),-40)
 			x = current_x + factor
 		else:
 			x = current_x
+		x = int(x)
 		if abs(pitch) > shift_threshold:
 			sign = -pitch/abs(pitch)
 			factor = (-pitch - (shift_threshold*sign))/smooth_factor
 			factor_sign = factor/abs(factor)
 			factor = (abs(factor)**power_factor)*factor_sign
+			factor = max(min(factor,40),-40)
 			y = current_y + factor
 		else:
 			y = current_y
+		y = int(y)
+
+#		print_round = (print_round + 1) % 10
+#		if print_round == 0:
+#			print int(x-current_x), int(y-current_y), roll, pitch
+#		x_diff = int(x-current_x)
+#		y_diff = int(y-current_y)
+#		if (x_diff != 0) or (y_diff != 0):
+#			print x_diff, y_diff, roll, pitch
 
 		try:
-			win32api.SetCursorPos((int(x),int(y)))
+			win32api.SetCursorPos((x,y))
 		except win32api.error:
 			pass
 	sock.close()

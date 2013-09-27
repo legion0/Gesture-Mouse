@@ -61,7 +61,7 @@ public class CreateActionActivity extends Activity {
 			keyList.add(new TextItemPair<Integer>(entry.getKey().replace("VK_", "")+" Release", KeyMap.releaseKey(entry.getValue())));
 		}
 
-		ArrayAdapter<TextItemPair<Integer>> adapter = new ArrayAdapter<TextItemPair<Integer>>(getApplicationContext(), R.layout.spinner_view_key,
+		ArrayAdapter<TextItemPair<Integer>> adapter = new ArrayAdapter<TextItemPair<Integer>>(this, R.layout.spinner_view_key,
 				R.id.createActionKeyName, keyList);
 		keySpinner.setAdapter(adapter);
 

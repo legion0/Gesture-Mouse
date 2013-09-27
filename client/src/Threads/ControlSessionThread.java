@@ -7,8 +7,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
 
 import org.msgpack.MessagePack;
+
+import android.util.Log;
 
 import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 
@@ -34,7 +37,7 @@ public class ControlSessionThread extends PausableThread {
 		try {
 			buffer = msgpack.write(msg);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			Log.e("ControlSessionThread", "sendGesture: Failed to encode msg: " + msg.toString(), e);
 		}
 		msg.remove("gesture");
 		if (buffer != null) {
@@ -48,7 +51,7 @@ public class ControlSessionThread extends PausableThread {
 		try {
 			buffer = msgpack.write(msg);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			Log.e("ControlSessionThread", "sendKey: Failed to encode msg: " + msg.toString(), e);
 		}
 		msg.remove("key_event");
 		if (buffer != null) {
@@ -62,7 +65,7 @@ public class ControlSessionThread extends PausableThread {
 		try {
 			buffer = msgpack.write(msg);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			Log.e("ControlSessionThread", "sendKeys: Failed to encode msg: " + msg.toString(), e);
 		}
 		msg.remove("key_event");
 		if (buffer != null) {
@@ -72,7 +75,12 @@ public class ControlSessionThread extends PausableThread {
 
 	@Override
 	protected void innerAction() {
-		byte[] buffer = outgoingControlMessages.pollFirst();
+		byte[] buffer = null;
+		try {
+			buffer = outgoingControlMessages.pollFirst(1, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			Log.e("ControlSessionThread", "SLEEP INTERRUPT !!!", e);
+		}
 		if (buffer != null) {
 			try {
 				Socket socket = new Socket(remoteDeviceInfo.getAddress(), remoteDeviceInfo.getControlPort());
@@ -80,7 +88,7 @@ public class ControlSessionThread extends PausableThread {
 				outputStream.write(buffer);
 				socket.close();
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				Log.e("ControlSessionThread", "Exception in: innerAction", e);
 			}
 		}
 	}

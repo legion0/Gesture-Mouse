@@ -126,7 +126,7 @@ public class GestureDAL {
 			db.close();
 
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			Log.e("GestureDAL", "failed to save Gesture", e);
 		}
 	}
 

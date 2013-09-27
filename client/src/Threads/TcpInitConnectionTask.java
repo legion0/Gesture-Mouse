@@ -35,7 +35,7 @@ public class TcpInitConnectionTask extends AsyncTask<Boolean, Void, Void> {
 	protected Void doInBackground(Boolean... params) {
 		boolean openNewTcpConnection = params[0];
 
-		TcpClient client = new TcpClient(remoteDevice, activity.getApplicationContext());
+		TcpClient client = new TcpClient(remoteDevice, activity);
 		client.setTimeout(5);
 		try {
 			if(openNewTcpConnection)

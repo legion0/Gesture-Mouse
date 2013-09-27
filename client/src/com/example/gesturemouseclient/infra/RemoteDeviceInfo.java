@@ -5,6 +5,7 @@ import java.net.UnknownHostException;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 /**
  * @author Yotam & Jonatan
@@ -42,7 +43,7 @@ public class RemoteDeviceInfo implements Parcelable {
 		try {
 			address = InetAddress.getByName(in.readString());
 		} catch (UnknownHostException e) {
-			throw new RuntimeException(e);
+			Log.e("RemoteDeviceInfo", "failed to get Self Network name", e);
 		}
 		controlPort = in.readInt();
 		localControlPort = in.readInt();

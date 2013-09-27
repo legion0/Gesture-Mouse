@@ -23,7 +23,6 @@
  */
 package org.wiigee.device;
 
-import java.io.IOException;
 import java.util.Vector;
 
 import org.wiigee.event.AccelerationEvent;
@@ -161,7 +160,7 @@ public class Device {
         return this.processingunit;
     }
 
-    public void setAccelerationEnabled(boolean enabled) throws IOException {
+    public void setAccelerationEnabled(boolean enabled) {
         this.accelerationEnabled = enabled;
     }
 

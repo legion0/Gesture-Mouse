@@ -6,14 +6,18 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
 
 import org.msgpack.MessagePack;
+
+import android.util.Log;
 
 import com.example.gesturemouseclient.infra.RemoteDeviceInfo;
 
 public class FastSampleSenderThread extends PausableThread {
 
 	private BlockingDeque<float[]> outgoingSampleQueue;
+	private static int MAX_MEMORY = 10;
 	private MessagePack msgpack;
 	private final RemoteDeviceInfo remoteDeviceInfo;
 
@@ -36,19 +40,29 @@ public class FastSampleSenderThread extends PausableThread {
 
 	@Override
 	protected void innerAction() {
+		while (outgoingSampleQueue.size() > MAX_MEMORY) {
+			outgoingSampleQueue.pollFirst();
+		}
+		float[] sample = null;
 		try {
-			float[] sample = outgoingSampleQueue.pollFirst();
-			if (sample != null) {
-//				Logger.printLog("FastSensorConnection : ", "sendSample(" + sample[0] + "," + sample[1] + "," + sample[2] + ")");
-				byte[] buffer = msgpack.write(sample);
+			sample = outgoingSampleQueue.pollFirst(1, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			Log.e("FastSampleSenderThread", "SLEEP INTERRUPT !!!", e);
+		}
+		if (sample != null) {
+			try {
+				if (sample != null) {
+					// Logger.printLog("FastSensorConnection : ", "sendSample(" + sample[0] + "," + sample[1] + "," + sample[2] + ")");
+					byte[] buffer = msgpack.write(sample);
 
-				DatagramPacket packet = new DatagramPacket(buffer, buffer.length, remoteDeviceInfo.getAddress(), remoteDeviceInfo.getUDPPort());
-				DatagramSocket socket = new DatagramSocket();
-				socket.send(packet);
-				socket.close();
+					DatagramPacket packet = new DatagramPacket(buffer, buffer.length, remoteDeviceInfo.getAddress(), remoteDeviceInfo.getUDPPort());
+					DatagramSocket socket = new DatagramSocket();
+					socket.send(packet);
+					socket.close();
+				}
+			} catch (SocketException ex) {
+			} catch (IOException ex) {
 			}
-		} catch (IOException e) {
-			throw new RuntimeException(e);
 		}
 	}
 

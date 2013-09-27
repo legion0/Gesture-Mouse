@@ -8,6 +8,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.nio.charset.Charset;
+import java.security.InvalidParameterException;
+import java.util.Arrays;
 
 import org.msgpack.MessagePack;
 import org.msgpack.type.MapValue;
@@ -32,6 +35,7 @@ public class ApplicationListenerTask extends AsyncTask<Void, ApplicationDAL, Voi
 	private ServerSocket tcpServer;
 
 	private ApplicationListener applicationListener;
+	private final RemoteDeviceInfo remoteDeviceInfo;
 
 	/**
 	 * Constctur:
@@ -41,25 +45,34 @@ public class ApplicationListenerTask extends AsyncTask<Void, ApplicationDAL, Voi
 	 * @param inetSocketAddress
 	 * @throws SocketException
 	 */
-	public ApplicationListenerTask(RemoteDeviceInfo remoteDeviceInfo, ApplicationListener applicationListener) {
+	public ApplicationListenerTask(RemoteDeviceInfo remoteDeviceInfo, ApplicationListener applicationListener) throws InvalidParameterException {
 		super();
+		this.remoteDeviceInfo = remoteDeviceInfo;
 		this.applicationListener = applicationListener;
-		try {
-			Log.d("Application Listener", "binding socket");
-			tcpServer = new ServerSocket();
-			tcpServer.setReuseAddress(true);
-			tcpServer.bind(new InetSocketAddress(remoteDeviceInfo.getLocalControlPort()));
-
-		} catch (NumberFormatException e) {
-			throw new RuntimeException(e);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
 	}
 
 	@Override
 	protected Void doInBackground(Void... params) {
 		Logger.printLog("Application Listener", "" + isCancelled());
+		
+		
+		while (!isCancelled()) {
+			try {
+				Log.d("Application Listener", "binding socket");
+				tcpServer = new ServerSocket();
+				tcpServer.setReuseAddress(true);
+				tcpServer.bind(new InetSocketAddress(remoteDeviceInfo.getLocalControlPort()));
+				break;
+			} catch (IOException e) {
+				Log.e("ApplicationListenerTask", "Failed to bind port", e);
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e1) {
+					Log.e("ApplicationListenerTask", "SLEEP INTERRUPT !!!", e);
+				}
+			}
+		}
+		
 		while (!isCancelled()) {
 			Socket socket = null;
 			try {
@@ -90,8 +103,12 @@ public class ApplicationListenerTask extends AsyncTask<Void, ApplicationDAL, Voi
 				if (returnMsg.containsKey(key_app_id)) {
 					appData.setId(returnMsg.get(key_app_id).asIntegerValue().getInt());
 				} else {
-					appData.setProcessName(returnMsg.get(key_process_name).asRawValue().getString());
-					appData.setWindowTitle(returnMsg.get(key_window_title).asRawValue().getString());
+					byte[] bytes = returnMsg.get(key_window_title).asRawValue().getByteArray();
+					Log.d("ApplicationListenerTask", "window_title bytes = " + Arrays.toString(bytes));
+					String windowTitle = new String(bytes, Charset.forName("UTF-8"));
+					appData.setWindowTitle(windowTitle);
+					Log.d("ApplicationListenerTask", "window_title = " + windowTitle);
+					appData.setProcessName(new String(returnMsg.get(key_process_name).asRawValue().getByteArray(), Charset.forName("UTF-8")));
 				}
 				publishProgress(appData);
 			} catch (SocketException ex) {

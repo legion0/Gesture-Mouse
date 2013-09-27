@@ -49,6 +49,8 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	enum State {
 		MOUSE, GESTURE
 	};
+	
+	private static int ROTATION_VECTOR_RATE = 20000;
 
 	private RemoteDeviceInfo remoteDeviceInfo;
 	private TextView pcConnectedName;
@@ -85,7 +87,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		Logger.printLog("onCreate", "the app is created !");
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		KeyboardDetectorRelativeLayout layout = new KeyboardDetectorRelativeLayout(getApplicationContext());
+		KeyboardDetectorRelativeLayout layout = new KeyboardDetectorRelativeLayout(this);
 		layout.inflate(R.layout.activity_main);
 		layout.addKeyboardStateChangedListener(this);
 		setContentView(layout);
@@ -200,7 +202,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	@Override
 	protected void onStart() {
-		applications = ApplicationDAL.loadWithGestures(getApplicationContext());
+		applications = ApplicationDAL.loadWithGestures(this);
 		super.onStart();
 		tcpConnection = new TcpInitConnectionTask(remoteDeviceInfo, this);
 		tcpConnection.execute(true);
@@ -336,7 +338,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	private boolean registerRotationalVector() {
 		rotationalVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
-		return sensorManager.registerListener(this, rotationalVectorSensor, SensorManager.SENSOR_DELAY_GAME);
+		return sensorManager.registerListener(this, rotationalVectorSensor, ROTATION_VECTOR_RATE);
 	}
 
 	private void unregisterRotationalVector() {
@@ -441,14 +443,10 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		String displayText = runningApp.getWindowTitle();
 		displayText = displayText.substring(0, Math.min(displayText.length(), 20));
 		appConnectedName.setText(displayText);
-		try {
-			if (backgroundWorkManager != null) {
-				backgroundWorkManager.resumeFastSampleSenderThread();
-			}
-			andgee.getDevice().setAccelerationEnabled(false);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+		if (backgroundWorkManager != null) {
+			backgroundWorkManager.resumeFastSampleSenderThread();
 		}
+		andgee.getDevice().setAccelerationEnabled(false);
 	}
 
 	private void toGestureMode() {
@@ -457,15 +455,10 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		goToGestureBtn.setVisibility(View.GONE);
 		String displayText = runningApp.getName();
 		appConnectedName.setText(displayText);
-		try {
-			if (backgroundWorkManager != null) {
-				backgroundWorkManager.suspendFastSampleSenderThread();
-			}
-
-			andgee.getDevice().setAccelerationEnabled(true);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+		if (backgroundWorkManager != null) {
+			backgroundWorkManager.suspendFastSampleSenderThread();
 		}
+		andgee.getDevice().setAccelerationEnabled(true);
 		classifierIdMap.clear();
 		andgee.getDevice().getProcessingUnit().getClassifier().clear();
 

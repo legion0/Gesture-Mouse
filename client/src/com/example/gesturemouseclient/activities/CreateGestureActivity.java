@@ -1,7 +1,5 @@
 package com.example.gesturemouseclient.activities;
 
-import java.io.IOException;
-
 import org.wiigee.control.AndroidWiigee;
 import org.wiigee.logic.GestureModel;
 
@@ -74,12 +72,7 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 		lblStatus = (TextView) findViewById(R.id.recognizeGestureTxt);
 
 		andgee = new AndroidWiigee();
-		try {
-			andgee.getDevice().setAccelerationEnabled(true);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			throw new RuntimeException(e);
-		}
+		andgee.getDevice().setAccelerationEnabled(true);
 		learnGestureBtn = (ImageView) findViewById(R.id.recordGestureBtn);
 
 		learnGestureBtn.setOnTouchListener(new OnTouchListener() {
@@ -133,14 +126,13 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 			return;
 		}
 		saveGestureBtn.setClickable(false);
-		SaveAsyncTask save = new SaveAsyncTask();
+		SaveAsyncTask save = new SaveAsyncTask(this);
 		save.execute();
 	}
 
 	@Override
 	protected void onStart() {
 		Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-		// TODO: Error checks
 		sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_GAME);
 		super.onStart();
 	}
@@ -171,6 +163,13 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 	}
 
 	class SaveAsyncTask extends AsyncTask<Void, Void, Void> {
+		
+		public SaveAsyncTask(Context context) {
+			super();
+			this.context = context;
+		}
+
+		private Context context;
 
 		@Override
 		protected void onPreExecute() {
@@ -181,7 +180,6 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 
 		@Override
 		protected Void doInBackground(Void... params) {
-			Context context = getApplicationContext();
 			Logger.printLog("Create Gesture", "save gesture.");
 			int classifierGestureId = andgee.getDevice().getProcessingUnit().saveLearningAsGesture();
 			GestureModel gestureModel = andgee.getDevice().getProcessingUnit().getClassifier().getGestureModel(classifierGestureId);
@@ -190,7 +188,7 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 
 			if (appId == -1) {
 				ApplicationDAL applicationDAL = new ApplicationDAL(applicationName, processName, windowTitle);
-				applicationDAL.save(getApplicationContext());
+				applicationDAL.save(context);
 				appId = applicationDAL.getId();
 			}
 

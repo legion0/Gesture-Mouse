@@ -34,6 +34,8 @@ import org.wiigee.logic.GestureModel;
 import org.wiigee.logic.HMM;
 import org.wiigee.logic.Quantizer;
 
+import android.util.Log;
+
 /**
  * This is a static class to support saving and loading complete gestures. I've
  * choosen not to use some kind of XML, because the big multidimensional arrays
@@ -129,7 +131,7 @@ public class FileIO {
 			out.flush();
 			out.close();
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			Log.e("FileIO", "failed to write to file", e);
 		}
 	}
 
@@ -224,8 +226,9 @@ public class FileIO {
 			in.close();
 			return ret;
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			Log.e("FileIO", "failed to read from file", e);
 		}
+		return null;
 	}
 
 }
