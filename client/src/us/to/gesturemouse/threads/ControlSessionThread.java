@@ -16,7 +16,7 @@ import us.to.gesturemouse.infra.RemoteDeviceInfo;
 import android.util.Log;
 
 
-public class ControlSessionThread extends PausableThread {
+public class ControlSessionThread extends PausableRunnable {
 
 	private RemoteDeviceInfo remoteDeviceInfo;
 	private final BlockingDeque<byte[]> outgoingControlMessages;

@@ -1,5 +1,9 @@
 package us.to.gesturemouse.infra;
 
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -92,5 +96,27 @@ public class Tools {
 		if (sensor != null) {
 			sensorManager.unregisterListener(sensorEventListener, sensor);
 		}
+	}
+
+	public static boolean closeSocket(Socket socket) {
+		if (socket != null) {
+			try {
+				socket.close();
+				return true;
+			} catch (IOException e) {
+			}
+		}
+		return false;
+	}
+
+	public static boolean closeSocket(ServerSocket socket) {
+		if (socket != null) {
+			try {
+				socket.close();
+				return true;
+			} catch (IOException e) {
+			}
+		}
+		return false;
 	}
 }

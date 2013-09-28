@@ -22,7 +22,6 @@ public class RemoteDeviceInfo implements Parcelable {
 	private int UDPPort;
 	private final String machineName;
 	private boolean connected;
-	private String activeApplication;
 
 	/**
 	 * Constructor
@@ -35,6 +34,9 @@ public class RemoteDeviceInfo implements Parcelable {
 		this.address = address;
 		this.machineName = machineName;
 		connected = false;
+		localControlPort = 0;
+		UDPPort = 0;
+		sessionId = null;
 	}
 
 	// example constructor that takes a Parcel and gives you an object populated with it's values
@@ -49,7 +51,6 @@ public class RemoteDeviceInfo implements Parcelable {
 		localControlPort = in.readInt();
 		UDPPort = in.readInt();
 		machineName = in.readString();
-		activeApplication = in.readString();
 	}
 
 	public int getControlPort() {
@@ -93,7 +94,6 @@ public class RemoteDeviceInfo implements Parcelable {
 		out.writeInt(localControlPort);
 		out.writeInt(UDPPort);
 		out.writeString(machineName);
-		out.writeString(activeApplication);
 	}
 
 	// this is used to regenerate your object. All Parcelables must have a CREATOR that implements these two methods
@@ -113,14 +113,6 @@ public class RemoteDeviceInfo implements Parcelable {
 
 	public synchronized void setConnected(boolean connected) {
 		this.connected = connected;
-	}
-
-	public String getActiveApplication() {
-		return activeApplication;
-	}
-
-	public void setActiveApplication(String activeApplication) {
-		this.activeApplication = activeApplication;
 	}
 
 	public String getName() {

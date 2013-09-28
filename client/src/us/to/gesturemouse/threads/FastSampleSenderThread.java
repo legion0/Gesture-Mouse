@@ -15,7 +15,7 @@ import us.to.gesturemouse.infra.RemoteDeviceInfo;
 import android.util.Log;
 
 
-public class FastSampleSenderThread extends PausableThread {
+public class FastSampleSenderThread extends PausableRunnable {
 
 	private BlockingDeque<float[]> outgoingSampleQueue;
 	private static int MAX_MEMORY = 10;

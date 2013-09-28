@@ -225,7 +225,7 @@ public class FileIO {
 			ret.setHMM(hmm);
 			in.close();
 			return ret;
-		} catch (Exception e) {
+		} catch (IOException e) {
 			Log.e("FileIO", "failed to read from file", e);
 		}
 		return null;

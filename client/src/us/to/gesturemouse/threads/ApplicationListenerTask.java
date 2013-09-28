@@ -21,6 +21,7 @@ import org.msgpack.unpacker.Unpacker;
 import us.to.gesturemouse.dal.ApplicationDAL;
 import us.to.gesturemouse.infra.Logger;
 import us.to.gesturemouse.infra.RemoteDeviceInfo;
+import us.to.gesturemouse.infra.Tools;
 import us.to.gesturemouse.infra.interfaces.ApplicationListener;
 
 import android.os.AsyncTask;
@@ -52,25 +53,35 @@ public class ApplicationListenerTask extends AsyncTask<Void, ApplicationDAL, Voi
 		this.applicationListener = applicationListener;
 	}
 
+	private void sleepOrDie() {
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			Log.e("ApplicationListenerTask", "SLEEP INTERRUPT !!!", e);
+			cancel(false);
+		}
+	}
+
 	@Override
 	protected Void doInBackground(Void... params) {
 		Logger.printLog("Application Listener", "" + isCancelled());
 		
 		
 		while (!isCancelled()) {
-			try {
-				Log.d("Application Listener", "binding socket");
-				tcpServer = new ServerSocket();
-				tcpServer.setReuseAddress(true);
-				tcpServer.bind(new InetSocketAddress(remoteDeviceInfo.getLocalControlPort()));
-				break;
-			} catch (IOException e) {
-				Log.e("ApplicationListenerTask", "Failed to bind port", e);
+			if (remoteDeviceInfo.getLocalControlPort() > 0) {
 				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e1) {
-					Log.e("ApplicationListenerTask", "SLEEP INTERRUPT !!!", e);
+					Log.d("Application Listener", "binding socket");
+					tcpServer = new ServerSocket();
+					tcpServer.setReuseAddress(true);
+					tcpServer.bind(new InetSocketAddress(remoteDeviceInfo.getLocalControlPort()));
+					break;
+				} catch (IOException e) {
+					Log.e("ApplicationListenerTask", "Failed to bind port, waiting 1 second and trying again.", e);
+					sleepOrDie();
 				}
+			} else {
+				Log.e("ApplicationListenerTask", "No port yet, waiting 1 second to check again");
+				sleepOrDie();
 			}
 		}
 		
@@ -117,19 +128,11 @@ public class ApplicationListenerTask extends AsyncTask<Void, ApplicationDAL, Voi
 			} catch (IOException ex) {
 				Log.e("ApplicationListenerTask", "doInBackground", ex);
 			} finally {
-				if (socket != null)
-				try {
-					socket.close();
-				} catch (IOException e) {
-				}
+				Tools.closeSocket(socket);
 			}
 		}
-		try {
-			tcpServer.close();
-			Log.d("Application Listener", " closed socket.");
-		} catch (IOException e) {
-		}
-		Log.d("Application Listener", " closing");
+		Tools.closeSocket(tcpServer);
+		Log.d("Application Listener", " closed");
 		return null;
 	}
 

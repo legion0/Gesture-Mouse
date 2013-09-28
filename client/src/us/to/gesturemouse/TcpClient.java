@@ -25,6 +25,7 @@ import us.to.gesturemouse.dal.ApplicationDAL;
 import us.to.gesturemouse.dal.GestureDAL;
 import us.to.gesturemouse.infra.Logger;
 import us.to.gesturemouse.infra.RemoteDeviceInfo;
+import us.to.gesturemouse.infra.Tools;
 
 import android.content.Context;
 import android.util.Log;
@@ -110,15 +111,15 @@ public class TcpClient {
 	private int findNewLocalControlPort()
 	{
 		int port = -1;
+		ServerSocket tcpServer = null;
 		try {
-			ServerSocket tcpServer = new ServerSocket();
+			tcpServer = new ServerSocket();
 			tcpServer.bind(null);
-			
 			port = tcpServer.getLocalPort();
-			tcpServer.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.e("TCPClient", "findNewLocalControlPort", e);
+		} finally {
+			Tools.closeSocket(tcpServer);
 		}
 		Log.d("TcpClient","tcp port found: "+port);
 		return port;
@@ -171,10 +172,14 @@ public class TcpClient {
 			device.setUDPPort(udpFromServer);
 
 			Logger.printLog("TCP Client", "S: Received udp port: " + udpFromServer);
-		} catch (Exception e) {
-			Logger.printLog("TCPClient", "S: Error, " + e.getMessage());
+		} catch (IOException e) {
+			Log.e("TCPClient", "initControllSession", e);
+		} catch (NullPointerException e) {
+			Log.e("TCPClient", "initControllSession", e);
+		} catch (MessageTypeException e) {
+			Log.e("TCPClient", "initControllSession", e);
 		} finally {
-			socket.close();
+			Tools.closeSocket(socket);
 		}
 
 	}
@@ -201,10 +206,14 @@ public class TcpClient {
 			outputStream.write(msgBuffer);
 			Logger.printLog("TCP Client", "C: close.");
 
-		} catch (Exception e) {
-			Logger.printLog("TCPClient", "S: Error, " + e.getMessage());
+		} catch (IOException e) {
+			Log.e("TCPClient", "closeSession", e);
+		} catch (NullPointerException e) {
+			Log.e("TCPClient", "closeSession", e);
+		} catch (MessageTypeException e) {
+			Log.e("TCPClient", "closeSession", e);
 		} finally {
-			socket.close();
+			Tools.closeSocket(socket);
 		}
 	}
 }

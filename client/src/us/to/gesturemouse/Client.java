@@ -110,7 +110,6 @@ public class Client {
 				} catch (SocketTimeoutException ex) {
 				} catch (NullPointerException ex) {
 				} catch (MessageTypeException ex) {
-				} catch (Exception ex) {
 				}
 			}
 		} finally {
@@ -169,7 +168,6 @@ public class Client {
 				} catch (SocketTimeoutException ex) {
 				} catch (NullPointerException ex) {
 				} catch (MessageTypeException ex) {
-				} catch (Exception ex) {
 				}
 			}
 		} finally {

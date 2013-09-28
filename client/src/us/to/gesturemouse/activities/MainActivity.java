@@ -238,7 +238,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			backgroundWorkManager.suspend();
 			tcpConnection = new TcpInitConnectionTask(remoteDeviceInfo, this);
 			tcpConnection.execute(false);
-			applicationListenerThread.cancel(true);
+			applicationListenerThread.cancel(false);
 			applicationListenerThread = null;
 		}
 	}
@@ -251,7 +251,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			backgroundWorkManager = null;
 		}
 		if (applicationListenerThread != null) {
-			applicationListenerThread.cancel(true);
+			applicationListenerThread.cancel(false);
 			applicationListenerThread = null;
 		}
 		super.onDestroy();
