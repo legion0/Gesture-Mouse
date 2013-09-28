@@ -246,6 +246,14 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	@Override
 	protected void onDestroy() {
 		Logger.printLog("onDestroy", "the app is destroyed !");
+		if (backgroundWorkManager != null) {
+			backgroundWorkManager.stop();
+			backgroundWorkManager = null;
+		}
+		if (applicationListenerThread != null) {
+			applicationListenerThread.cancel(true);
+			applicationListenerThread = null;
+		}
 		super.onDestroy();
 	}
 
