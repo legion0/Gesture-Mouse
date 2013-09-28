@@ -172,7 +172,7 @@ public class FindServersActivity extends Activity implements OnClickListener {
 		stopProgressBar();
 		if (adapter.getCount() == 0) {
 			Tools.showErrorModal(this, "Error",
-					"Did not find any device...\nPlease verify your PC / Laptop server is on and both your phone and PC / Laptop connected to the same network.");
+					"Did not find any device...\nPlease verify your PC / Laptop server is on and both your phone and PC / Laptop are connected to the same network.");
 		}
 	}
 

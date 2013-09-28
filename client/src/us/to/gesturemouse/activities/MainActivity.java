@@ -1,6 +1,5 @@
 package us.to.gesturemouse.activities;
 
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -22,7 +21,6 @@ import us.to.gesturemouse.layouts.KeyboardDetectorRelativeLayout.IKeyboardChange
 import us.to.gesturemouse.threads.ApplicationListenerTask;
 import us.to.gesturemouse.threads.BackgroundWorkManager;
 import us.to.gesturemouse.threads.TcpInitConnectionTask;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -51,7 +49,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		MOUSE, GESTURE
 	};
 	
-	private static int ROTATION_VECTOR_RATE = 20000;
+	private static int MOUSE_SENSOR_DELAY = 20000;
 
 	private RemoteDeviceInfo remoteDeviceInfo;
 	private TextView pcConnectedName;
@@ -80,8 +78,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	private ImageView openKeyboardBtn;
 	private InputMethodManager inputMethodManager;
 	protected boolean isKeyboardOpen;
-	private boolean mouseSuspended;
-	private Sensor rotationalVectorSensor;
+	private boolean isMouseSuspended;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -130,7 +127,9 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 					int gestureId = classifierIdMap.get(event.getId());
 					Log.d("Main activity", "Recognized gesture " + gestureId + " with probability " + event.getProbability());
 					Log.d("Main activity", "Sending Gesture id: " + gestureId);
-					backgroundWorkManager.sendGesture(gestureId);
+					if (remoteDeviceInfo.isConnected()) {
+						backgroundWorkManager.sendGesture(gestureId);
+					}
 				} else {
 					// TODO: did not recognize any gesture
 				}
@@ -197,8 +196,6 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			}
 
 		});
-
-		toMouseMode();
 	}
 
 	@Override
@@ -215,7 +212,6 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	}
 
 	public void onConnectionToRemoteDevice() {
-		remoteDeviceInfo.setConnected(true);
 		Logger.printLog("onConnectionToRemoteDevice", "");
 		// start threads:
 		backgroundWorkManager = new BackgroundWorkManager(remoteDeviceInfo);
@@ -224,11 +220,8 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		applicationListenerThread.execute();
 
 		// start sensors:
-		Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-		// TODO: Error checks
-		sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_GAME);
-
-		registerRotationalVector();
+		remoteDeviceInfo.setConnected(true);
+		toMouseMode();
 	}
 
 	@Override
@@ -240,6 +233,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		Logger.printLog("onStop", "the app is stoped !");
 		super.onStop();
 		if (remoteDeviceInfo.isConnected()) {
+			remoteDeviceInfo.setConnected(false);
 			sensorManager.unregisterListener(this);
 			backgroundWorkManager.suspend();
 			tcpConnection = new TcpInitConnectionTask(remoteDeviceInfo, this);
@@ -247,7 +241,6 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			applicationListenerThread.cancel(true);
 			applicationListenerThread = null;
 		}
-		remoteDeviceInfo.setConnected(false);
 	}
 
 	@Override
@@ -273,22 +266,24 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		Log.d("keyCode", "" + keyCode);
 		super.onKeyDown(keyCode, event);
-
-		if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-			if (!volumeDownIsPressed) {
-				volumeDownIsPressed = true;
-				backgroundWorkManager.sendKey(KeyMap.holdKey(KeyMap.VK_RBUTTON));
-				return true;
-			}
-		} else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-			if (!volumeUpIsPressed) {
-				volumeUpIsPressed = true;
-				backgroundWorkManager.sendKey(KeyMap.holdKey(KeyMap.VK_LBUTTON));
-				return true;
-			}
-		} else if (keyCode == KeyEvent.KEYCODE_BACK) {
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
 			onBackPressed();
 			return true;
+		}
+		if (remoteDeviceInfo.isConnected()) {
+			if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+				if (!volumeDownIsPressed) {
+					volumeDownIsPressed = true;
+					backgroundWorkManager.sendKey(KeyMap.holdKey(KeyMap.VK_RBUTTON));
+					return true;
+				}
+			} else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+				if (!volumeUpIsPressed) {
+					volumeUpIsPressed = true;
+					backgroundWorkManager.sendKey(KeyMap.holdKey(KeyMap.VK_LBUTTON));
+					return true;
+				}
+			}
 		}
 		return false;
 	}
@@ -326,58 +321,52 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	}
 
 	private void suspendMouse() {
-		mouseSuspended = true;
-		backgroundWorkManager.suspendFastSampleSenderThread();
-		unregisterRotationalVector();
+		isMouseSuspended = true;
+		if (remoteDeviceInfo.isConnected()) {
+			backgroundWorkManager.suspendFastSampleSenderThread();
+		}
+		Tools.unregisterMouseSensor(sensorManager, this);
 	}
 
 	private void resumeMouse() {
-		mouseSuspended = false;
-		backgroundWorkManager.resumeFastSampleSenderThread();
-		registerRotationalVector();
-	}
-
-	private boolean registerRotationalVector() {
-		rotationalVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
-		return sensorManager.registerListener(this, rotationalVectorSensor, ROTATION_VECTOR_RATE);
-	}
-
-	private void unregisterRotationalVector() {
-		sensorManager.unregisterListener(this, rotationalVectorSensor);
-	}
-
-	private boolean isMouseSuspended() {
-		return mouseSuspended;
+		isMouseSuspended = false;
+		if (remoteDeviceInfo.isConnected()) {
+			backgroundWorkManager.resumeFastSampleSenderThread();
+		}
+		Tools.registerMouseSensor(sensorManager, this, MOUSE_SENSOR_DELAY);
+		
 	}
 
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		super.onKeyUp(keyCode, event);
 		// Log.d("keyCode", KeyEvent.keyCodeToString(keyCode));
-		Integer winKeyCode = null;
-		if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-			if (volumeDownIsPressed) {
-				volumeDownIsPressed = false;
-				backgroundWorkManager.sendKey(KeyMap.releaseKey(KeyMap.VK_RBUTTON));
-				return true;
-			}
-		} else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-			if (volumeUpIsPressed) {
-				volumeUpIsPressed = false;
-				backgroundWorkManager.sendKey(KeyMap.releaseKey(KeyMap.VK_LBUTTON));
-				return true;
-			}
-		} else if ((winKeyCode = KeyMap.ANDROID_TO_WINDOWS_KEY_MAP.get(keyCode)) != null) { // try to map to windows key codes
-			if (event.isShiftPressed()) {
-				int[] keys = new int[] { KeyMap.holdKey(KeyMap.VK_SHIFT), winKeyCode, KeyMap.releaseKey(KeyMap.VK_SHIFT) };
-				backgroundWorkManager.sendKeys(keys);
-			} else if (event.isAltPressed()) {
-				int[] keys = new int[] { KeyMap.holdKey(KeyMap.VK_MENU), winKeyCode, KeyMap.releaseKey(KeyMap.VK_MENU) };
-				backgroundWorkManager.sendKeys(keys);
-				// } else if (event.isCtrlPressed()) {
-				// int[] keys = new int[] {KeyMap.holdKey(KeyMap.VK_CONTROL), winKeyCode, KeyMap.releaseKey(KeyMap.VK_CONTROL)};
-				// backgroundWorkManager.sendKeys(keys);
-			} else {
-				backgroundWorkManager.sendKey(winKeyCode);
+		if (remoteDeviceInfo.isConnected()) {
+			Integer winKeyCode = null;
+			if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+				if (volumeDownIsPressed) {
+					volumeDownIsPressed = false;
+					backgroundWorkManager.sendKey(KeyMap.releaseKey(KeyMap.VK_RBUTTON));
+					return true;
+				}
+			} else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+				if (volumeUpIsPressed) {
+					volumeUpIsPressed = false;
+					backgroundWorkManager.sendKey(KeyMap.releaseKey(KeyMap.VK_LBUTTON));
+					return true;
+				}
+			} else if ((winKeyCode = KeyMap.ANDROID_TO_WINDOWS_KEY_MAP.get(keyCode)) != null) { // try to map to windows key codes
+				if (event.isShiftPressed()) {
+					int[] keys = new int[] { KeyMap.holdKey(KeyMap.VK_SHIFT), winKeyCode, KeyMap.releaseKey(KeyMap.VK_SHIFT) };
+					backgroundWorkManager.sendKeys(keys);
+				} else if (event.isAltPressed()) {
+					int[] keys = new int[] { KeyMap.holdKey(KeyMap.VK_MENU), winKeyCode, KeyMap.releaseKey(KeyMap.VK_MENU) };
+					backgroundWorkManager.sendKeys(keys);
+					// } else if (event.isCtrlPressed()) {
+					// int[] keys = new int[] {KeyMap.holdKey(KeyMap.VK_CONTROL), winKeyCode, KeyMap.releaseKey(KeyMap.VK_CONTROL)};
+					// backgroundWorkManager.sendKeys(keys);
+				} else {
+					backgroundWorkManager.sendKey(winKeyCode);
+				}
 			}
 		}
 		return false;
@@ -387,13 +376,13 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	// want to update since we're in anotre state.
 	@Override
 	public void onSensorChanged(SensorEvent event) {
-		if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
+		if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE || event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 			andgee.getDevice().onSensorChanged(event);
 		}
 
 		// Logger.printLog("onSensorChanged",
 		// Integer.toString(event.sensor.getType()));
-		if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR && !isMouseSuspended()) {
+		if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR && !isMouseSuspended) {
 
 			float[] rotationMatrix = new float[9];
 			SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
@@ -402,7 +391,9 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			SensorManager.getOrientation(rotationMatrix, newValues);
 
 			// Logger.printLog("onSensorChanged", Arrays.toString(newValues));
-			backgroundWorkManager.sendSample(newValues);
+			if (remoteDeviceInfo.isConnected()) {
+				backgroundWorkManager.sendSample(newValues);
+			}
 		}
 	}
 
@@ -437,6 +428,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	}
 
 	private void toMouseMode() {
+		resumeMouse();
 		recognizeGestureBtn.setVisibility(View.GONE);
 		goToMouseBtn.setVisibility(View.GONE);
 		goToGestureBtn.setVisibility(View.VISIBLE);
@@ -448,9 +440,12 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			backgroundWorkManager.resumeFastSampleSenderThread();
 		}
 		andgee.getDevice().setAccelerationEnabled(false);
+		Tools.unregisterGestureSensor(sensorManager, this);
 	}
 
 	private void toGestureMode() {
+		suspendMouse();
+		Tools.registerGestureSensor(sensorManager, this, SensorManager.SENSOR_DELAY_GAME);
 		recognizeGestureBtn.setVisibility(View.VISIBLE);
 		goToMouseBtn.setVisibility(View.VISIBLE);
 		goToGestureBtn.setVisibility(View.GONE);

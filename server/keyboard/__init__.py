@@ -16,11 +16,30 @@ def key_press(key, duration = None):
 		time.sleep(duration)
 	key_up(key)
 
-def key_down(key):
-	win32api.keybd_event(key, win32api.MapVirtualKey(key, 0))
+def key_down(key_event):
+	if is_mouse_event(key_event):
+		__handle_mouse_key(key_event)
+	else:
+		win32api.keybd_event(key_event, win32api.MapVirtualKey(key_event, 0))
 
-def key_up(key):
-	win32api.keybd_event(key, win32api.MapVirtualKey(key, 0), win32con.KEYEVENTF_KEYUP)
+def __handle_mouse_key(key_event):
+	mouse_key = KEYBOARD_MOUSE_MAP.get(key_event)
+	if mouse_key is None:
+		return
+	if type(mouse_key) is int:
+		mouse_key = [mouse_key]
+	for key_part in mouse_key:
+		win32api.mouse_event(key_part,0,0,0,0)
+
+def key_up(key_event):
+	if is_mouse_event(key_event):
+		__handle_mouse_key(key_event)
+	else:
+		win32api.keybd_event(key_event, win32api.MapVirtualKey(key_event, 0), win32con.KEYEVENTF_KEYUP)
+
+def is_mouse_event(key_event):
+	pure_key = get_pure_key(key_event)
+	return pure_key in MOUSE_KEYS
 
 class KEYS:
 	VK_LBUTTON = 1
@@ -199,6 +218,7 @@ def get_pure_key(key_event):
 		return key_event - MODEFIERS.RELEASE
 	if key_event & MODEFIERS.HOLD:
 		return key_event - MODEFIERS.HOLD
+	return key_event
 
 def is_key_hold(key_event):
 	return key_event & MODEFIERS.HOLD
@@ -215,13 +235,17 @@ def set_key_release(key):
 KEYBOARD_MOUSE_MAP = {
 	set_key_hold(KEYS.VK_LBUTTON) : win32con.MOUSEEVENTF_LEFTDOWN,
 	set_key_release(KEYS.VK_LBUTTON) : win32con.MOUSEEVENTF_LEFTUP,
+	KEYS.VK_LBUTTON : [win32con.MOUSEEVENTF_LEFTDOWN, win32con.MOUSEEVENTF_LEFTUP],
 	set_key_hold(KEYS.VK_RBUTTON) : win32con.MOUSEEVENTF_RIGHTDOWN,
 	set_key_release(KEYS.VK_RBUTTON) : win32con.MOUSEEVENTF_RIGHTUP,
+	KEYS.VK_RBUTTON : [win32con.MOUSEEVENTF_RIGHTDOWN, win32con.MOUSEEVENTF_RIGHTUP],
 }
 
 def execute_sequence(seq):
 	for key in seq:
-		if key == 0:
+		if is_mouse_event(key):
+			__handle_mouse_key(key)
+		elif key == 0:
 			time.sleep(sleep_interval())
 		elif is_key_hold(key):
 			key_down(key)

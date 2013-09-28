@@ -3,6 +3,9 @@ package us.to.gesturemouse.infra;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.hardware.Sensor;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 
 public class Tools {
 	public static boolean equals(String a, String b) {
@@ -37,5 +40,57 @@ public class Tools {
 		});
 		AlertDialog dialog = builder.create();
 		dialog.show();
+	}
+
+	public static Sensor getGestureSensor(SensorManager sensorManager) {
+		Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+		if (sensor == null) {
+			sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+		}
+		return sensor;
+	}
+
+	public static Sensor getMouseSensor(SensorManager sensorManager) {
+		Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+		return sensor;
+	}
+
+	public static boolean registerMouseSensor(SensorManager sensorManager, SensorEventListener sensorEventListener, int rate) {
+		if (sensorManager == null || sensorEventListener == null) {
+			return false;
+		}
+		Sensor sensor = getMouseSensor(sensorManager);
+		return sensorManager.registerListener(sensorEventListener, sensor, rate);
+	}
+
+	public static boolean registerGestureSensor(SensorManager sensorManager, SensorEventListener sensorEventListener, int rate) {
+		if (sensorManager == null || sensorEventListener == null) {
+			return false;
+		}
+		Sensor sensor = getGestureSensor(sensorManager);
+		if (sensor != null) {
+			return sensorManager.registerListener(sensorEventListener, sensor, rate);
+		}
+		return false;
+	}
+
+	public static void unregisterGestureSensor(SensorManager sensorManager, SensorEventListener sensorEventListener) {
+		if (sensorManager == null || sensorEventListener == null) {
+			return;
+		}
+		Sensor sensor = getGestureSensor(sensorManager);
+		if (sensor != null) {
+			sensorManager.unregisterListener(sensorEventListener, sensor);
+		}
+	}
+
+	public static void unregisterMouseSensor(SensorManager sensorManager, SensorEventListener sensorEventListener) {
+		if (sensorManager == null || sensorEventListener == null) {
+			return;
+		}
+		Sensor sensor = getMouseSensor(sensorManager);
+		if (sensor != null) {
+			sensorManager.unregisterListener(sensorEventListener, sensor);
+		}
 	}
 }

@@ -133,8 +133,7 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 
 	@Override
 	protected void onStart() {
-		Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-		sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_GAME);
+		Tools.registerGestureSensor(sensorManager, this, SensorManager.SENSOR_DELAY_GAME);
 		super.onStart();
 	}
 

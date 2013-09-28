@@ -58,7 +58,7 @@ public class FirstTimeLoginActivity extends Activity {
 		}
 
 		SensorManager sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-		Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+		Sensor sensor = Tools.getGestureSensor(sensorManager);
 		final Runnable finish = new Runnable() {
 
 			@Override
@@ -67,7 +67,7 @@ public class FirstTimeLoginActivity extends Activity {
 			}
 		};
 		if (sensor == null) {
-			Tools.showErrorModal(this, "Error", "Your device does not have the GYROSCOPE sensor and cannot run this application.", "OK", finish);
+			Tools.showErrorModal(this, "Error", "Your device does not have the GYROSCOPE or ACCELEROMETER sensor and cannot run this application.", "OK", finish);
 		}
 		sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
 		if (sensor == null) {

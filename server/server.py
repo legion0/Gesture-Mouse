@@ -19,12 +19,7 @@ import sys
 import os
 import threading
 import time
-import win32gui
-import win32process
 import win32api
-import win32con
-import ctypes
-import wintypes
 
 SCRIPT_DIR = os.path.dirname(__file__)
 SCRIPT_NAME = os.path.basename(__file__)
@@ -204,23 +199,16 @@ def request_handler(sock, addr):
 
 def handle_key_event(session, msg):
 	key_event = msg["key_event"]
-	if type(key_event) is list:
-		keyboard.execute_sequence(key_event)
-	else:
-		pure_key = keyboard.get_pure_key(key_event)
-		if pure_key in keyboard.MOUSE_KEYS:
-			handle_mouse_key(session, key_event)
-		else:
-			handle_keyboard_key(session, key_event)
+	if type(key_event) is int and keyboard.is_mouse_event(key_event):
+		handle_mouse_drag(session, key_event)
+	if type(key_event) is int:
+		key_event = [key_event]
+	keyboard.execute_sequence(key_event)
 
 def handle_keyboard_key(session, key_event):
 	keyboard.execute_sequence([key_event])
 
-def handle_mouse_key(session, key_event):
-	mouse_key = keyboard.KEYBOARD_MOUSE_MAP.get(key_event)
-	if mouse_key is None:
-		return
-	win32api.mouse_event(mouse_key,0,0,0,0)
+def handle_mouse_drag(session, key_event):
 	if keyboard.is_key_hold(key_event):
 		with session["lock"]:
 			delay_drag = session.get("settings", {}).get("mouse", {}).get("delay_drag", False)
@@ -433,11 +421,14 @@ def mouse_listener(session):
 #		print_round = (print_round + 1) % 10
 #		if print_round == 0:
 #			print int(x-current_x), int(y-current_y), roll, pitch
-#		x_diff = int(x-current_x)
-#		y_diff = int(y-current_y)
-#		if (x_diff != 0) or (y_diff != 0):
-#			print x_diff, y_diff, roll, pitch
-
+		x_diff = int(x-current_x)
+		y_diff = int(y-current_y)
+		if (x_diff != 0) or (y_diff != 0):
+			print x_diff, y_diff, roll, pitch
+		now_ = get_timestamp()
+		end_ = session.get("mouse_filter_low_end", now_)
+		if end_ > now_ and abs(x_diff) <= 1 and abs(y_diff) <= 1:
+			continue
 		try:
 			win32api.SetCursorPos((x,y))
 		except win32api.error:
