@@ -12,7 +12,7 @@ def get_foreground_title():
 	window_text_length = __user32dll.GetWindowTextLengthW(wintypes.HANDLE(hwnd))
 	lpString = ctypes.create_unicode_buffer(window_text_length+1)
 	__user32dll.GetWindowTextW(hwnd, lpString, window_text_length+1)
-	return lpString.value
+	return lpString.value.encode("utf-8")
 
 def get_foreground_process_name():
 	hwnd = __user32dll.GetForegroundWindow()
@@ -28,7 +28,7 @@ def get_foreground_process_name():
 		if not chars_returned:
 			return None
 	__kernel32dll.CloseHandle(pshandle)
-	return os.path.basename(lpString.value)
+	return os.path.basename(lpString.value.encode("utf-8"))
 
 def get_screen_size():
 	return __user32dll.GetSystemMetrics(win32con.SM_CXSCREEN), __user32dll.GetSystemMetrics(win32con.SM_CYSCREEN)
