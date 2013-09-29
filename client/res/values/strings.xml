@@ -7,8 +7,8 @@
 	<string name="title_activity_main">MainActivity</string>
 	<string name="title_activity_first_time_login">FirstTimeLoginActivity</string>
 	<string name="devices">Devices</string>
-	<string name="instructionOne">Welcome to Gesture Mouse&#8230;\nThe Application that will revolutionize the way you control your computer.\nPlease Go to: <a href="http://www.gesturemouse.us.to">gesturemouse.us.to</a> to download the server application to your desktop computer.</string>
-	<string name="instructionTwo">After installation please launch the desktop application and follow the online tutorial that will guide you through a quick setup and the initial connection.\nRead the Getting Started tutrial at <a href="http://www.gesturemouse.us.to">gesturemouse.us.to</a> for a detailed explanation of what this app can do.</string>
+	<string name="instructionOne">Welcome to Gesture Mouse&#8230;\nThe Application that will revolutionize the way you control your computer.\nPlease Go to: <a href="http://gesturemouse.us.to">gesturemouse.us.to</a> to download the server application to your desktop computer.</string>
+	<string name="instructionTwo">After installation please launch the desktop application and follow the online tutorial that will guide you through a quick setup and the initial connection.\nRead the Getting Started tutrial at <a href="http://gesturemouse.us.to">gesturemouse.us.to</a> for a detailed explanation of what this app can do.</string>
 	<string name="title_activity_create_gesture">CreateGestureActivity</string>
 	<string name="mouseBtnTxt">Mouse</string>
 	<string name="createGesture">Create New Gesture</string>
