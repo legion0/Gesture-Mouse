@@ -11,25 +11,48 @@ import java.util.concurrent.TimeUnit;
 
 import org.msgpack.MessagePack;
 
+import us.to.gesturemouse.TcpClient;
 import us.to.gesturemouse.infra.RemoteDeviceInfo;
+import us.to.gesturemouse.infra.interfaces.ApplicationListener;
 
+import android.app.Activity;
+import android.content.Context;
 import android.util.Log;
 
 
 public class ControlSessionThread extends PausableRunnable {
+	
+	public static enum ConnectionState {
+		CONNECTING, CONNECTED, DISCONNECTING, DISCONNECTED
+	}
 
 	private RemoteDeviceInfo remoteDeviceInfo;
 	private final BlockingDeque<byte[]> outgoingControlMessages;
 	private MessagePack msgpack;
 	private Map<String, Object> msg;
+	private boolean shouldConnect;
+	private boolean shouldDisconnect;
+	private Context context;
+	private Runnable runOnConnect;
+	private ConnectionState connectionState;
+	private Activity activity;
+	private Thread thread;
 
-	public ControlSessionThread(RemoteDeviceInfo remoteDeviceInfo) {
+	public ControlSessionThread(RemoteDeviceInfo remoteDeviceInfo, Context context, Activity activity, Runnable runOnConnect) {
 		super();
+		this.activity = activity;
+		connectionState =  ConnectionState.DISCONNECTED;
 		this.remoteDeviceInfo = remoteDeviceInfo;
+		this.context = context;
+		this.runOnConnect = runOnConnect;
 		outgoingControlMessages = new LinkedBlockingDeque<byte[]>();
 		msgpack = new MessagePack();
 		msg = new LinkedHashMap<String, Object>();
 		msg.put("session_id", remoteDeviceInfo.getSessionId());
+	}
+
+	public void setThread(Thread thread) {
+		this.thread = thread;
 	}
 
 	public void sendGesture(int gestureId) {
@@ -76,6 +99,51 @@ public class ControlSessionThread extends PausableRunnable {
 
 	@Override
 	protected void innerAction() {
+		doConnect();
+		doSendMsg();
+		doDisconnect();
+	}
+
+	private void doDisconnect() {
+		try {
+			if (getConnectionState() == ConnectionState.DISCONNECTING) {
+				TcpClient client = new TcpClient(remoteDeviceInfo, context);
+				client.closeSession();
+			}
+			if (getConnectionState() == ConnectionState.DISCONNECTING) {
+				setConnectionState(ConnectionState.DISCONNECTED);
+			}
+		} catch (IOException e) {
+			Log.e("ControlSessionThread", "doConnect", e);
+		}
+	}
+
+	private void doConnect() {
+		try {
+			if (getConnectionState() == ConnectionState.CONNECTING) {
+				TcpClient client = new TcpClient(remoteDeviceInfo, context);
+				client.initControllSession();
+			}
+			if (getConnectionState() == ConnectionState.CONNECTING) {
+				setConnectionState(ConnectionState.CONNECTED);
+				if (activity != null && runOnConnect != null) {
+					activity.runOnUiThread(runOnConnect);
+				}
+			}
+		} catch (IOException e) {
+			Log.e("ControlSessionThread", "doConnect", e);
+		}
+	}
+
+	public synchronized ConnectionState getConnectionState() {
+		return connectionState;
+	}
+
+	private synchronized void setConnectionState(ConnectionState connectionState) {
+		this.connectionState = connectionState;
+	}
+
+	private void doSendMsg() {
 		byte[] buffer = null;
 		try {
 			buffer = outgoingControlMessages.pollFirst(1, TimeUnit.SECONDS);
@@ -91,6 +159,20 @@ public class ControlSessionThread extends PausableRunnable {
 			} catch (IOException e) {
 				Log.e("ControlSessionThread", "Exception in: innerAction", e);
 			}
+		}
+	}
+
+	public synchronized void connect() {
+		if (connectionState != ConnectionState.CONNECTED && connectionState != ConnectionState.CONNECTING) {
+			connectionState = ConnectionState.CONNECTING;
+			outgoingControlMessages.clear();
+		}
+	}
+
+	public synchronized void disconnect() {
+		if (connectionState != ConnectionState.DISCONNECTED && connectionState != ConnectionState.DISCONNECTING) {
+			connectionState = ConnectionState.DISCONNECTING;
+			outgoingControlMessages.clear();
 		}
 	}
 

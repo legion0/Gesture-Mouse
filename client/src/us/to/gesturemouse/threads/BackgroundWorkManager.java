@@ -1,20 +1,34 @@
 package us.to.gesturemouse.threads;
 
+import android.app.Activity;
+import android.content.Context;
 import us.to.gesturemouse.infra.RemoteDeviceInfo;
+import us.to.gesturemouse.infra.interfaces.ApplicationListener;
 
 public class BackgroundWorkManager {
 	private ControlSessionThread controlSession;
 	private FastSampleSenderThread fastSampleSender;
 	private Thread controlSessionThread;
 	private Thread fastSampleSenderThread;
+	private ApplicationListener applicationListener;
+	private ApplicationListenerTask applicationListenerTask;
 
-	public BackgroundWorkManager(RemoteDeviceInfo remoteDeviceInfo) {
+	public BackgroundWorkManager(RemoteDeviceInfo remoteDeviceInfo, Context context, Activity activity, Runnable actionOnConnect, ApplicationListener applicationListener) {
 		super();
-		controlSession = new ControlSessionThread(remoteDeviceInfo);
+		this.applicationListener = applicationListener;
+		controlSession = new ControlSessionThread(remoteDeviceInfo, context, activity, actionOnConnect);
 		fastSampleSender = new FastSampleSenderThread(remoteDeviceInfo);
-		
 		controlSessionThread = new Thread(controlSession);
 		fastSampleSenderThread = new Thread(fastSampleSender);
+		applicationListenerTask = new ApplicationListenerTask(remoteDeviceInfo, applicationListener);
+	}
+
+	public void connect() {
+		controlSession.connect();
+	}
+
+	public void disconnect() {
+		controlSession.disconnect();
 	}
 
 	public void sendGesture(int gestureId) {
@@ -36,11 +50,14 @@ public class BackgroundWorkManager {
 	public void start() {
 		controlSessionThread.start();
 		fastSampleSenderThread.start();
+		applicationListenerTask.execute();
 	}
 
 	public void stop() {
-		controlSession.stop();
+		applicationListenerTask.cancel(false);
+		controlSession.disconnect();
 		fastSampleSender.stop();
+		controlSession.stop();
 	}
 
 	public void join() throws InterruptedException {

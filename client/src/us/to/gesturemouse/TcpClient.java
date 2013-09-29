@@ -123,10 +123,10 @@ public class TcpClient {
 		return port;
 	}
 
-	public void initControllSession(String[] features, RemoteDeviceInfo device) throws IOException {	
+	public void initControllSession() throws IOException {	
 		
 		int localControlPort = findNewLocalControlPort();
-		device.setLocalControlPort(localControlPort);
+		remoteDevice.setLocalControlPort(localControlPort);
 		
 		byte[] msgBuffer = createMsg(localControlPort);
 		
@@ -166,8 +166,8 @@ public class TcpClient {
 			if (sessionId == null) {
 				throw new MessageTypeException("Invalid session id.");
 			}
-			device.setSessionId(sessionId);
-			device.setUDPPort(udpFromServer);
+			remoteDevice.setSessionId(sessionId);
+			remoteDevice.setUDPPort(udpFromServer);
 
 //			Logger.printLog("TCP Client", "S: Received udp port: " + udpFromServer);
 		} catch (IOException e) {
@@ -184,7 +184,7 @@ public class TcpClient {
 
 	
 
-	public void closeSession(Object object, RemoteDeviceInfo remoteDevice2) throws IOException {
+	public void closeSession() throws IOException {
 		Map<Object, Object> msg = new LinkedHashMap<Object, Object>();
 
 		msg.put(key_close, "temporary close"); 
