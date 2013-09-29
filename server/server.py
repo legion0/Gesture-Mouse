@@ -208,11 +208,7 @@ def handle_key_event(session, msg):
 def handle_keyboard_key(session, key_event):
 	keyboard.execute_sequence([key_event])
 
-def handle_mouse_key(session, key_event):
-	mouse_key = keyboard.KEYBOARD_MOUSE_MAP.get(key_event)
-	if mouse_key is None:
-		return
-	win32api.mouse_event(mouse_key, 0, 0, 0, 0)
+def handle_mouse_drag(session, key_event):
 	if keyboard.is_key_hold(key_event):
 		with session["lock"]:
 			delay_drag = session.get("settings", {}).get("mouse", {}).get("delay_drag", False)
