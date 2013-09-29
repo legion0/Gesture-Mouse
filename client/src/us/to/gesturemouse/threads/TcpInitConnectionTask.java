@@ -4,9 +4,7 @@ import java.io.IOException;
 
 import us.to.gesturemouse.TcpClient;
 import us.to.gesturemouse.activities.MainActivity;
-import us.to.gesturemouse.infra.Logger;
 import us.to.gesturemouse.infra.RemoteDeviceInfo;
-
 import android.os.AsyncTask;
 
 
@@ -42,11 +40,11 @@ public class TcpInitConnectionTask extends AsyncTask<Boolean, Void, Void> {
 			if(openNewTcpConnection)
 			{
 				client.initControllSession(null,remoteDevice);
-				Logger.printLog("TcpInitialConnection", remoteDevice.getUDPPort() + "");
+//				Logger.printLog("TcpInitialConnection", remoteDevice.getUDPPort() + "");
 				isClose = false;
 			}else{
 				client.closeSession(null,remoteDevice);
-				Logger.printLog("TcpInitialConnection", "close connection with "+remoteDevice.getUDPPort());
+//				Logger.printLog("TcpInitialConnection", "close connection with "+remoteDevice.getUDPPort());
 				isClose = true;
 			}
 		} catch (IOException e) {
@@ -62,13 +60,13 @@ public class TcpInitConnectionTask extends AsyncTask<Boolean, Void, Void> {
 	}
 
 	protected void onPostExecute(Void v) {
-		Logger.printLog("TCPinitialConnection", "onPostExecute start");
+//		Logger.printLog("TCPinitialConnection", "onPostExecute start");
 		
 		if(!isClose)
 		{
 			activity.onConnectionToRemoteDevice();
 		}
-		Logger.printLog("TCPinitialConnection", "onPostExecute end");
+//		Logger.printLog("TCPinitialConnection", "onPostExecute end");
 
 	}
 }

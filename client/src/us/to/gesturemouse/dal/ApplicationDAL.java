@@ -68,7 +68,6 @@ public class ApplicationDAL {
 			values.put(DBHelper.APPLICATIONS_COLUMN_ID, id);
 		}
 		values.put(DBHelper.APPLICATIONS_COLUMN_NAME, name);
-		values.put(DBHelper.APPLICATIONS_COLUMN_NAME, name);
 		values.put(DBHelper.APPLICATIONS_COLUMN_PROCESS_NAME, processName);
 		values.put(DBHelper.APPLICATIONS_COLUMN_WINDOW_TITLE, windowTitle);
 		long newId = db.insertWithOnConflict(DBHelper.APPLICATIONS_TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);

@@ -11,7 +11,6 @@ import org.wiigee.event.GestureListener;
 import us.to.gesturemouse.dal.ApplicationDAL;
 import us.to.gesturemouse.dal.GestureDAL;
 import us.to.gesturemouse.infra.KeyMap;
-import us.to.gesturemouse.infra.Logger;
 import us.to.gesturemouse.infra.Params;
 import us.to.gesturemouse.infra.RemoteDeviceInfo;
 import us.to.gesturemouse.infra.Tools;
@@ -82,7 +81,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		Logger.printLog("onCreate", "the app is created !");
+//		Logger.printLog("onCreate", "the app is created !");
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		KeyboardDetectorRelativeLayout layout = new KeyboardDetectorRelativeLayout(this);
@@ -111,8 +110,9 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 		final Activity this_ = this;
 
-		Logger.printLog("MainActivity", "initGestureMode");
+//		Logger.printLog("MainActivity", "initGestureMode");
 		recognizeGestureBtn = (ImageView) findViewById(R.id.gestureBtn);
+		recognizeGestureBtn.setVisibility(View.INVISIBLE);
 		goToMouseBtn = (ImageView) findViewById(R.id.goToMouseBtn);
 		goToGestureBtn = (ImageView) findViewById(R.id.goToGestureBtn);
 		learnGestureBtn = (ImageView) findViewById(R.id.learnGestureBtn);
@@ -127,7 +127,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 					int gestureId = classifierIdMap.get(event.getId());
 					Log.d("Main activity", "Recognized gesture " + gestureId + " with probability " + event.getProbability());
 					Log.d("Main activity", "Sending Gesture id: " + gestureId);
-					if (remoteDeviceInfo.isConnected()) {
+					if (backgroundWorkManager != null) {
 						backgroundWorkManager.sendGesture(gestureId);
 					}
 				} else {
@@ -192,7 +192,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 			@Override
 			public void onClick(View v) {
-				inputMethodManager.toggleSoftInputFromWindow(openKeyboardBtn.getApplicationWindowToken(), InputMethodManager.SHOW_IMPLICIT, 0);
+				inputMethodManager.toggleSoftInputFromWindow(openKeyboardBtn.getApplicationWindowToken(), InputMethodManager.SHOW_FORCED, 0);
 			}
 
 		});
@@ -212,7 +212,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	}
 
 	public void onConnectionToRemoteDevice() {
-		Logger.printLog("onConnectionToRemoteDevice", "");
+//		Logger.printLog("onConnectionToRemoteDevice", "");
 		// start threads:
 		backgroundWorkManager = new BackgroundWorkManager(remoteDeviceInfo);
 		backgroundWorkManager.start();
@@ -230,7 +230,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	}
 
 	protected void onStop() {
-		Logger.printLog("onStop", "the app is stoped !");
+//		Logger.printLog("onStop", "the app is stoped !");
 		super.onStop();
 		if (remoteDeviceInfo.isConnected()) {
 			remoteDeviceInfo.setConnected(false);
@@ -245,7 +245,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	@Override
 	protected void onDestroy() {
-		Logger.printLog("onDestroy", "the app is destroyed !");
+//		Logger.printLog("onDestroy", "the app is destroyed !");
 		if (backgroundWorkManager != null) {
 			backgroundWorkManager.stop();
 			backgroundWorkManager = null;
@@ -330,7 +330,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	private void suspendMouse() {
 		isMouseSuspended = true;
-		if (remoteDeviceInfo.isConnected()) {
+		if (backgroundWorkManager != null) {
 			backgroundWorkManager.suspendFastSampleSenderThread();
 		}
 		Tools.unregisterMouseSensor(sensorManager, this);
@@ -338,7 +338,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	private void resumeMouse() {
 		isMouseSuspended = false;
-		if (remoteDeviceInfo.isConnected()) {
+		if (backgroundWorkManager != null) {
 			backgroundWorkManager.resumeFastSampleSenderThread();
 		}
 		Tools.registerMouseSensor(sensorManager, this, MOUSE_SENSOR_DELAY);
@@ -399,7 +399,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			SensorManager.getOrientation(rotationMatrix, newValues);
 
 			// Logger.printLog("onSensorChanged", Arrays.toString(newValues));
-			if (remoteDeviceInfo.isConnected()) {
+			if (backgroundWorkManager != null) { // TODO: sync ?
 				backgroundWorkManager.sendSample(newValues);
 			}
 		}

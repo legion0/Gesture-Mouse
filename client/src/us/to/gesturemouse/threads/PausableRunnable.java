@@ -1,6 +1,5 @@
 package us.to.gesturemouse.threads;
 
-import us.to.gesturemouse.infra.Logger;
 
 public abstract class PausableRunnable implements Runnable {
 
@@ -34,7 +33,7 @@ public abstract class PausableRunnable implements Runnable {
 
 	@Override
 	public void run() {
-		Logger.printLog("Pauseable run: ", "start running...");
+//		Logger.printLog("Pauseable run: ", "start running...");
 		while (!isStoped) {
 			doPause();
 			innerAction();
@@ -46,10 +45,10 @@ public abstract class PausableRunnable implements Runnable {
 			shouldPause = false;
 			isPaused = true;
 			try {
-				Logger.printLog("Pauseable run: ", "wait...");
+//				Logger.printLog("Pauseable run: ", "wait...");
 				wait();
 			} catch (InterruptedException e) {
-				Logger.printLog("Pauseable Thread(InterruptedException): ","errorMSg: "+e.getMessage());
+//				Logger.printLog("Pauseable Thread(InterruptedException): ","errorMSg: "+e.getMessage());
 			}
 			isPaused = false;
 		}

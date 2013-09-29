@@ -5,8 +5,6 @@ import java.net.SocketException;
 import org.wiigee.control.AndroidWiigee;
 import org.wiigee.event.GestureEvent;
 
-import us.to.gesturemouse.infra.Logger;
-
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -35,13 +33,13 @@ public class GestureListener implements SensorEventListener, org.wiigee.event.Ge
 		this.androidWiigee.setTrainButton(LEARN_KEY);
 		this.androidWiigee.addGestureListener(this);
 
-		Logger.printLog("GestureListener", "constructed !");
+//		Logger.printLog("GestureListener", "constructed !");
 	}
 
 	@Override
 	public void gestureReceived(GestureEvent event) {
-		Logger.printLog("gestureReceived", "id="+event.getId());
-		Logger.printLog("gestureReceived", "prob="+event.getProbability());
+//		Logger.printLog("gestureReceived", "id="+event.getId());
+//		Logger.printLog("gestureReceived", "prob="+event.getProbability());
 	}
 
 	@Override

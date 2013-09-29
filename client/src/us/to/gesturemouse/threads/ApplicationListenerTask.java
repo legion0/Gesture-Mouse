@@ -19,11 +19,9 @@ import org.msgpack.type.ValueFactory;
 import org.msgpack.unpacker.Unpacker;
 
 import us.to.gesturemouse.dal.ApplicationDAL;
-import us.to.gesturemouse.infra.Logger;
 import us.to.gesturemouse.infra.RemoteDeviceInfo;
 import us.to.gesturemouse.infra.Tools;
 import us.to.gesturemouse.infra.interfaces.ApplicationListener;
-
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -64,7 +62,7 @@ public class ApplicationListenerTask extends AsyncTask<Void, ApplicationDAL, Voi
 
 	@Override
 	protected Void doInBackground(Void... params) {
-		Logger.printLog("Application Listener", "" + isCancelled());
+//		Logger.printLog("Application Listener", "" + isCancelled());
 		
 		
 		while (!isCancelled()) {
