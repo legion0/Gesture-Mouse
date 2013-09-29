@@ -30,13 +30,13 @@ public class ControlSessionThread extends PausableRunnable {
 	private final BlockingDeque<byte[]> outgoingControlMessages;
 	private MessagePack msgpack;
 	private Map<String, Object> msg;
-	private boolean shouldConnect;
-	private boolean shouldDisconnect;
 	private Context context;
 	private Runnable runOnConnect;
 	private ConnectionState connectionState;
 	private Activity activity;
 	private Thread thread;
+	private boolean stopAfterDisconnect = false;
+	private boolean suspendAfterDisconnect = false;
 
 	public ControlSessionThread(RemoteDeviceInfo remoteDeviceInfo, Context context, Activity activity, Runnable runOnConnect) {
 		super();
@@ -116,6 +116,16 @@ public class ControlSessionThread extends PausableRunnable {
 		} catch (IOException e) {
 			Log.e("ControlSessionThread", "doConnect", e);
 		}
+		synchronized (this) {
+			if (suspendAfterDisconnect && connectionState == ConnectionState.DISCONNECTED) {
+				suspendAfterDisconnect = false;
+				super.suspend();
+			}
+			if (stopAfterDisconnect && connectionState == ConnectionState.DISCONNECTED) {
+				stopAfterDisconnect = false;
+				super.stop();
+			}
+		}
 	}
 
 	private void doConnect() {
@@ -173,6 +183,24 @@ public class ControlSessionThread extends PausableRunnable {
 		if (connectionState != ConnectionState.DISCONNECTED && connectionState != ConnectionState.DISCONNECTING) {
 			connectionState = ConnectionState.DISCONNECTING;
 			outgoingControlMessages.clear();
+		}
+	}
+
+	@Override
+	public synchronized void stop() {
+		if (connectionState == ConnectionState.DISCONNECTING) {
+			stopAfterDisconnect = true;
+		} else {
+			super.stop();
+		}
+	}
+
+	@Override
+	public synchronized void suspend() {
+		if (connectionState == ConnectionState.DISCONNECTING) {
+			suspendAfterDisconnect = true;
+		} else {
+			super.suspend();
 		}
 	}
 

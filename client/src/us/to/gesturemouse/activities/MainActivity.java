@@ -57,7 +57,6 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	private ApplicationDAL runningApp;
 	private SensorManager sensorManager;
 	private BackgroundWorkManager backgroundWorkManager;
-	private ApplicationListenerTask applicationListenerThread;
 
 	private ImageView recognizeGestureBtn;
 
@@ -226,9 +225,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	protected void onStop() {
 		sensorManager.unregisterListener(this);
 		backgroundWorkManager.suspend();
-		applicationListenerThread.cancel(false);
-		applicationListenerThread = null;
-			super.onStop();
+		super.onStop();
 	}
 
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
