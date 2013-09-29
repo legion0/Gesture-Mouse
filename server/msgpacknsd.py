@@ -61,7 +61,7 @@ class NSDServer():
 				data, address = sock.recvfrom(4096)
 			except (socket.timeout, socket.error):
 				continue
-			print 'received %r bytes from %r' % (len(data), address)
+# 			print 'received %r bytes from %r' % (len(data), address)
 			msg = msgpack.unpackb(data)
 			service_name = msg["service"]
 			required_features = msg.get("features", [])
@@ -70,6 +70,6 @@ class NSDServer():
 			if service:
 				has_features = len(set(service["features"]) - set(required_features)) == 0
 				if has_features:
-					print 'sending discovery response to', address
-					print service["response"]
+# 					print 'sending discovery response to', address
+# 					print service["response"]
 					sock.sendto(msgpack.packb(service["response"]), address)

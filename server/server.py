@@ -69,13 +69,13 @@ def main(args):
 	client_server_thread = threading.Thread(target=client_server)
 	client_server_thread.start()
 
-	#Set Tray Icon
+	# Set Tray Icon
 	tray_thread = threading.Thread(target=tray_handler)
 	tray_thread.start()
 
 	tray_thread.join()
-	#time.sleep(60)
-	#event_shutdown.set()
+	# time.sleep(60)
+	# event_shutdown.set()
 
 	client_server_thread.join()
 	broadcast_listener_thread.join()
@@ -85,12 +85,12 @@ def tray_handler():
 	global TRAY_HNWD
 	hover_text = "Gesture Mouse Server"
 	menu_options = (
-#		('Say Hello', None, kill_server),
-#		('Switch Icon', None, kill_server),
-#		('A sub-menu', None, (
-#			('Say Hello to Simon', None, kill_server),
-#			('Switch Icon', None, kill_server),
-#		))
+# 		('Say Hello', None, kill_server),
+# 		('Switch Icon', None, kill_server),
+# 		('A sub-menu', None, (
+# 			('Say Hello to Simon', None, kill_server),
+# 			('Switch Icon', None, kill_server),
+# 		))
 	)
 	TRAY_HNWD = SysTrayIcon("icon.ico", hover_text, menu_options, on_quit=kill_server, default_menu_index=1)
 	TRAY_HNWD.show_balloon_tip("Startup", "Gesture mouse is running.")
@@ -208,13 +208,17 @@ def handle_key_event(session, msg):
 def handle_keyboard_key(session, key_event):
 	keyboard.execute_sequence([key_event])
 
-def handle_mouse_drag(session, key_event):
+def handle_mouse_key(session, key_event):
+	mouse_key = keyboard.KEYBOARD_MOUSE_MAP.get(key_event)
+	if mouse_key is None:
+		return
+	win32api.mouse_event(mouse_key, 0, 0, 0, 0)
 	if keyboard.is_key_hold(key_event):
 		with session["lock"]:
 			delay_drag = session.get("settings", {}).get("mouse", {}).get("delay_drag", False)
 			if delay_drag:
 				now = get_timestamp()
-				session["mouse_filter_low_end"] = now + 500 # delay mouse input for 100 miliseconds
+				session["mouse_filter_low_end"] = now + 500  # delay mouse input for 100 miliseconds
 
 def find_session(session_id):
 	with SESSIONS_LOCK:
@@ -257,20 +261,20 @@ def client_msg_handler(session, msg):
 		if action is not None:
 			keyboard.execute_sequence(action)
 
-#PROCESS_CREATE_PROCESS = 0x0080
-#PROCESS_CREATE_THREAD = 0x0002
-#PROCESS_DUP_HANDLE = 0x0040
+# PROCESS_CREATE_PROCESS = 0x0080
+# PROCESS_CREATE_THREAD = 0x0002
+# PROCESS_DUP_HANDLE = 0x0040
 PROCESS_QUERY_INFORMATION = 0x0400
-#PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
-#PROCESS_SET_INFORMATION = 0x0200
-#PROCESS_SET_QUOTA = 0x0100
-#PROCESS_SUSPEND_RESUME = 0x0800
-#PROCESS_TERMINATE = 0x0001
-#PROCESS_VM_OPERATION = 0x0008
+# PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+# PROCESS_SET_INFORMATION = 0x0200
+# PROCESS_SET_QUOTA = 0x0100
+# PROCESS_SUSPEND_RESUME = 0x0800
+# PROCESS_TERMINATE = 0x0001
+# PROCESS_VM_OPERATION = 0x0008
 PROCESS_VM_READ = 0x0010
-#PROCESS_VM_WRITE = 0x0020
-#SYNCHRONIZE = 0x00100000L
-#PROCESS_ALL_ACCESS = PROCESS_CREATE_PROCESS | PROCESS_CREATE_THREAD | PROCESS_DUP_HANDLE | PROCESS_QUERY_INFORMATION | PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_INFORMATION | PROCESS_SET_QUOTA | PROCESS_SUSPEND_RESUME | PROCESS_TERMINATE | PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE | SYNCHRONIZE
+# PROCESS_VM_WRITE = 0x0020
+# SYNCHRONIZE = 0x00100000L
+# PROCESS_ALL_ACCESS = PROCESS_CREATE_PROCESS | PROCESS_CREATE_THREAD | PROCESS_DUP_HANDLE | PROCESS_QUERY_INFORMATION | PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_INFORMATION | PROCESS_SET_QUOTA | PROCESS_SUSPEND_RESUME | PROCESS_TERMINATE | PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE | SYNCHRONIZE
 
 ERROR_ACCESS_DENIED = 5
 ERROR_PARTIAL_COPY = 299
@@ -318,6 +322,10 @@ def window_monitor():
 						session["current_window_title"] = window_title
 						session["current_process_name"] = process_name
 						msg = {"window_title": window_title, "process_name": process_name}
+# 						print window_title.encode('utf-8')
+# 						print msgpack.packb(window_title.encode('utf-8'))
+# 						print map(ord,window_title.encode('utf-8'))
+# 						print map(ord,window_title)
 					if msg is not None:
 						addr = (session["ip"], session["control_port"])
 						print "Sending", repr(msg), "to", addr
@@ -327,7 +335,7 @@ def window_monitor():
 							sock.sendall(msgpack.packb(msg))
 							sock.close()
 							session["control_port_fails"] = 0
-						#except socket.error as ex:
+						# except socket.error as ex:
 						except Exception as ex:
 							if type(ex) == socket.error:
 								session["control_port_fails"] = session.get("control_port_fails", 0) + 1
@@ -342,20 +350,20 @@ def find_in_list(l, selector):
 			return item
 	return None
 
-#def extract_application(window_title, file_name, apps):
-#	if window_title == "" and file_name == "explorer.exe": # Desktop
-#		return None
-#	selected_app = None
-#	for app in apps: # First try by title
-#		if window_title.endswith(app["name"].lower()):
-#			selected_app = app
-#			break
-#	if selected_app is None: # Cannot find by title
-#		for app in apps: # First try by title
-#			if file_name == app["name"].lower():
-#				selected_app = app
-#				break
-#	return selected_app
+# def extract_application(window_title, file_name, apps):
+# 	if window_title == "" and file_name == "explorer.exe": # Desktop
+# 		return None
+# 	selected_app = None
+# 	for app in apps: # First try by title
+# 		if window_title.endswith(app["name"].lower()):
+# 			selected_app = app
+# 			break
+# 	if selected_app is None: # Cannot find by title
+# 		for app in apps: # First try by title
+# 			if file_name == app["name"].lower():
+# 				selected_app = app
+# 				break
+# 	return selected_app
 
 def get_timestamp():
 	return int(time.time() * 1000)
@@ -370,6 +378,8 @@ def mouse_listener(session):
 	global print_round
 	sock = session["udp_sock"]
 	client_disconnect_event = session["disconnected"]
+	x_last = 0.0
+	y_last = 0.0
 	while True:
 		if client_disconnect_event.is_set():
 			break
@@ -386,53 +396,77 @@ def mouse_listener(session):
 
 		current_x, current_y = win32api.GetCursorPos()
 
-		pitch = math.degrees(msg[2])
-		pitch = 180-pitch
-		if pitch > 180:
-			pitch -= 360
+		pitch = -math.degrees(msg[1])
+# 		pitch = math.degrees(msg[2])
+# 		pitch = 180 - pitch
+# 		if pitch > 180:
+# 			pitch -= 360
+		
 
-		roll = math.degrees(msg[1])
-
-		#Calc new x,y:
+		roll = math.degrees(msg[2])
+# 		roll = -math.degrees(msg[1])
+		
+		# Calc new x,y:
 		shift_threshold = 1.5
-		smooth_factor = 5.0
-		power_factor = 1.8
+		smooth_factor = 4.0
+		power_factor = 1.3
+		diff_bound = 2
 		if abs(roll) > shift_threshold:
-			sign = -roll/abs(roll)
-			factor = (-roll - (shift_threshold*sign))/smooth_factor
-			factor_sign = factor/abs(factor)
-			factor = (abs(factor)**power_factor)*factor_sign
-			factor = max(min(factor,40),-40)
-			x = current_x + factor
+			sign = roll / abs(roll)
+			factor = ((roll - (shift_threshold * sign)) / smooth_factor)
+			factor_sign = factor / abs(factor)
+			factor = (abs(factor) ** power_factor) * factor_sign
+			factor = max(min(factor, 40), -40)
+			if abs(x_last - current_x) > diff_bound:
+				x_last = current_x
+			x = x_last + factor
+			
+# 			x_diff_sum = x_diff_sum + (x_last - x)*smooth_factor
+#  			if abs(x_diff_sum) >= diff_bound:
+#  				x_diff_sum = 0.0
+#  			if x_diff_sum > 1 or x_diff_sum < -1:
+#  				x = x - x_diff_sum
+#  				x_diff_sum = 0.0
 		else:
 			x = current_x
-		x = int(x)
+		
 		if abs(pitch) > shift_threshold:
-			sign = -pitch/abs(pitch)
-			factor = (-pitch - (shift_threshold*sign))/smooth_factor
-			factor_sign = factor/abs(factor)
-			factor = (abs(factor)**power_factor)*factor_sign
-			factor = max(min(factor,40),-40)
-			y = current_y + factor
+			sign = -pitch / abs(pitch)
+			factor = (-pitch - (shift_threshold * sign)) / smooth_factor
+			factor_sign = factor / abs(factor)
+			factor = (abs(factor) ** power_factor) * factor_sign
+			factor = max(min(factor, 40), -40)
+			if abs(y_last - current_y) > diff_bound:
+				y_last = current_y
+			y = y_last + factor
+			
+# 			y_diff_sum = y_diff_sum + (y_last - y)*smooth_factor
+#  			if abs(y_diff_sum) >= diff_bound:
+#  				y_diff_sum = 0.0
+#  			if y_diff_sum > 1 or y_diff_sum < -1:
+#  				y = y - y_diff_sum
+#  				y_diff_sum = 0.0
 		else:
 			y = current_y
-		y = int(y)
 
-#		print_round = (print_round + 1) % 10
-#		if print_round == 0:
-#			print int(x-current_x), int(y-current_y), roll, pitch
-		x_diff = int(x-current_x)
-		y_diff = int(y-current_y)
-		if (x_diff != 0) or (y_diff != 0):
-			print x_diff, y_diff, roll, pitch
-		now_ = get_timestamp()
-		end_ = session.get("mouse_filter_low_end", now_)
-		if end_ > now_ and abs(x_diff) <= 1 and abs(y_diff) <= 1:
-			continue
-		try:
-			win32api.SetCursorPos((x,y))
-		except win32api.error:
-			pass
+		print_round = (print_round + 1) % 100
+# 		if print_round == 0:
+# 			print int(x-current_x), int(y-current_y), roll, pitch
+# 			print "x: ",x, "y: ",y
+# 			print "x diff: ",x - x_last,"y diff", y - y_last, "x_diff_sum: ",x_diff_sum," y_diff_sum: ",y_diff_sum
+# 		x_diff = int(x-current_x)
+# 		y_diff = int(y-current_y)
+# 		if (x_diff != 0) or (y_diff != 0): 
+# 			print x_diff, y_diff, roll, pitch
+		x_last = x
+		y_last = y
+		round_x = int(x)
+		round_y = int(y)
+		if round_x != current_x or round_y != current_y:
+			try:
+				win32api.SetCursorPos((round_x, round_y))
+			except win32api.error:
+				pass
 	sock.close()
 
 def broadcast_listener(broadcast_port, tcp_port):
