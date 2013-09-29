@@ -19,11 +19,9 @@ import org.msgpack.type.ValueFactory;
 import org.msgpack.unpacker.Unpacker;
 
 import us.to.gesturemouse.dal.ApplicationDAL;
-import us.to.gesturemouse.infra.Logger;
 import us.to.gesturemouse.infra.RemoteDeviceInfo;
 import us.to.gesturemouse.infra.Tools;
 import us.to.gesturemouse.infra.interfaces.ApplicationListener;
-
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -64,7 +62,7 @@ public class ApplicationListenerTask extends AsyncTask<Void, ApplicationDAL, Voi
 
 	@Override
 	protected Void doInBackground(Void... params) {
-		Logger.printLog("Application Listener", "" + isCancelled());
+//		Logger.printLog("Application Listener", "" + isCancelled());
 		
 		
 		while (!isCancelled()) {
@@ -117,10 +115,10 @@ public class ApplicationListenerTask extends AsyncTask<Void, ApplicationDAL, Voi
 				} else {
 					byte[] bytes = returnMsg.get(key_window_title).asRawValue().getByteArray();
 					Log.d("ApplicationListenerTask", "window_title bytes = " + Arrays.toString(bytes));
-					String windowTitle = new String(bytes, Charset.forName("UTF-8"));
+					String windowTitle = new String(bytes, "utf-8");
 					appData.setWindowTitle(windowTitle);
 					Log.d("ApplicationListenerTask", "window_title = " + windowTitle);
-					appData.setProcessName(new String(returnMsg.get(key_process_name).asRawValue().getByteArray(), Charset.forName("UTF-8")));
+					appData.setProcessName(new String(returnMsg.get(key_process_name).asRawValue().getByteArray(), "utf-8"));
 				}
 				publishProgress(appData);
 			} catch (SocketException ex) {

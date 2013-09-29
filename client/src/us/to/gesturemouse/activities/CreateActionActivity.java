@@ -56,6 +56,7 @@ public class CreateActionActivity extends Activity {
 		keySpinner = (ListView) findViewById(R.id.createActionKeyListView);
 
 		List<TextItemPair<Integer>> keyList = new ArrayList<TextItemPair<Integer>>(KeyMap.KEY_MAP.size());
+		keyList.add(new TextItemPair<Integer>("Delay 50ms", 0));
 		for (Entry<String, Integer> entry : KeyMap.KEY_MAP.entrySet()) {
 			keyList.add(new TextItemPair<Integer>(entry.getKey().replace("VK_", "")+" Press", entry.getValue()));
 			keyList.add(new TextItemPair<Integer>(entry.getKey().replace("VK_", "")+" Hold", KeyMap.holdKey(entry.getValue())));

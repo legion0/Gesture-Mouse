@@ -21,7 +21,6 @@ public class RemoteDeviceInfo implements Parcelable {
 	private int localControlPort;
 	private int UDPPort;
 	private final String machineName;
-	private boolean connected;
 
 	/**
 	 * Constructor
@@ -33,7 +32,6 @@ public class RemoteDeviceInfo implements Parcelable {
 		this.controlPort = controlPort;
 		this.address = address;
 		this.machineName = machineName;
-		connected = false;
 		localControlPort = 0;
 		UDPPort = 0;
 		sessionId = null;
@@ -106,14 +104,6 @@ public class RemoteDeviceInfo implements Parcelable {
 			return new RemoteDeviceInfo[size];
 		}
 	};
-
-	public synchronized boolean isConnected() {
-		return connected;
-	}
-
-	public synchronized void setConnected(boolean connected) {
-		this.connected = connected;
-	}
 
 	public String getName() {
 		return getMachineName();

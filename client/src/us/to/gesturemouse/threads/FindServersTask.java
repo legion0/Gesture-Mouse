@@ -11,10 +11,8 @@ import org.msgpack.type.ValueFactory;
 import us.to.gesturemouse.Client;
 import us.to.gesturemouse.Client.Result;
 import us.to.gesturemouse.activities.FindServersActivity;
-import us.to.gesturemouse.infra.Logger;
 import us.to.gesturemouse.infra.RemoteDeviceInfo;
 import us.to.gesturemouse.infra.ResponseReader;
-
 import android.os.AsyncTask;
 
 
@@ -34,7 +32,7 @@ public class FindServersTask extends AsyncTask<Void, Void, List<RemoteDeviceInfo
 
 	@Override
 	protected List<RemoteDeviceInfo> doInBackground(Void... params) {
-		Logger.printLog("initialPcConnection", "doInBackground");
+//		Logger.printLog("initialPcConnection", "doInBackground");
 		List<RemoteDeviceInfo> deviceList = new LinkedList<RemoteDeviceInfo>();
 
 		MyResponseReader response = new MyResponseReader();
@@ -49,7 +47,7 @@ public class FindServersTask extends AsyncTask<Void, Void, List<RemoteDeviceInfo
 			}
 			return deviceList;
 		} catch (IOException e) {
-			Logger.printLog("initialPcConnection", "Failed to find Pc connection.");
+//			Logger.printLog("initialPcConnection", "Failed to find Pc connection.");
 			return null;
 		}
 	}
@@ -66,7 +64,7 @@ public class FindServersTask extends AsyncTask<Void, Void, List<RemoteDeviceInfo
 	};
 
 	protected void onPostExecute(List<RemoteDeviceInfo> result) {
-		Logger.printLog("initialPcConnection", "onPostExecute");
+//		Logger.printLog("initialPcConnection", "onPostExecute");
 		for (RemoteDeviceInfo deviceItem : result) {
 			findServerActivity.addDevice(deviceItem);
 		}

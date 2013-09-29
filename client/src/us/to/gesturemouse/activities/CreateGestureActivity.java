@@ -5,9 +5,7 @@ import org.wiigee.logic.GestureModel;
 
 import us.to.gesturemouse.dal.ApplicationDAL;
 import us.to.gesturemouse.dal.GestureDAL;
-import us.to.gesturemouse.infra.Logger;
 import us.to.gesturemouse.infra.Tools;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -81,10 +79,10 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
 				if (event.getAction() == MotionEvent.ACTION_DOWN) {
-					Logger.printLog("Create Gesture Activity", "start learning");
+//					Logger.printLog("Create Gesture Activity", "start learning");
 					andgee.getDevice().getProcessingUnit().startLearning();
 				} else if (event.getAction() == MotionEvent.ACTION_UP) {
-					Logger.printLog("Create Gesture Activity", "stop learning");
+//					Logger.printLog("Create Gesture Activity", "stop learning");
 					andgee.getDevice().getProcessingUnit().endLearning();
 					updateSessionCountLabel();
 				}
@@ -180,7 +178,7 @@ public class CreateGestureActivity extends Activity implements SensorEventListen
 
 		@Override
 		protected Void doInBackground(Void... params) {
-			Logger.printLog("Create Gesture", "save gesture.");
+//			Logger.printLog("Create Gesture", "save gesture.");
 			int classifierGestureId = andgee.getDevice().getProcessingUnit().saveLearningAsGesture();
 			GestureModel gestureModel = andgee.getDevice().getProcessingUnit().getClassifier().getGestureModel(classifierGestureId);
 			gesture.setModel(gestureModel);

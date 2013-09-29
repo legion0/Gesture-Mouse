@@ -3,6 +3,7 @@ package us.to.gesturemouse.activities;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import org.wiigee.control.AndroidWiigee;
 import org.wiigee.event.GestureEvent;
@@ -11,7 +12,6 @@ import org.wiigee.event.GestureListener;
 import us.to.gesturemouse.dal.ApplicationDAL;
 import us.to.gesturemouse.dal.GestureDAL;
 import us.to.gesturemouse.infra.KeyMap;
-import us.to.gesturemouse.infra.Logger;
 import us.to.gesturemouse.infra.Params;
 import us.to.gesturemouse.infra.RemoteDeviceInfo;
 import us.to.gesturemouse.infra.Tools;
@@ -48,6 +48,11 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	enum State {
 		MOUSE, GESTURE
 	};
+	enum ConnectionState {
+		CONNECTING, CONNECTED, DISCONNECTING, DISCONNECTED
+	}
+
+	private ConnectionState connectionState = ConnectionState.DISCONNECTED;
 	
 	private static int MOUSE_SENSOR_DELAY = 20000;
 
@@ -82,7 +87,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		Logger.printLog("onCreate", "the app is created !");
+//		Logger.printLog("onCreate", "the app is created !");
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		KeyboardDetectorRelativeLayout layout = new KeyboardDetectorRelativeLayout(this);
@@ -111,8 +116,9 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 		final Activity this_ = this;
 
-		Logger.printLog("MainActivity", "initGestureMode");
+//		Logger.printLog("MainActivity", "initGestureMode");
 		recognizeGestureBtn = (ImageView) findViewById(R.id.gestureBtn);
+		recognizeGestureBtn.setVisibility(View.INVISIBLE);
 		goToMouseBtn = (ImageView) findViewById(R.id.goToMouseBtn);
 		goToGestureBtn = (ImageView) findViewById(R.id.goToGestureBtn);
 		learnGestureBtn = (ImageView) findViewById(R.id.learnGestureBtn);
@@ -127,7 +133,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 					int gestureId = classifierIdMap.get(event.getId());
 					Log.d("Main activity", "Recognized gesture " + gestureId + " with probability " + event.getProbability());
 					Log.d("Main activity", "Sending Gesture id: " + gestureId);
-					if (remoteDeviceInfo.isConnected()) {
+					if (backgroundWorkManager != null) {
 						backgroundWorkManager.sendGesture(gestureId);
 					}
 				} else {
@@ -192,7 +198,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 			@Override
 			public void onClick(View v) {
-				inputMethodManager.toggleSoftInputFromWindow(openKeyboardBtn.getApplicationWindowToken(), InputMethodManager.SHOW_IMPLICIT, 0);
+				inputMethodManager.toggleSoftInputFromWindow(openKeyboardBtn.getApplicationWindowToken(), InputMethodManager.SHOW_FORCED, 0);
 			}
 
 		});
@@ -202,8 +208,11 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	protected void onStart() {
 		applications = ApplicationDAL.loadWithGestures(this);
 		super.onStart();
-		tcpConnection = new TcpInitConnectionTask(remoteDeviceInfo, this);
-		tcpConnection.execute(true);
+		synchronized (connectionState) {
+			connectionState = ConnectionState.CONNECTING;
+			tcpConnection = new TcpInitConnectionTask(remoteDeviceInfo, this);
+			tcpConnection.execute(true);
+		}
 	}
 
 	@Override
@@ -212,7 +221,10 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	}
 
 	public void onConnectionToRemoteDevice() {
-		Logger.printLog("onConnectionToRemoteDevice", "");
+		synchronized (connectionState) {
+			
+		}
+//		Logger.printLog("onConnectionToRemoteDevice", "");
 		// start threads:
 		backgroundWorkManager = new BackgroundWorkManager(remoteDeviceInfo);
 		backgroundWorkManager.start();
@@ -220,7 +232,6 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		applicationListenerThread.execute();
 
 		// start sensors:
-		remoteDeviceInfo.setConnected(true);
 		toMouseMode();
 	}
 
@@ -230,22 +241,24 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	}
 
 	protected void onStop() {
-		Logger.printLog("onStop", "the app is stoped !");
+		synchronized (connectionState) {
+			if (connectionState == ConnectionState.CONNECTED) {
+				
+			}
+		}
+//		Logger.printLog("onStop", "the app is stoped !");
 		super.onStop();
-		if (remoteDeviceInfo.isConnected()) {
-			remoteDeviceInfo.setConnected(false);
 			sensorManager.unregisterListener(this);
 			backgroundWorkManager.suspend();
 			tcpConnection = new TcpInitConnectionTask(remoteDeviceInfo, this);
 			tcpConnection.execute(false);
 			applicationListenerThread.cancel(false);
 			applicationListenerThread = null;
-		}
 	}
 
 	@Override
 	protected void onDestroy() {
-		Logger.printLog("onDestroy", "the app is destroyed !");
+//		Logger.printLog("onDestroy", "the app is destroyed !");
 		if (backgroundWorkManager != null) {
 			backgroundWorkManager.stop();
 			backgroundWorkManager = null;
@@ -278,18 +291,20 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			onBackPressed();
 			return true;
 		}
-		if (remoteDeviceInfo.isConnected()) {
-			if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-				if (!volumeDownIsPressed) {
-					volumeDownIsPressed = true;
-					backgroundWorkManager.sendKey(KeyMap.holdKey(KeyMap.VK_RBUTTON));
-					return true;
-				}
-			} else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-				if (!volumeUpIsPressed) {
-					volumeUpIsPressed = true;
-					backgroundWorkManager.sendKey(KeyMap.holdKey(KeyMap.VK_LBUTTON));
-					return true;
+		synchronized (connectionState) {
+			if (connectionState == ConnectionState.CONNECTED) {
+				if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+					if (!volumeDownIsPressed) {
+						volumeDownIsPressed = true;
+						backgroundWorkManager.sendKey(KeyMap.holdKey(KeyMap.VK_RBUTTON));
+						return true;
+					}
+				} else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+					if (!volumeUpIsPressed) {
+						volumeUpIsPressed = true;
+						backgroundWorkManager.sendKey(KeyMap.holdKey(KeyMap.VK_LBUTTON));
+						return true;
+					}
 				}
 			}
 		}
@@ -330,7 +345,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	private void suspendMouse() {
 		isMouseSuspended = true;
-		if (remoteDeviceInfo.isConnected()) {
+		if (backgroundWorkManager != null) {
 			backgroundWorkManager.suspendFastSampleSenderThread();
 		}
 		Tools.unregisterMouseSensor(sensorManager, this);
@@ -338,7 +353,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	private void resumeMouse() {
 		isMouseSuspended = false;
-		if (remoteDeviceInfo.isConnected()) {
+		if (backgroundWorkManager != null) {
 			backgroundWorkManager.resumeFastSampleSenderThread();
 		}
 		Tools.registerMouseSensor(sensorManager, this, MOUSE_SENSOR_DELAY);
@@ -348,32 +363,34 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		super.onKeyUp(keyCode, event);
 		// Log.d("keyCode", KeyEvent.keyCodeToString(keyCode));
-		if (remoteDeviceInfo.isConnected()) {
-			Integer winKeyCode = null;
-			if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-				if (volumeDownIsPressed) {
-					volumeDownIsPressed = false;
-					backgroundWorkManager.sendKey(KeyMap.releaseKey(KeyMap.VK_RBUTTON));
-					return true;
-				}
-			} else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-				if (volumeUpIsPressed) {
-					volumeUpIsPressed = false;
-					backgroundWorkManager.sendKey(KeyMap.releaseKey(KeyMap.VK_LBUTTON));
-					return true;
-				}
-			} else if ((winKeyCode = KeyMap.ANDROID_TO_WINDOWS_KEY_MAP.get(keyCode)) != null) { // try to map to windows key codes
-				if (event.isShiftPressed()) {
-					int[] keys = new int[] { KeyMap.holdKey(KeyMap.VK_SHIFT), winKeyCode, KeyMap.releaseKey(KeyMap.VK_SHIFT) };
-					backgroundWorkManager.sendKeys(keys);
-				} else if (event.isAltPressed()) {
-					int[] keys = new int[] { KeyMap.holdKey(KeyMap.VK_MENU), winKeyCode, KeyMap.releaseKey(KeyMap.VK_MENU) };
-					backgroundWorkManager.sendKeys(keys);
-					// } else if (event.isCtrlPressed()) {
-					// int[] keys = new int[] {KeyMap.holdKey(KeyMap.VK_CONTROL), winKeyCode, KeyMap.releaseKey(KeyMap.VK_CONTROL)};
-					// backgroundWorkManager.sendKeys(keys);
-				} else {
-					backgroundWorkManager.sendKey(winKeyCode);
+		synchronized (connectionState) {
+			if (connectionState == ConnectionState.CONNECTED) {
+				Integer winKeyCode = null;
+				if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+					if (volumeDownIsPressed) {
+						volumeDownIsPressed = false;
+						backgroundWorkManager.sendKey(KeyMap.releaseKey(KeyMap.VK_RBUTTON));
+						return true;
+					}
+				} else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+					if (volumeUpIsPressed) {
+						volumeUpIsPressed = false;
+						backgroundWorkManager.sendKey(KeyMap.releaseKey(KeyMap.VK_LBUTTON));
+						return true;
+					}
+				} else if ((winKeyCode = KeyMap.ANDROID_TO_WINDOWS_KEY_MAP.get(keyCode)) != null) { // try to map to windows key codes
+					if (event.isShiftPressed()) {
+						int[] keys = new int[] { KeyMap.holdKey(KeyMap.VK_SHIFT), winKeyCode, KeyMap.releaseKey(KeyMap.VK_SHIFT) };
+						backgroundWorkManager.sendKeys(keys);
+					} else if (event.isAltPressed()) {
+						int[] keys = new int[] { KeyMap.holdKey(KeyMap.VK_MENU), winKeyCode, KeyMap.releaseKey(KeyMap.VK_MENU) };
+						backgroundWorkManager.sendKeys(keys);
+						// } else if (event.isCtrlPressed()) {
+						// int[] keys = new int[] {KeyMap.holdKey(KeyMap.VK_CONTROL), winKeyCode, KeyMap.releaseKey(KeyMap.VK_CONTROL)};
+						// backgroundWorkManager.sendKeys(keys);
+					} else {
+						backgroundWorkManager.sendKey(winKeyCode);
+					}
 				}
 			}
 		}
@@ -399,7 +416,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			SensorManager.getOrientation(rotationMatrix, newValues);
 
 			// Logger.printLog("onSensorChanged", Arrays.toString(newValues));
-			if (remoteDeviceInfo.isConnected()) {
+			if (backgroundWorkManager != null) { // TODO: sync ?
 				backgroundWorkManager.sendSample(newValues);
 			}
 		}

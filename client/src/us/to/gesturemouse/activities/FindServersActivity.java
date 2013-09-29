@@ -4,11 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import us.to.gesturemouse.infra.DeviceListDisplayAdapter;
-import us.to.gesturemouse.infra.Logger;
 import us.to.gesturemouse.infra.RemoteDeviceInfo;
 import us.to.gesturemouse.infra.Tools;
 import us.to.gesturemouse.threads.FindServersTask;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -51,9 +49,9 @@ public class FindServersActivity extends Activity implements OnClickListener {
 
 		// TODO: check the true device name:
 		deviceName = android.os.Build.MODEL;
-		Logger.printLog("onCreate", "host name: " + deviceName);
+//		Logger.printLog("onCreate", "host name: " + deviceName);
 		deviceName = android.os.Build.USER;
-		Logger.printLog("onCreate", "host name: " + deviceName);
+//		Logger.printLog("onCreate", "host name: " + deviceName);
 
 		deviceList = new ArrayList<RemoteDeviceInfo>();
 		ListView deviceListView = (ListView) findViewById(R.id.deviceList);
@@ -123,7 +121,7 @@ public class FindServersActivity extends Activity implements OnClickListener {
 			return;
 		}
 		startProgressBar();
-		Logger.printLog("initialPcConnection", "start");
+//		Logger.printLog("initialPcConnection", "start");
 		findServer = new FindServersTask(this);
 		findServer.execute();
 	}

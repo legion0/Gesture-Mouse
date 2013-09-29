@@ -23,10 +23,8 @@ import org.msgpack.unpacker.Unpacker;
 
 import us.to.gesturemouse.dal.ApplicationDAL;
 import us.to.gesturemouse.dal.GestureDAL;
-import us.to.gesturemouse.infra.Logger;
 import us.to.gesturemouse.infra.RemoteDeviceInfo;
 import us.to.gesturemouse.infra.Tools;
-
 import android.content.Context;
 import android.util.Log;
 
@@ -134,7 +132,7 @@ public class TcpClient {
 		
 		
 
-		Logger.printLog("TCP Client", "C: Connecting...");
+//		Logger.printLog("TCP Client", "C: Connecting...");
 
 		// create a socket to make the connection with the server
 		Socket socket = new Socket(remoteDevice.getAddress(), remoteDevice.getControlPort());
@@ -144,7 +142,7 @@ public class TcpClient {
 			// send the message to the server
 			OutputStream outputStream = socket.getOutputStream();
 			outputStream.write(msgBuffer);
-			Logger.printLog("TCP Client", "C: Sent.");
+//			Logger.printLog("TCP Client", "C: Sent.");
 
 			// receive the message which the server sends back
 			byte[] bufInput = new byte[4096];
@@ -171,7 +169,7 @@ public class TcpClient {
 			device.setSessionId(sessionId);
 			device.setUDPPort(udpFromServer);
 
-			Logger.printLog("TCP Client", "S: Received udp port: " + udpFromServer);
+//			Logger.printLog("TCP Client", "S: Received udp port: " + udpFromServer);
 		} catch (IOException e) {
 			Log.e("TCPClient", "initControllSession", e);
 		} catch (NullPointerException e) {
@@ -194,7 +192,7 @@ public class TcpClient {
 		MessagePack msgpack = new MessagePack();
 		byte[] msgBuffer = msgpack.write(msg);
 
-		Logger.printLog("TCP Client", "C: Connecting...");
+//		Logger.printLog("TCP Client", "C: Connecting...");
 
 		// create a socket to make the connection with the server
 		Socket socket = new Socket(remoteDevice.getAddress(), remoteDevice.getControlPort());
@@ -204,7 +202,7 @@ public class TcpClient {
 			// send the message to the server
 			OutputStream outputStream = socket.getOutputStream();
 			outputStream.write(msgBuffer);
-			Logger.printLog("TCP Client", "C: close.");
+//			Logger.printLog("TCP Client", "C: close.");
 
 		} catch (IOException e) {
 			Log.e("TCPClient", "closeSession", e);
