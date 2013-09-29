@@ -12,9 +12,11 @@ public class BackgroundWorkManager {
 	private Thread fastSampleSenderThread;
 	private ApplicationListener applicationListener;
 	private ApplicationListenerTask applicationListenerTask;
+	private final RemoteDeviceInfo remoteDeviceInfo;
 
 	public BackgroundWorkManager(RemoteDeviceInfo remoteDeviceInfo, Context context, Activity activity, Runnable actionOnConnect, ApplicationListener applicationListener) {
 		super();
+		this.remoteDeviceInfo = remoteDeviceInfo;
 		this.applicationListener = applicationListener;
 		controlSession = new ControlSessionThread(remoteDeviceInfo, context, activity, actionOnConnect);
 		fastSampleSender = new FastSampleSenderThread(remoteDeviceInfo);
@@ -48,8 +50,11 @@ public class BackgroundWorkManager {
 	}
 
 	public void start() {
+		controlSessionThread = new Thread(controlSession);
+		fastSampleSenderThread = new Thread(fastSampleSender);
 		controlSessionThread.start();
 		fastSampleSenderThread.start();
+		applicationListenerTask = new ApplicationListenerTask(remoteDeviceInfo, applicationListener);
 		applicationListenerTask.execute();
 	}
 
@@ -68,6 +73,7 @@ public class BackgroundWorkManager {
 	public void suspend() {
 		controlSession.suspend();
 		fastSampleSender.suspend();
+		applicationListenerTask.cancel(false);
 	}
 
 	public void resume() {

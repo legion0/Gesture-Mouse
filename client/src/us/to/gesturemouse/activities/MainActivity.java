@@ -79,7 +79,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-//		Logger.printLog("onCreate", "the app is created !");
+		//		Logger.printLog("onCreate", "the app is created !");
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		KeyboardDetectorRelativeLayout layout = new KeyboardDetectorRelativeLayout(this);
@@ -107,17 +107,22 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 		classifierIdMap = new LinkedHashMap<Integer, Integer>();
 
 		final Activity this_ = this;
-		
+
 		actionOnConnect = new Runnable() {
-			
+
 			@Override
 			public void run() {
-				toMouseMode();
+				if(runningApp.getId() == null){
+					toMouseMode();
+				}else{
+					toGestureMode();
+				}
+				
 			}
 		};
 		backgroundWorkManager = new BackgroundWorkManager(remoteDeviceInfo, this, this, actionOnConnect, this);
 
-//		Logger.printLog("MainActivity", "initGestureMode");
+		//		Logger.printLog("MainActivity", "initGestureMode");
 		recognizeGestureBtn = (ImageView) findViewById(R.id.gestureBtn);
 		recognizeGestureBtn.setVisibility(View.INVISIBLE);
 		goToMouseBtn = (ImageView) findViewById(R.id.goToMouseBtn);
@@ -209,6 +214,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	protected void onStart() {
 		applications = ApplicationDAL.loadWithGestures(this);
 		backgroundWorkManager.start();
+		backgroundWorkManager.connect();
 		super.onStart();
 	}
 
@@ -225,6 +231,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 	protected void onStop() {
 		sensorManager.unregisterListener(this);
 		backgroundWorkManager.suspend();
+		backgroundWorkManager.disconnect();
 		super.onStop();
 	}
 
@@ -307,7 +314,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 			backgroundWorkManager.resumeFastSampleSenderThread();
 		}
 		Tools.registerMouseSensor(sensorManager, this, MOUSE_SENSOR_DELAY);
-		
+
 	}
 
 	public boolean onKeyUp(int keyCode, KeyEvent event) {

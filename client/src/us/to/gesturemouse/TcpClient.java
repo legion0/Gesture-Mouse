@@ -147,7 +147,7 @@ public class TcpClient {
 			// receive the message which the server sends back
 			byte[] bufInput = new byte[4096];
 			DatagramPacket incomingPacket = new DatagramPacket(bufInput, bufInput.length);
-			socket.setSoTimeout(timeout);
+//			socket.setSoTimeout(timeout);
 			InputStream inputStream = socket.getInputStream();
 			inputStream.read(bufInput);
 
