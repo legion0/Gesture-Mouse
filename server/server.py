@@ -75,7 +75,7 @@ def main(args):
 
 	tray_thread.join()
 	# time.sleep(60)
-	# event_shutdown.set()
+	event_shutdown.set()
 
 	client_server_thread.join()
 	broadcast_listener_thread.join()
