@@ -280,7 +280,9 @@ def get_active_window_data():
 
 def application_finder(window_title, process_name):
 	def the_finder(item):
-		return window_title.startswith(item["window_title"]) or window_title.endswith(item["window_title"])
+		windows = (window_title == "" and item["window_title"] == "")
+		other = item["window_title"] != "" and (window_title.startswith(item["window_title"]) or window_title.endswith(item["window_title"]))
+		return windows or other
 	return the_finder
 
 def delete_stail_sessions():
@@ -397,11 +399,11 @@ def mouse_listener(session):
 # 		pitch = 180 - pitch
 # 		if pitch > 180:
 # 			pitch -= 360
-		
+
 
 		roll = math.degrees(msg[2])
 # 		roll = -math.degrees(msg[1])
-		
+
 		# Calc new x,y:
 		shift_threshold = 1.5
 		smooth_factor = 4.0
@@ -416,7 +418,7 @@ def mouse_listener(session):
 			if abs(x_last - current_x) > diff_bound:
 				x_last = current_x
 			x = x_last + factor
-			
+
 # 			x_diff_sum = x_diff_sum + (x_last - x)*smooth_factor
 #  			if abs(x_diff_sum) >= diff_bound:
 #  				x_diff_sum = 0.0
@@ -425,7 +427,7 @@ def mouse_listener(session):
 #  				x_diff_sum = 0.0
 		else:
 			x = current_x
-		
+
 		if abs(pitch) > shift_threshold:
 			sign = -pitch / abs(pitch)
 			factor = (-pitch - (shift_threshold * sign)) / smooth_factor
@@ -435,7 +437,7 @@ def mouse_listener(session):
 			if abs(y_last - current_y) > diff_bound:
 				y_last = current_y
 			y = y_last + factor
-			
+
 # 			y_diff_sum = y_diff_sum + (y_last - y)*smooth_factor
 #  			if abs(y_diff_sum) >= diff_bound:
 #  				y_diff_sum = 0.0
@@ -452,7 +454,7 @@ def mouse_listener(session):
 # 			print "x diff: ",x - x_last,"y diff", y - y_last, "x_diff_sum: ",x_diff_sum," y_diff_sum: ",y_diff_sum
 # 		x_diff = int(x-current_x)
 # 		y_diff = int(y-current_y)
-# 		if (x_diff != 0) or (y_diff != 0): 
+# 		if (x_diff != 0) or (y_diff != 0):
 # 			print x_diff, y_diff, roll, pitch
 		x_last = x
 		y_last = y
