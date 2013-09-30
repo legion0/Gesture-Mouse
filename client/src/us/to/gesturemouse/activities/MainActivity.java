@@ -192,7 +192,7 @@ public class MainActivity extends Activity implements SensorEventListener, Appli
 
 			@Override
 			public void onClick(View v) {
-				inputMethodManager.toggleSoftInputFromWindow(openKeyboardBtn.getApplicationWindowToken(), InputMethodManager.SHOW_FORCED, 0);
+				inputMethodManager.toggleSoftInputFromWindow(openKeyboardBtn.getApplicationWindowToken(), InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_NOT_ALWAYS);
 			}
 
 		});
